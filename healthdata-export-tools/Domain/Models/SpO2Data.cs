@@ -86,8 +86,8 @@ public sealed class SpO2Data : HealthDataRecord
             { "Resting", RestingPercentage.HasValue ? $"{RestingPercentage}%" : "N/A" },
             { "Measurements", MeasurementCount },
             { "LowSpO2Events", LowSpO2Events },
-            { "LowestAlert", LowestAlertValue },
-            { "Reliability", $"{ReliabilityScore}%" }
+            { "LowestAlert", (object?)LowestAlertValue },
+            { "Reliability", ReliabilityScore.HasValue ? $"{ReliabilityScore}%" : "N/A" }
         };
     }
 

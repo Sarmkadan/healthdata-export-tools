@@ -107,7 +107,7 @@ public sealed class DateRangeInfo
 
     [JsonPropertyName("daysCovered")]
     public int DaysCovered => EndDate is not null && StartDate is not null
-        ? (int)(EndDate - StartDate)?.TotalDays
+        ? (int)(EndDate.Value - StartDate.Value).TotalDays
         : 0;
 }
 
