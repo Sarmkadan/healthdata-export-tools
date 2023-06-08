@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -9,7 +10,7 @@ namespace HealthDataExportTools.Services;
 /// HTTP client for integrating with external health data APIs
 /// Handles request/response serialization and error handling
 /// </summary>
-public class HttpHealthDataClient
+public sealed class HttpHealthDataClient
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger<HttpHealthDataClient> _logger;
@@ -86,7 +87,7 @@ public class HttpHealthDataClient
     {
         try
         {
-            if (records == null || records.Count == 0)
+            if (records is null || records.Count == 0)
             {
                 _logger.LogWarning("No records to upload");
                 return string.Empty;

@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -9,7 +10,7 @@ namespace HealthDataExportTools.Events;
 /// Event raised when health data export is successfully completed
 /// Contains export metadata and outcome information
 /// </summary>
-public class ExportCompletedEvent : EventBase
+public sealed class ExportCompletedEvent : EventBase
 {
     public ExportFormat ExportFormat { get; }
     public int RecordsExported { get; }

@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -8,7 +9,7 @@ namespace HealthDataExportTools.Domain.Models;
 /// <summary>
 /// Blood oxygen saturation (SpO2) measurements for a day
 /// </summary>
-public class SpO2Data : HealthDataRecord
+public sealed class SpO2Data : HealthDataRecord
 {
     /// <summary>
     /// Minimum SpO2 percentage recorded (0-100%)
@@ -126,7 +127,7 @@ public class SpO2Data : HealthDataRecord
 /// <summary>
 /// Single SpO2 measurement with timestamp
 /// </summary>
-public class SpO2Measurement
+public sealed class SpO2Measurement
 {
     /// <summary>
     /// Timestamp of the measurement

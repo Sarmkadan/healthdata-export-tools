@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -8,7 +9,7 @@ namespace HealthDataExportTools.DTOs;
 /// <summary>
 /// Data Transfer Object for export operation results
 /// </summary>
-public class ExportResultDto
+public sealed class ExportResultDto
 {
     [JsonPropertyName("exportId")]
     public string ExportId { get; set; } = Guid.NewGuid().ToString();
@@ -83,7 +84,7 @@ public class ExportResultDto
 /// <summary>
 /// Information about an exported file
 /// </summary>
-public class ExportedFile
+public sealed class ExportedFile
 {
     [JsonPropertyName("fileName")]
     public string FileName { get; set; } = string.Empty;

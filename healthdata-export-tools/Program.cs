@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -56,7 +57,7 @@ class Program
             var analytics = (AnalyticsService?)serviceProvider.GetService(typeof(AnalyticsService));
             var exporter = (ExportService?)serviceProvider.GetService(typeof(ExportService));
 
-            if (parser == null || analytics == null || exporter == null)
+            if (parser is null || analytics is null || exporter is null)
             {
                 Console.WriteLine("❌ Failed to initialize services");
                 return;
@@ -130,7 +131,7 @@ class Program
         catch (Exception ex)
         {
             Console.WriteLine($"❌ Error: {ex.Message}");
-            if (ex.InnerException != null)
+            if (ex.InnerException is not null)
                 Console.WriteLine($"   Details: {ex.InnerException.Message}");
             Environment.Exit(1);
         }

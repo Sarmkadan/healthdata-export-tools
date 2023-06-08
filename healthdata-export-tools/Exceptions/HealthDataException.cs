@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -59,7 +60,7 @@ public class HealthDataException : Exception
 /// <summary>
 /// Exception thrown when parsing health data files fails
 /// </summary>
-public class ParsingException : HealthDataException
+public sealed class ParsingException : HealthDataException
 {
     /// <summary>
     /// Path to the file being parsed
@@ -92,7 +93,7 @@ public class ParsingException : HealthDataException
 /// <summary>
 /// Exception thrown when data validation fails
 /// </summary>
-public class ValidationException : HealthDataException
+public sealed class ValidationException : HealthDataException
 {
     /// <summary>
     /// Field or property that failed validation
@@ -127,7 +128,7 @@ public class ValidationException : HealthDataException
 /// <summary>
 /// Exception thrown when data export operation fails
 /// </summary>
-public class ExportException : HealthDataException
+public sealed class ExportException : HealthDataException
 {
     /// <summary>
     /// Destination path where export was attempted
@@ -160,7 +161,7 @@ public class ExportException : HealthDataException
 /// <summary>
 /// Exception thrown when database operation fails
 /// </summary>
-public class DataAccessException : HealthDataException
+public sealed class DataAccessException : HealthDataException
 {
     /// <summary>
     /// Operation being performed when error occurred

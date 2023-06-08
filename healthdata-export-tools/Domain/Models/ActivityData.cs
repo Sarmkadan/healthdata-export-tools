@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -8,7 +9,7 @@ namespace HealthDataExportTools.Domain.Models;
 /// <summary>
 /// Represents a specific exercise or activity session
 /// </summary>
-public class ActivityData : HealthDataRecord
+public sealed class ActivityData : HealthDataRecord
 {
     /// <summary>
     /// Type of activity (running, cycling, swimming, etc.)
@@ -181,7 +182,7 @@ public class ActivityData : HealthDataRecord
 /// <summary>
 /// GPS coordinate point for activity routes
 /// </summary>
-public class GpsPoint
+public sealed class GpsPoint
 {
     /// <summary>
     /// Latitude coordinate

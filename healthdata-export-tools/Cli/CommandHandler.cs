@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -12,7 +13,7 @@ namespace HealthDataExportTools.Cli;
 /// <summary>
 /// Handles execution of commands and coordinates services
 /// </summary>
-public class CommandHandler
+public sealed class CommandHandler
 {
     private readonly HealthDataParserService _parserService;
     private readonly ExportService _exportService;

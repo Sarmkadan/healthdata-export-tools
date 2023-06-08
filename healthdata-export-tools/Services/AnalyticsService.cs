@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -10,7 +11,7 @@ namespace HealthDataExportTools.Services;
 /// <summary>
 /// Service for analyzing health data and computing metrics
 /// </summary>
-public class AnalyticsService
+public sealed class AnalyticsService
 {
     /// <summary>
     /// Calculate average sleep duration over a period
@@ -319,7 +320,7 @@ public class AnalyticsService
 }
 
 /// <summary>Result of trend analysis</summary>
-public class TrendAnalysis
+public sealed class TrendAnalysis
 {
     public string Status { get; set; } = "Unknown";
     public double PercentChange { get; set; }
@@ -327,7 +328,7 @@ public class TrendAnalysis
 }
 
 /// <summary>Sleep quality analysis report</summary>
-public class SleepQualityReport
+public sealed class SleepQualityReport
 {
     public double AverageDuration { get; set; }
     public double AverageDeepSleep { get; set; }
@@ -339,7 +340,7 @@ public class SleepQualityReport
 }
 
 /// <summary>SpO2 health analysis report</summary>
-public class SpO2HealthReport
+public sealed class SpO2HealthReport
 {
     public int AverageSpO2 { get; set; }
     public int MinimumSpO2 { get; set; }
@@ -349,7 +350,7 @@ public class SpO2HealthReport
 }
 
 /// <summary>Activity intensity distribution</summary>
-public class ActivityIntensityDistribution
+public sealed class ActivityIntensityDistribution
 {
     public int LowIntensity { get; set; }
     public int MediumIntensity { get; set; }
