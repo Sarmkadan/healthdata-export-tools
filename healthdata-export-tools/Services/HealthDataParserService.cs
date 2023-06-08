@@ -16,7 +16,12 @@ namespace HealthDataExportTools.Services;
 /// </summary>
 public class HealthDataParserService
 {
-    private readonly ValidationService _validationService = new();
+    private readonly IValidationService _validationService;
+
+    public HealthDataParserService(IValidationService validationService)
+    {
+        _validationService = validationService;
+    }
 
     // FrozenDictionary is read-only after construction and uses optimized lookup structures
     private static readonly FrozenDictionary<string, DeviceType> _deviceKeywords =

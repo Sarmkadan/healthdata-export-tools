@@ -9,7 +9,7 @@ using HealthDataExportTools.Domain.Enums;
 using HealthDataExportTools.Domain.Models;
 using HealthDataExportTools.Services;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 using Xunit;
 
 namespace HealthDataExportTools.Tests;
@@ -167,7 +167,8 @@ public class DomainModelTests
     public void HealthDataParserService_DetectDeviceType_GarminIdentifier_ReturnsGarmin()
     {
         // Arrange
-        var parser = new HealthDataParserService();
+        var mockValidationService = Substitute.For<IValidationService>();
+        var parser = new HealthDataParserService(mockValidationService);
 
         // Act
         var deviceType = parser.DetectDeviceType("garmin-fenix-7");
@@ -180,8 +181,8 @@ public class DomainModelTests
     public async Task InMemoryCacheProvider_SetAndGet_WithMockedLogger_ReturnsStoredValue()
     {
         // Arrange
-        var mockLogger = new Mock<ILogger<InMemoryCacheProvider>>();
-        var cache = new InMemoryCacheProvider(mockLogger.Object);
+        var mockLogger = Substitute.For<ILogger<InMemoryCacheProvider>>();
+        var cache = new InMemoryCacheProvider(mockLogger);
         const string expectedValue = "health-data-payload";
 
         // Act
@@ -196,8 +197,8 @@ public class DomainModelTests
     public async Task InMemoryCacheProvider_GetNonExistentKey_ReturnsNull()
     {
         // Arrange
-        var mockLogger = new Mock<ILogger<InMemoryCacheProvider>>();
-        var cache = new InMemoryCacheProvider(mockLogger.Object);
+        var mockLogger = Substitute.For<ILogger<InMemoryCacheProvider>>();
+        var cache = new InMemoryCacheProvider(mockLogger);
 
         // Act
         var result = await cache.GetAsync<string>("nonexistent-key");
@@ -210,8 +211,8 @@ public class DomainModelTests
     public async Task InMemoryCacheProvider_RemoveKey_SubsequentGetReturnsNull()
     {
         // Arrange
-        var mockLogger = new Mock<ILogger<InMemoryCacheProvider>>();
-        var cache = new InMemoryCacheProvider(mockLogger.Object);
+        var mockLogger = Substitute.For<ILogger<InMemoryCacheProvider>>();
+        var cache = new InMemoryCacheProvider(mockLogger);
         await cache.SetAsync("remove-key", "some-value");
 
         // Act
