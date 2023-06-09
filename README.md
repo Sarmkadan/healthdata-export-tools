@@ -1,3 +1,7 @@
+[![Build](https://github.com/sarmkadan/healthdata-export-tools/actions/workflows/build.yml/badge.svg)](https://github.com/sarmkadan/healthdata-export-tools/actions/workflows/build.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
+
 # Health Data Export Tools
 
 A comprehensive, production-grade .NET 10 library for parsing, analyzing, and exporting health data from Zepp, Amazfit, and Garmin wearables. Extract sleep patterns, heart rate metrics, SpO2 levels, step counts, and activity data to multiple formats including CSV, JSON, and SQLite with built-in analytics and validation.
