@@ -13,9 +13,9 @@
     <Title>Health Data Export Tools</Title>
     <Description>Parse and analyze Zepp/Amazfit/Garmin health exports in .NET - sleep, heart rate, SpO2, steps to CSV/JSON/SQLite</Description>
     <Authors>Vladyslav Zaiets</Authors>
-    <PackageProjectUrl>https://github.com/vladyslav/healthdata-export-tools</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/sarmkadan/healthdata-export-tools</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <RepositoryUrl>https://github.com/vladyslav/healthdata-export-tools</RepositoryUrl>
+    <RepositoryUrl>https://github.com/sarmkadan/healthdata-export-tools</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <Version>1.0.0</Version>
   </PropertyGroup>
