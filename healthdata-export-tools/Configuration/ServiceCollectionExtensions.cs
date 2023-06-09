@@ -28,10 +28,12 @@ public static class ServiceCollectionExtensions
         else
             services.Configure<HealthDataExportOptions>(x => { });
 
+        services.AddLogging();
         services.AddSingleton<ValidationService>();
         services.AddSingleton<HealthDataParserService>();
         services.AddSingleton<ExportService>();
         services.AddSingleton<AnalyticsService>();
+        services.AddSingleton<TrendAnomalyDetectionService>();
 
         return services;
     }
