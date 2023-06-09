@@ -1,0 +1,60 @@
+# =============================================================================
+# Author: Vladyslav Zaiets | https://sarmkadan.com
+# CTO & Software Architect
+# =============================================================================
+
+version: '3.8'
+
+services:
+  healthdata-exporter:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: healthdata-export-tools
+    volumes:
+      # Mount directories for data access
+      - ./exports:/data/exports:ro
+      - ./output:/data/output
+      - ./healthdata.db:/data/healthdata.db
+    environment:
+      # .NET runtime configuration
+      - DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
+      - DOTNET_gcServer=1
+      - DOTNET_gcConcurrent=1
+      # Application configuration
+      - INPUT_PATH=/data/exports
+      - OUTPUT_PATH=/data/output
+      - DATABASE_PATH=/data/healthdata.db
+    ports:
+      # Expose for potential API endpoints
+      - "5000:5000"
+    networks:
+      - healthdata-network
+    restart: unless-stopped
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1024M
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    # Health check
+    healthcheck:
+      test: ["CMD", "test", "-f", "/data/healthdata.db"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    # Logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "service=healthdata-exporter"
+
+networks:
+  healthdata-network:
+    driver: bridge
