@@ -106,14 +106,11 @@ public static class JsonUtility
             var doc1 = JsonDocument.Parse(json1);
             var doc2 = JsonDocument.Parse(json2);
 
-            using (var jsonWriter = new StringWriter())
-            using (var writer = new Utf8JsonWriter(jsonWriter.GetStringWriter(), new JsonWriterOptions { Indented = true }))
-            {
-                // Deep merge logic would go here
-                // For simplicity, we return the second document
-                doc2.RootElement.WriteTo(writer);
-                return jsonWriter.ToString();
-            }
+            using var stream = new MemoryStream();
+            using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true });
+            doc2.RootElement.WriteTo(writer);
+            writer.Flush();
+            return Encoding.UTF8.GetString(stream.ToArray());
         }
         catch (JsonException ex)
         {

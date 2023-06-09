@@ -55,9 +55,9 @@ public class CsvFormatter : IDataFormatter
 
             // Write data
             csv.WriteField(record.RecordDate);
-            csv.WriteField(record.MetricType);
-            csv.WriteField(record.DeviceType);
-            csv.WriteField(record.Value);
+            csv.WriteField(record.GetType().Name);
+            csv.WriteField(record.DeviceId);
+            csv.WriteField(string.Empty);
             csv.NextRecord();
         }
 
@@ -90,9 +90,9 @@ public class CsvFormatter : IDataFormatter
             foreach (var record in records)
             {
                 csv.WriteField(record.RecordDate);
-                csv.WriteField(record.MetricType);
-                csv.WriteField(record.DeviceType);
-                csv.WriteField(record.Value);
+                csv.WriteField(record.GetType().Name);
+                csv.WriteField(record.DeviceId);
+                csv.WriteField(string.Empty);
                 csv.NextRecord();
             }
         }
@@ -126,13 +126,13 @@ public class CsvFormatter : IDataFormatter
             // Write sleep records
             foreach (var record in sleepRecords)
             {
-                csv.WriteField(record.SleepDate);
+                csv.WriteField(record.RecordDate);
                 csv.WriteField(record.DurationMinutes);
                 csv.WriteField(record.Quality);
                 csv.WriteField(record.DeepSleepMinutes);
                 csv.WriteField(record.RemSleepMinutes);
                 csv.WriteField(record.AwakeMinutes);
-                csv.WriteField(record.DeviceType);
+                csv.WriteField(record.DeviceId);
                 csv.NextRecord();
             }
         }
@@ -163,10 +163,10 @@ public class CsvFormatter : IDataFormatter
             // Write heart rate records
             foreach (var record in heartRateRecords)
             {
-                csv.WriteField(record.Timestamp);
-                csv.WriteField(record.HeartRate);
-                csv.WriteField(record.HeartRateZone);
-                csv.WriteField(record.DeviceType);
+                csv.WriteField(record.RecordDate);
+                csv.WriteField(record.AverageBpm);
+                csv.WriteField(string.Empty);
+                csv.WriteField(record.DeviceId);
                 csv.NextRecord();
             }
         }
@@ -195,10 +195,10 @@ public class CsvFormatter : IDataFormatter
 
             foreach (var record in spo2Records)
             {
-                csv.WriteField(record.Timestamp);
-                csv.WriteField(record.SpO2);
-                csv.WriteField(record.IsLowOxygen);
-                csv.WriteField(record.DeviceType);
+                csv.WriteField(record.RecordDate);
+                csv.WriteField(record.AveragePercentage);
+                csv.WriteField(record.HasConcerningLevels());
+                csv.WriteField(record.DeviceId);
                 csv.NextRecord();
             }
         }
@@ -228,11 +228,11 @@ public class CsvFormatter : IDataFormatter
 
             foreach (var record in stepsRecords)
             {
-                csv.WriteField(record.StepsDate);
-                csv.WriteField(record.StepCount);
-                csv.WriteField(record.Distance);
-                csv.WriteField(record.Calories);
-                csv.WriteField(record.DeviceType);
+                csv.WriteField(record.RecordDate);
+                csv.WriteField(record.TotalSteps);
+                csv.WriteField(record.DistanceKm);
+                csv.WriteField(record.CaloriesBurned);
+                csv.WriteField(record.DeviceId);
                 csv.NextRecord();
             }
         }
@@ -268,15 +268,6 @@ public class CsvFormatter : IDataFormatter
 
             if (record.RecordDate == default)
                 errors.Add($"Record {i}: RecordDate is not set");
-
-            if (record.MetricType == default)
-                errors.Add($"Record {i}: MetricType is not set");
-
-            if (record.DeviceType == default)
-                errors.Add($"Record {i}: DeviceType is not set");
-
-            if (double.IsNaN(record.Value) || double.IsInfinity(record.Value))
-                errors.Add($"Record {i}: Invalid numeric value");
         }
 
         _logger.LogInformation("Validation complete: {ErrorCount} errors found", errors.Count);

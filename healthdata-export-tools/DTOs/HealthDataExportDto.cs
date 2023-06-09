@@ -8,7 +8,6 @@ namespace HealthDataExportTools.DTOs;
 /// <summary>
 /// Data Transfer Object for comprehensive health data export
 /// </summary>
-[JsonSerializable]
 public class HealthDataExportDto
 {
     [JsonPropertyName("exportId")]
