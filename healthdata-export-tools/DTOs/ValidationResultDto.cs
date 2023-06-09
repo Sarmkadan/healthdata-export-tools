@@ -8,7 +8,6 @@ namespace HealthDataExportTools.DTOs;
 /// <summary>
 /// Data Transfer Object for validation operation results
 /// </summary>
-[JsonSerializable]
 public class ValidationResultDto
 {
     [JsonPropertyName("validationId")]
@@ -179,18 +178,3 @@ public class CommonError
     public List<string> AffectedFields { get; set; } = new();
 }
 
-/// <summary>
-/// Date range info
-/// </summary>
-public class DateRangeInfo
-{
-    [JsonPropertyName("startDate")]
-    public DateTime? StartDate { get; set; }
-
-    [JsonPropertyName("endDate")]
-    public DateTime? EndDate { get; set; }
-
-    [JsonPropertyName("daysSpanned")]
-    public int? DaysSpanned =>
-        StartDate != null && EndDate != null ? (int)(EndDate - StartDate)?.TotalDays : null;
-}

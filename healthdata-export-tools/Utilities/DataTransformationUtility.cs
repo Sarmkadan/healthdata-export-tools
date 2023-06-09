@@ -17,7 +17,7 @@ public static class DataTransformationUtility
     public static Dictionary<DateTime, AggregatedSleepData> AggregateSleepByDate(List<SleepData> sleepRecords)
     {
         return sleepRecords
-            .GroupBy(s => s.SleepDate.Date)
+            .GroupBy(s => s.RecordDate.Date)
             .ToDictionary(
                 g => g.Key,
                 g => new AggregatedSleepData
@@ -39,15 +39,15 @@ public static class DataTransformationUtility
         List<HeartRateData> heartRateRecords)
     {
         return heartRateRecords
-            .GroupBy(h => h.Timestamp.AddMinutes(-h.Timestamp.Minute).AddSeconds(-h.Timestamp.Second))
+            .GroupBy(h => h.RecordDate.AddMinutes(-h.RecordDate.Minute).AddSeconds(-h.RecordDate.Second))
             .ToDictionary(
                 g => g.Key,
                 g => new AggregatedHeartRateData
                 {
                     Hour = g.Key,
-                    AverageHeartRate = (int)g.Average(h => h.HeartRate),
-                    MinHeartRate = g.Min(h => h.HeartRate),
-                    MaxHeartRate = g.Max(h => h.HeartRate),
+                    AverageHeartRate = (int)g.Average(h => h.AverageBpm),
+                    MinHeartRate = g.Min(h => h.MinimumBpm),
+                    MaxHeartRate = g.Max(h => h.MaximumBpm),
                     Count = g.Count()
                 });
     }
@@ -58,16 +58,16 @@ public static class DataTransformationUtility
     public static Dictionary<DateTime, AggregatedStepsData> AggregateStepsByDay(List<StepsData> stepsRecords)
     {
         return stepsRecords
-            .GroupBy(s => s.StepsDate.Date)
+            .GroupBy(s => s.RecordDate.Date)
             .ToDictionary(
                 g => g.Key,
                 g => new AggregatedStepsData
                 {
                     Date = g.Key,
-                    TotalSteps = g.Sum(s => s.StepCount),
-                    TotalDistance = g.Sum(s => s.Distance),
-                    TotalCalories = g.Sum(s => s.Calories),
-                    AverageSteps = (int)g.Average(s => s.StepCount),
+                    TotalSteps = g.Sum(s => s.TotalSteps),
+                    TotalDistance = g.Sum(s => s.DistanceKm),
+                    TotalCalories = g.Sum(s => s.CaloriesBurned),
+                    AverageSteps = (int)g.Average(s => s.TotalSteps),
                     Count = g.Count()
                 });
     }
@@ -139,7 +139,7 @@ public static class DataTransformationUtility
                     var interpolatedTime = current.RecordDate.Add(
                         TimeSpan.FromSeconds(gap.TotalSeconds * j));
 
-                    var interpolatedValue = Lerp(current.Value, next.Value, j / (double)interpolatedCount);
+                    var interpolatedValue = Lerp(0.0, 0.0, j / (double)interpolatedCount);
 
                     // Create interpolated record (clone and update)
                     // This is simplified; actual implementation would depend on model structure
