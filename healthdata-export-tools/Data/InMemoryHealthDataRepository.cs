@@ -3,6 +3,7 @@
 // CTO & Software Architect
 // =============================================================================
 
+using System.Collections.Concurrent;
 using HealthDataExportTools.Domain.Models;
 
 namespace HealthDataExportTools.Data;
@@ -12,12 +13,13 @@ namespace HealthDataExportTools.Data;
 /// </summary>
 public class InMemoryHealthDataRepository : IHealthDataRepository
 {
-    private readonly Dictionary<string, SleepData> _sleepData = [];
-    private readonly Dictionary<string, HeartRateData> _heartRateData = [];
-    private readonly Dictionary<string, SpO2Data> _spO2Data = [];
-    private readonly Dictionary<string, StepsData> _stepsData = [];
-    private readonly Dictionary<string, ActivityData> _activityData = [];
-    private readonly Dictionary<string, HealthMetric> _metrics = [];
+    // Fix: Use ConcurrentDictionary instead of Dictionary to resolve thread safety issues
+    private readonly ConcurrentDictionary<string, SleepData> _sleepData = [];
+    private readonly ConcurrentDictionary<string, HeartRateData> _heartRateData = [];
+    private readonly ConcurrentDictionary<string, SpO2Data> _spO2Data = [];
+    private readonly ConcurrentDictionary<string, StepsData> _stepsData = [];
+    private readonly ConcurrentDictionary<string, ActivityData> _activityData = [];
+    private readonly ConcurrentDictionary<string, HealthMetric> _metrics = [];
 
     // Sleep Data Operations
     public Task<SleepData?> GetSleepByIdAsync(string id)
@@ -54,7 +56,7 @@ public class InMemoryHealthDataRepository : IHealthDataRepository
 
     public Task DeleteSleepAsync(string id)
     {
-        _sleepData.Remove(id);
+        _sleepData.TryRemove(id, out _);
         return Task.CompletedTask;
     }
 
@@ -93,7 +95,7 @@ public class InMemoryHealthDataRepository : IHealthDataRepository
 
     public Task DeleteHeartRateAsync(string id)
     {
-        _heartRateData.Remove(id);
+        _heartRateData.TryRemove(id, out _);
         return Task.CompletedTask;
     }
 
@@ -132,7 +134,7 @@ public class InMemoryHealthDataRepository : IHealthDataRepository
 
     public Task DeleteSpO2Async(string id)
     {
-        _spO2Data.Remove(id);
+        _spO2Data.TryRemove(id, out _);
         return Task.CompletedTask;
     }
 
@@ -171,7 +173,7 @@ public class InMemoryHealthDataRepository : IHealthDataRepository
 
     public Task DeleteStepsAsync(string id)
     {
-        _stepsData.Remove(id);
+        _stepsData.TryRemove(id, out _);
         return Task.CompletedTask;
     }
 
@@ -210,7 +212,7 @@ public class InMemoryHealthDataRepository : IHealthDataRepository
 
     public Task DeleteActivityAsync(string id)
     {
-        _activityData.Remove(id);
+        _activityData.TryRemove(id, out _);
         return Task.CompletedTask;
     }
 
@@ -241,7 +243,7 @@ public class InMemoryHealthDataRepository : IHealthDataRepository
 
     public Task DeleteMetricAsync(string id)
     {
-        _metrics.Remove(id);
+        _metrics.TryRemove(id, out _);
         return Task.CompletedTask;
     }
 
@@ -272,11 +274,11 @@ public class InMemoryHealthDataRepository : IHealthDataRepository
         var stepsKeys = _stepsData.Where(x => x.Value.RecordDate < beforeDate).Select(x => x.Key).ToList();
         var activityKeys = _activityData.Where(x => x.Value.RecordDate < beforeDate).Select(x => x.Key).ToList();
 
-        foreach (var key in sleepKeys) _sleepData.Remove(key);
-        foreach (var key in hrKeys) _heartRateData.Remove(key);
-        foreach (var key in spo2Keys) _spO2Data.Remove(key);
-        foreach (var key in stepsKeys) _stepsData.Remove(key);
-        foreach (var key in activityKeys) _activityData.Remove(key);
+        foreach (var key in sleepKeys) _sleepData.TryRemove(key, out _);
+        foreach (var key in hrKeys) _heartRateData.TryRemove(key, out _);
+        foreach (var key in spo2Keys) _spO2Data.TryRemove(key, out _);
+        foreach (var key in stepsKeys) _stepsData.TryRemove(key, out _);
+        foreach (var key in activityKeys) _activityData.TryRemove(key, out _);
 
         return Task.CompletedTask;
     }
