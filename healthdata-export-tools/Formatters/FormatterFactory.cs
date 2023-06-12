@@ -25,11 +25,12 @@ public class FormatterFactory
     /// </summary>
     public void RegisterFormatter(string formatName, IDataFormatter formatter)
     {
-        if (string.IsNullOrEmpty(formatName))
-            throw new ArgumentException("Format name cannot be empty", nameof(formatName));
+        // Fix: Use IsNullOrWhiteSpace for better boundary checking and improve exception message with actual value
+        if (string.IsNullOrWhiteSpace(formatName))
+            throw new ArgumentException($"Format name cannot be null or empty. Received: '{formatName}'", nameof(formatName));
 
         if (formatter == null)
-            throw new ArgumentNullException(nameof(formatter));
+            throw new ArgumentNullException(nameof(formatter), "Formatter instance cannot be null when registering a new format.");
 
         _formatters[formatName] = formatter;
         _logger.LogInformation("Formatter registered: {Format}", formatName);
@@ -40,7 +41,7 @@ public class FormatterFactory
     /// </summary>
     public IDataFormatter? GetFormatter(string formatName)
     {
-        if (string.IsNullOrEmpty(formatName))
+        if (string.IsNullOrWhiteSpace(formatName))
             return null;
 
         if (_formatters.TryGetValue(formatName, out var formatter))
