@@ -3,6 +3,7 @@
 // CTO & Software Architect
 // =============================================================================
 
+using System.Collections.Frozen;
 using System.Text.Json;
 using HealthDataExportTools.Domain.Enums;
 using HealthDataExportTools.Domain.Models;
@@ -17,10 +18,19 @@ public class HealthDataParserService
 {
     private readonly ValidationService _validationService = new();
 
+    // FrozenDictionary is read-only after construction and uses optimized lookup structures
+    private static readonly FrozenDictionary<string, DeviceType> _deviceKeywords =
+        new Dictionary<string, DeviceType>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["zepp"]    = DeviceType.Zepp,
+            ["amazfit"] = DeviceType.Amazfit,
+            ["garmin"]  = DeviceType.Garmin,
+        }.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
+
     /// <summary>
     /// Parse health data from a JSON string
     /// </summary>
-    public async Task<HealthDataCollection> ParseJsonAsync(string jsonContent)
+    public Task<HealthDataCollection> ParseJsonAsync(string jsonContent)
     {
         try
         {
@@ -69,7 +79,7 @@ public class HealthDataParserService
                 }
             }
 
-            return await Task.FromResult(collection);
+            return Task.FromResult(collection);
         }
         catch (JsonException ex)
         {
@@ -84,15 +94,15 @@ public class HealthDataParserService
     {
         var sleep = new SleepData
         {
-            RecordDate = DateTime.Parse(element.GetProperty("recordDate").GetString() ?? ""),
-            DeviceId = element.GetProperty("deviceId").GetString() ?? "",
-            SleepStart = DateTime.Parse(element.GetProperty("sleepStart").GetString() ?? ""),
-            SleepEnd = DateTime.Parse(element.GetProperty("sleepEnd").GetString() ?? ""),
-            DurationMinutes = element.GetProperty("durationMinutes").GetInt32(),
+            RecordDate  = element.GetProperty("recordDate").GetDateTime(),
+            DeviceId    = element.GetProperty("deviceId").GetString() ?? "",
+            SleepStart  = element.GetProperty("sleepStart").GetDateTime(),
+            SleepEnd    = element.GetProperty("sleepEnd").GetDateTime(),
+            DurationMinutes  = element.GetProperty("durationMinutes").GetInt32(),
             DeepSleepMinutes = element.GetProperty("deepSleepMinutes").GetInt32(),
             LightSleepMinutes = element.GetProperty("lightSleepMinutes").GetInt32(),
-            RemSleepMinutes = element.GetProperty("remSleepMinutes").GetInt32(),
-            AwakeMinutes = element.GetProperty("awakeMinutes").GetInt32()
+            RemSleepMinutes  = element.GetProperty("remSleepMinutes").GetInt32(),
+            AwakeMinutes     = element.GetProperty("awakeMinutes").GetInt32()
         };
 
         if (element.TryGetProperty("score", out var score))
@@ -111,11 +121,11 @@ public class HealthDataParserService
     {
         var hr = new HeartRateData
         {
-            RecordDate = DateTime.Parse(element.GetProperty("recordDate").GetString() ?? ""),
-            DeviceId = element.GetProperty("deviceId").GetString() ?? "",
-            MinimumBpm = element.GetProperty("minimumBpm").GetInt32(),
-            MaximumBpm = element.GetProperty("maximumBpm").GetInt32(),
-            AverageBpm = element.GetProperty("averageBpm").GetInt32(),
+            RecordDate       = element.GetProperty("recordDate").GetDateTime(),
+            DeviceId         = element.GetProperty("deviceId").GetString() ?? "",
+            MinimumBpm       = element.GetProperty("minimumBpm").GetInt32(),
+            MaximumBpm       = element.GetProperty("maximumBpm").GetInt32(),
+            AverageBpm       = element.GetProperty("averageBpm").GetInt32(),
             MeasurementCount = element.GetProperty("measurementCount").GetInt32()
         };
 
@@ -135,12 +145,12 @@ public class HealthDataParserService
     {
         var spo2 = new SpO2Data
         {
-            RecordDate = DateTime.Parse(element.GetProperty("recordDate").GetString() ?? ""),
-            DeviceId = element.GetProperty("deviceId").GetString() ?? "",
-            MinimumPercentage = element.GetProperty("minimumPercentage").GetInt32(),
-            MaximumPercentage = element.GetProperty("maximumPercentage").GetInt32(),
-            AveragePercentage = element.GetProperty("averagePercentage").GetInt32(),
-            MeasurementCount = element.GetProperty("measurementCount").GetInt32()
+            RecordDate         = element.GetProperty("recordDate").GetDateTime(),
+            DeviceId           = element.GetProperty("deviceId").GetString() ?? "",
+            MinimumPercentage  = element.GetProperty("minimumPercentage").GetInt32(),
+            MaximumPercentage  = element.GetProperty("maximumPercentage").GetInt32(),
+            AveragePercentage  = element.GetProperty("averagePercentage").GetInt32(),
+            MeasurementCount   = element.GetProperty("measurementCount").GetInt32()
         };
 
         if (element.TryGetProperty("restingPercentage", out var resting))
@@ -159,13 +169,13 @@ public class HealthDataParserService
     {
         var steps = new StepsData
         {
-            RecordDate = DateTime.Parse(element.GetProperty("recordDate").GetString() ?? ""),
-            DeviceId = element.GetProperty("deviceId").GetString() ?? "",
-            TotalSteps = element.GetProperty("totalSteps").GetInt32(),
-            DistanceKm = element.GetProperty("distanceKm").GetDouble(),
+            RecordDate     = element.GetProperty("recordDate").GetDateTime(),
+            DeviceId       = element.GetProperty("deviceId").GetString() ?? "",
+            TotalSteps     = element.GetProperty("totalSteps").GetInt32(),
+            DistanceKm     = element.GetProperty("distanceKm").GetDouble(),
             CaloriesBurned = element.GetProperty("caloriesBurned").GetInt32(),
-            DailyGoal = element.GetProperty("dailyGoal").GetInt32(),
-            ActiveMinutes = element.GetProperty("activeMinutes").GetInt32()
+            DailyGoal      = element.GetProperty("dailyGoal").GetInt32(),
+            ActiveMinutes  = element.GetProperty("activeMinutes").GetInt32()
         };
 
         steps.UpdateGoalAchievement();
@@ -177,15 +187,12 @@ public class HealthDataParserService
     /// </summary>
     public DeviceType DetectDeviceType(string deviceIdentifier)
     {
-        var lower = deviceIdentifier.ToLower();
-
-        return lower switch
+        foreach (var kvp in _deviceKeywords)
         {
-            var x when x.Contains("zepp") => DeviceType.Zepp,
-            var x when x.Contains("amazfit") => DeviceType.Amazfit,
-            var x when x.Contains("garmin") => DeviceType.Garmin,
-            _ => DeviceType.Unknown
-        };
+            if (deviceIdentifier.Contains(kvp.Key, StringComparison.OrdinalIgnoreCase))
+                return kvp.Value;
+        }
+        return DeviceType.Unknown;
     }
 
     /// <summary>

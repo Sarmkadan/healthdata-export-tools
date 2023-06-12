@@ -3,6 +3,8 @@
 // CTO & Software Architect
 // =============================================================================
 
+using System.Buffers;
+
 namespace HealthDataExportTools.Utilities;
 
 /// <summary>
@@ -57,41 +59,58 @@ public static class CsvUtility
     /// </summary>
     public static List<string> ParseCsvLine(string line)
     {
-        var fields = new List<string>();
-        var currentField = new StringBuilder();
-        var inQuotes = false;
+        var fields = new List<string>(16);
+        char[] buffer = ArrayPool<char>.Shared.Rent(256);
+        int bufLen = 0;
+        bool inQuotes = false;
 
-        for (int i = 0; i < line.Length; i++)
+        try
         {
-            var c = line[i];
-
-            if (c == '"')
+            for (int i = 0; i < line.Length; i++)
             {
-                // Check for escaped quote
-                if (inQuotes && i + 1 < line.Length && line[i + 1] == '"')
+                char c = line[i];
+
+                if (c == '"')
                 {
-                    currentField.Append('"');
-                    i++;
+                    if (inQuotes && i + 1 < line.Length && line[i + 1] == '"')
+                    {
+                        GrowIfNeeded(ref buffer, bufLen, bufLen + 1);
+                        buffer[bufLen++] = '"';
+                        i++;
+                    }
+                    else
+                    {
+                        inQuotes = !inQuotes;
+                    }
+                }
+                else if (c == ',' && !inQuotes)
+                {
+                    fields.Add(new string(buffer, 0, bufLen).Trim());
+                    bufLen = 0;
                 }
                 else
                 {
-                    inQuotes = !inQuotes;
+                    GrowIfNeeded(ref buffer, bufLen, bufLen + 1);
+                    buffer[bufLen++] = c;
                 }
             }
-            else if (c == ',' && !inQuotes)
-            {
-                fields.Add(currentField.ToString());
-                currentField.Clear();
-            }
-            else
-            {
-                currentField.Append(c);
-            }
+
+            fields.Add(new string(buffer, 0, bufLen).Trim());
+            return fields;
         }
+        finally
+        {
+            ArrayPool<char>.Shared.Return(buffer);
+        }
+    }
 
-        fields.Add(currentField.ToString());
-
-        return fields.Select(f => f.Trim()).ToList();
+    private static void GrowIfNeeded(ref char[] buffer, int usedLen, int required)
+    {
+        if (required <= buffer.Length) return;
+        var larger = ArrayPool<char>.Shared.Rent(Math.Max(required, buffer.Length * 2));
+        buffer.AsSpan(0, usedLen).CopyTo(larger);
+        ArrayPool<char>.Shared.Return(buffer);
+        buffer = larger;
     }
 
     /// <summary>
@@ -102,12 +121,11 @@ public static class CsvUtility
         if (string.IsNullOrEmpty(value))
             return string.Empty;
 
-        if (value.Contains(",") || value.Contains("\"") || value.Contains("\n"))
-        {
-            return $"\"{value.Replace("\"", "\"\"")}\"";
-        }
+        // Single vectorised scan beats three separate Contains calls
+        if (value.AsSpan().IndexOfAny(',', '"', '\n') < 0)
+            return value;
 
-        return value;
+        return string.Concat("\"", value.Replace("\"", "\"\""), "\"");
     }
 
     /// <summary>

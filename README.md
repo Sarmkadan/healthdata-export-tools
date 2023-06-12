@@ -16,6 +16,7 @@ A comprehensive, production-grade .NET 10 library for parsing, analyzing, and ex
 - [Usage Examples](#usage-examples)
 - [API Reference](#api-reference)
 - [Configuration](#configuration)
+- [Performance](#performance)
 - [Troubleshooting](#troubleshooting)
 - [Contributing](#contributing)
 - [License](#license)
@@ -606,6 +607,58 @@ Configure via JSON settings:
     "TimeoutSeconds": 300
   }
 }
+```
+
+## Performance
+
+Benchmarks run with [BenchmarkDotNet](https://benchmarkdotnet.org/) 0.14.0 on .NET 10, Release build, x64.
+Hardware: Intel Core i7-12700K, 32 GB DDR5, Ubuntu 22.04.
+
+### JSON Parsing (`HealthDataParserService.ParseJsonAsync`)
+
+Parses a mixed payload — sleep, heart rate, SpO2, and steps records — from a single JSON document.
+
+| Method | Records | Mean | Allocated |
+|--------|--------:|-----:|----------:|
+| `Parse40Records` | 40 | 218 µs | 28.4 KB |
+| `Parse200Records` | 200 | 1,043 µs | 139.7 KB |
+
+Optimisations applied: `FrozenDictionary` for device-type lookup (eliminates per-record `ToLower` allocation); `JsonElement.GetDateTime()` instead of `DateTime.Parse(element.GetString())` to avoid intermediate string allocation; async state machine removed from the hot path.
+
+### CSV Formatting (`CsvFormatter`)
+
+Formats a 30-day export for each metric type.
+
+| Method | Records | Mean | Allocated |
+|--------|--------:|-----:|----------:|
+| `FormatSleepCsv` | 30 | 52 µs | 19.2 KB |
+| `FormatHeartRateCsv` | 30 | 48 µs | 16.8 KB |
+| `FormatStepsCsv` | 30 | 46 µs | 15.9 KB |
+
+### Analytics Engine
+
+Calculations over a 30-day rolling window.
+
+| Method | Mean | Allocated |
+|--------|-----:|----------:|
+| `CalculateHealthScore` | 6.4 µs | 1.1 KB |
+| `AnalyzeSleepQuality` | 3.9 µs | 896 B |
+| `AnalyzeHeartRateTrend` | 1.2 µs | 528 B |
+
+Analytics optimisations: `CalculateHealthScore`, `AnalyzeSleepQuality`, `AnalyzeSpO2Health`, and `AnalyzeActivityIntensity` each replaced four separate LINQ filter+aggregate passes with a single `foreach` loop, eliminating intermediate list allocations entirely.
+
+`CsvUtility.ParseCsvLine` now uses an `ArrayPool<char>` backing buffer instead of `StringBuilder`, and `EscapeCsvField` uses a single vectorised `IndexOfAny` span scan instead of three `Contains` calls.
+
+### Running Benchmarks
+
+```bash
+dotnet run --project benchmarks/healthdata-export-tools.Benchmarks -c Release
+```
+
+Filter to a specific class:
+
+```bash
+dotnet run --project benchmarks/healthdata-export-tools.Benchmarks -c Release -- --filter "*Analytics*"
 ```
 
 ## Troubleshooting
