@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\healthdata-export-tools\healthdata-export-tools.csproj" />
+    <ProjectReference Include="../../healthdata-export-tools/healthdata-export-tools.csproj" />
   </ItemGroup>
 
 </Project>

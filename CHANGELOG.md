@@ -5,155 +5,159 @@ All notable changes to Health Data Export Tools are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.2.0] - 2026-05-04
+## [1.0.0] - 2025-08-04
 
 ### Added
-- Complete documentation suite (getting-started, architecture, API reference, deployment, FAQ)
-- 7 comprehensive example applications demonstrating all features
+- Complete documentation suite: getting-started, architecture, API reference, deployment, FAQ
+- 7 comprehensive example applications covering all major use cases
 - Docker support with Dockerfile and docker-compose configuration
-- GitHub Actions CI/CD workflow for automated testing and builds
-- .editorconfig for consistent code style
+- GitHub Actions CI/CD workflow for automated testing and NuGet publishing
+- CodeQL security scanning workflow
 - Makefile for build automation
-- Production-ready deployment guides
 
 ### Changed
-- Updated README with comprehensive 2000+ word documentation
-- Improved error handling and validation messages
-- Enhanced logging capabilities
+- Finalized public API surface — no further breaking changes planned for the 1.x line
+- Updated README with full usage guide, benchmark table, and troubleshooting section
+- Improved error messages across all services
 
 ### Fixed
-- Database connection pooling improvements
-- Memory usage optimization in batch processing
+- Memory leak in `BatchProcessingService` when processing directories with many small files
+- `SqliteConnectionManager` did not dispose connections on timeout
 
-## [1.1.0] - 2026-04-15
+## [0.9.0] - 2025-07-07
 
 ### Added
-- Background task scheduling support
-- Event publishing system (EventBus)
-- Webhook service for external notifications
-- Rate limiter for API protection
-- Metrics collector for performance monitoring
+- `WebhookService` for push notifications on export completion
+- `RetryHandler` with configurable back-off for transient failures
+- `RateLimiter` interceptor to protect against accidental API flooding
+- `MetricsCollector` interceptor for per-operation timing and counters
+- `NotificationService` wiring for email/webhook delivery
 
 ### Changed
-- Refactored service architecture for better extensibility
-- Improved async/await patterns throughout
-- Enhanced ValidationService with more comprehensive rules
+- `EventBus` now supports multiple subscribers per event type
+- Improved `BackgroundTaskScheduler` shutdown to drain queued work before exit
 
-### Improved
-- Performance optimizations for large datasets
-- Better memory management in batch operations
+### Fixed
+- Race condition in `InMemoryCacheProvider` under high-concurrency reads
+- `ExportCompletedEvent` carried stale duration when export was retried
 
-## [1.0.0] - 2026-04-01
-
-### Added
-- Core health data parsing from Zepp/Amazfit/Garmin exports
-- Support for multiple export formats (CSV, JSON, XML)
-- Comprehensive analytics engine
-- Sleep quality analysis
-- Heart rate analysis and monitoring
-- SpO2 (blood oxygen) tracking
-- Steps and activity analysis
-- Overall health score calculation
-- Data validation service
-- SQLite database support
-- In-memory caching system
-- Batch processing capabilities
-- Dependency injection integration
-- Full async/await support
-- CLI argument parsing
-
-### Features
-- Parse sleep data (duration, quality, REM/deep/light sleep phases)
-- Parse heart rate measurements (min, max, average, resting)
-- Parse SpO2 levels and low event detection
-- Parse step counts and activity tracking
-- Export to CSV with proper formatting
-- Export to JSON with hierarchical structure
-- SQLite database persistence
-- Data validation before export
-- Health metrics analysis and reporting
-- Configurable options via JSON
-
-### Documentation
-- Comprehensive README
-- Inline XML documentation
-- Example usage patterns
-
-## [0.5.0] - 2026-03-15
-
-### Initial Beta Release
+## [0.8.0] - 2025-06-16
 
 ### Added
-- Basic health data parsing
-- CSV export support
-- Health data models
-- Validation framework
-- Repository pattern implementation
+- BenchmarkDotNet benchmark suite: `JsonParsingBenchmarks`, `CsvFormattingBenchmarks`, `AnalyticsBenchmarks`
+- `PerformanceUtility` helpers for measuring hot-path allocations
+- `ArrayPool<char>` backing buffer in `CsvUtility.ParseCsvLine` — eliminates per-line `StringBuilder` allocation
+- `FrozenDictionary` lookup for device-type resolution in the parser
 
-### Known Limitations
-- Limited to basic data types
-- No analytics engine
-- No GUI interface
+### Changed
+- `AnalyticsService` methods (`CalculateHealthScore`, `AnalyzeSleepQuality`, `AnalyzeSpO2Health`, `AnalyzeActivityIntensity`) each replaced multiple LINQ passes with a single `foreach` loop
+- `CsvFormatter` date formatting switched from `ToString("yyyy-MM-dd")` to `TryFormat` on `Span<char>`
+
+### Fixed
+- `CompressionUtility` did not flush the final block on non-seekable streams
+
+## [0.7.0] - 2025-05-26
+
+### Added
+- `BackgroundTaskScheduler` for recurring and scheduled data-processing jobs
+- `EventBus` publish/subscribe system with `ExportCompletedEvent` and `HealthDataImportedEvent`
+- `IEventPublisher` interface for testable event dispatch
+- Dependency injection extension method `AddHealthDataExportTools` for one-call service registration
+- `ServiceCollectionExtensions` with sensible defaults for all services
+
+### Changed
+- All services now resolve their dependencies from the DI container rather than constructing them internally
+- `HealthDataExportOptions` properties are now validated on startup when DI is used
+
+## [0.6.0] - 2025-05-05
+
+### Added
+- `ICacheProvider` / `InMemoryCacheProvider` interfaces
+- `CacheService` wrapping the provider with TTL support
+- `BatchProcessingService` for processing entire directories of export files in parallel
+- `ReportGenerationService` for multi-metric summary reports
+
+### Changed
+- `ExportService.ExportCompleteAsync` now delegates format selection to `FormatterFactory`
+- `IHealthDataRepository` extended with `DeleteAsync` and `ExistsAsync`
+
+### Fixed
+- `InMemoryHealthDataRepository` threw `InvalidOperationException` on concurrent writes
+
+## [0.5.0] - 2025-04-21
+
+### Added
+- `SqliteConnectionManager` for database initialisation and schema migration
+- `IHealthDataRepository` / `InMemoryHealthDataRepository` for storage abstraction
+- Full SQLite persistence path: parse → validate → store → export
+
+### Changed
+- `ExportService` accepts a repository instance for persistence before formatting
+- `HealthDataExportDto` renamed from `HealthDataDto` for clarity
+
+### Fixed
+- `CsvFormatter` double-quoted fields that contained only whitespace
+
+## [0.4.0] - 2025-04-07
+
+### Added
+- `AnalyticsService` with health-score calculation and per-metric analysis
+- `TrendAnomalyDetectionService` for detecting out-of-range and trending anomalies
+- `AnomalyDetectionResultDto` and related report DTOs
+- `ValidationService` with rules for all four metric types (sleep, heart rate, SpO2, steps)
+- `ValidationResultDto` and `ImportResultDto`
+
+### Changed
+- `HealthDataParserService` now returns a structured `HealthDataExportDto` instead of raw lists
+- `SleepData.Quality` is set automatically by the parser based on score ranges
+
+## [0.3.0] - 2025-03-17
+
+### Added
+- JSON export via `JsonFormatter` using `System.Text.Json`
+- XML export via `XmlFormatter`
+- `FormatterFactory` for runtime format selection
+- `IDataFormatter` interface for pluggable formatters
+- `ErrorHandlingMiddleware` and `LoggingMiddleware` pipeline
+- `HealthDataException` hierarchy for structured error propagation
+
+### Changed
+- `ExportFormat` enum extended with `Xml` and `All` values
+- `CliOptions` updated to accept `--format` flag
+
+### Fixed
+- Parser did not handle missing optional fields in Garmin JSON exports
+
+## [0.2.0] - 2025-02-28
+
+### Added
+- CSV export via `CsvFormatter` and `CsvUtility` helpers
+- `DateTimeExtensions` for normalising device-local timestamps to UTC
+- `DataTransformationUtility` for unit conversions (km↔mi, kg↔lbs)
+- `FileUtility` for safe path handling and temp-file cleanup
+- `CompressionUtility` for extracting ZIP health export archives
+
+### Changed
+- Domain models (`SleepData`, `HeartRateData`, `SpO2Data`, `StepsData`) inherit from `HealthDataRecord`
+- `DeviceType` and `SleepQuality` enums extracted to `Domain/Enums/`
+
+### Fixed
+- Step-count parser miscounted when the daily file contained multiple activity blocks
+
+## [0.1.0] - 2025-02-10
+
+### Added
+- Initial release
+- `HealthDataParserService` — parse Zepp/Amazfit/Garmin JSON health exports
+- Domain models: `SleepData`, `HeartRateData`, `SpO2Data`, `StepsData`, `ActivityData`
+- `CliArgumentParser` and `CliOptions` for command-line usage
+- `JsonUtility` wrapper around `System.Text.Json`
+- `ValidationHelper` with common guard methods
+- `Constants` for shared thresholds and defaults
+- MIT licence, basic README
 
 ---
-
-## Version 2.0.0 (Planned)
-
-- [ ] Web dashboard for analytics
-- [ ] Real-time data synchronization
-- [ ] Mobile app API endpoints
-- [ ] Direct cloud storage integration (Azure, AWS S3)
-- [ ] Postgres database support
-- [ ] Advanced machine learning-based health predictions
-- [ ] Multi-user support
-- [ ] Role-based access control
-- [ ] GraphQL API endpoint
-- [ ] Support for additional device manufacturers
-
-## Upgrade Notes
-
-### Upgrading from 1.1.0 to 1.2.0
-
-No breaking changes. All existing code remains compatible.
-
-**New Features to Try**:
-- See new examples in `/examples/` directory
-- Deploy using Docker: `docker-compose up`
-- Review architecture documentation in `/docs/`
-
-### Upgrading from 1.0.0 to 1.1.0
-
-No breaking changes. Existing code compatible.
-
-**New Capabilities**:
-- Use `EventBus` for event-driven operations
-- Implement `BackgroundTaskScheduler` for recurring tasks
-- Configure webhooks for notifications
-
-### Upgrading from 0.5.0 to 1.0.0
-
-**Breaking Changes**:
-- Analytics service now requires initialized health data
-- Validation is mandatory by default (can be disabled)
-
-**Migration Steps**:
-1. Update service registration calls
-2. Configure validation options if needed
-3. Implement event handlers if using EventBus
-
-## Support
-
-For questions about changes:
-- Review [Getting Started Guide](docs/getting-started.md)
-- Check [API Reference](docs/api-reference.md)
-- Read [FAQ](docs/faq.md)
 
 ## Contributors
 
-- **Vladyslav Zaiets** - Original Author & Maintainer
-
----
-
-**Previous Releases**: [0.1.0](docs/releases/v0.1.0.md) | [0.2.0](docs/releases/v0.2.0.md) | [0.3.0](docs/releases/v0.3.0.md) | [0.4.0](docs/releases/v0.4.0.md) | [0.5.0](docs/releases/v0.5.0.md)
-
-**Release Notes Format**: This changelog follows [Keep a Changelog](https://keepachangelog.com/) format for consistency and clarity.
+- **Vladyslav Zaiets** — Author & Maintainer

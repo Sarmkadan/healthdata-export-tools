@@ -844,10 +844,8 @@ dotnet test
 
 MIT License - See [LICENSE](LICENSE) file for details
 
-Copyright (c) 2026 Vladyslav Zaiets
+Copyright (c) 2025 Vladyslav Zaiets
 
-## Author
+---
 
-**Vladyslav Zaiets** - CTO & Software Architect
-
-[Portfolio](https://sarmkadan.com) | [GitHub](https://github.com/Sarmkadan) | [Telegram](https://t.me/sarmkadan)
+Built by [Vladyslav Zaiets](https://sarmkadan.com)
