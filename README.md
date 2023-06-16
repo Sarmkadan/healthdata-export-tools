@@ -18,6 +18,8 @@ A comprehensive, production-grade .NET 10 library for parsing, analyzing, and ex
 - [Configuration](#configuration)
 - [Performance](#performance)
 - [Troubleshooting](#troubleshooting)
+- [Testing](#testing)
+- [Related Projects](#related-projects)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -747,6 +749,70 @@ Only export needed data types to reduce processing time.
 - **Memory**: Minimum 512 MB (1 GB+ recommended for large datasets)
 - **Disk Space**: 100 MB free space for database and exports
 - **Operating System**: Windows, macOS, Linux
+
+## Testing
+
+Run the full test suite:
+
+```bash
+dotnet test
+```
+
+Run with code coverage:
+
+```bash
+dotnet test --collect:"XPlat Code Coverage"
+```
+
+Filter to a specific test class:
+
+```bash
+dotnet test --filter "FullyQualifiedName~AnalyticsServiceTests"
+```
+
+The suite covers four areas:
+
+| Test file | What it covers |
+|-----------|---------------|
+| `DomainModelTests` | Domain model construction, defaults, and invariants |
+| `AnalyticsServiceTests` | Health-score calculation, sleep and heart rate analysis |
+| `TrendAnomalyDetectionServiceTests` | Trend detection, anomaly flagging, threshold logic |
+| `ValidationServiceTests` | Input validation rules for all metric types |
+
+## Related Projects
+
+- [skiasharp-chart-engine](https://github.com/sarmkadan/skiasharp-chart-engine) - High-performance chart rendering with SkiaSharp — line, bar, pie, heatmap, export to PNG/SVG
+
+### Integration Examples
+
+Combine **healthdata-export-tools** with **skiasharp-chart-engine** to render parsed health metrics as publication-ready charts.
+
+**Heart rate trend line chart:**
+
+```csharp
+var parser = new HealthDataParserService();
+var data = await parser.ParseHealthDataAsync("amazfit_export.zip");
+
+var report = new AnalyticsService().AnalyzeHeartRate(data.HeartRateRecords);
+
+var chart = new LineChart { Title = "Heart Rate Trend" };
+chart.AddSeries("Avg BPM", report.DailyAverages);
+await chart.ExportToPngAsync("heart_rate_trend.png");
+```
+
+**30-day step count bar chart:**
+
+```csharp
+var data = await new HealthDataParserService().ParseHealthDataAsync("garmin_export.zip");
+
+var stepsByDay = data.StepsRecords
+    .OrderBy(s => s.RecordDate)
+    .Select(s => (s.RecordDate, (double)s.TotalSteps));
+
+var chart = new BarChart { Title = "Daily Steps — Last 30 Days" };
+chart.AddSeries("Steps", stepsByDay);
+await chart.ExportToPngAsync("steps_30d.png");
+```
 
 ## Contributing
 
