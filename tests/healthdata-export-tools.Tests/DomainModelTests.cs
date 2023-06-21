@@ -187,8 +187,8 @@ public sealed class DomainModelTests
         const string expectedValue = "health-data-payload";
 
         // Act
-        await cache.SetAsync("test-key", expectedValue);
-        var result = await cache.GetAsync<string>("test-key");
+        await cache.SetAsync("test-key", expectedValue).ConfigureAwait(false);
+        var result = await cache.GetAsync<string>("test-key").ConfigureAwait(false);
 
         // Assert
         result.Should().Be(expectedValue);
@@ -202,7 +202,7 @@ public sealed class DomainModelTests
         var cache = new InMemoryCacheProvider(mockLogger);
 
         // Act
-        var result = await cache.GetAsync<string>("nonexistent-key");
+        var result = await cache.GetAsync<string>("nonexistent-key").ConfigureAwait(false);
 
         // Assert
         result.Should().BeNull();
@@ -214,11 +214,11 @@ public sealed class DomainModelTests
         // Arrange
         var mockLogger = Substitute.For<ILogger<InMemoryCacheProvider>>();
         var cache = new InMemoryCacheProvider(mockLogger);
-        await cache.SetAsync("remove-key", "some-value");
+        await cache.SetAsync("remove-key", "some-value").ConfigureAwait(false);
 
         // Act
-        await cache.RemoveAsync("remove-key");
-        var result = await cache.GetAsync<string>("remove-key");
+        await cache.RemoveAsync("remove-key").ConfigureAwait(false);
+        var result = await cache.GetAsync<string>("remove-key").ConfigureAwait(false);
 
         // Assert
         result.Should().BeNull();

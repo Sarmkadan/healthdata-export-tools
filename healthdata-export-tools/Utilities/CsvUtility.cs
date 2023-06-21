@@ -23,7 +23,7 @@ public static class CsvUtility
 
         try
         {
-            var lines = await FileUtility.ReadLinesAsync(filePath);
+            var lines = await FileUtility.ReadLinesAsync(filePath).ConfigureAwait(false);
 
             if (lines.Count == 0)
                 return records;
@@ -182,7 +182,7 @@ public static class CsvUtility
     {
         try
         {
-            var lines = await FileUtility.ReadLinesAsync(filePath);
+            var lines = await FileUtility.ReadLinesAsync(filePath).ConfigureAwait(false);
             return Math.Max(0, lines.Count - 1); // Subtract header
         }
         catch
@@ -206,7 +206,7 @@ public static class CsvUtility
 
             foreach (var filePath in filePaths)
             {
-                var records = await ParseCsvFileAsync(filePath);
+                var records = await ParseCsvFileAsync(filePath).ConfigureAwait(false);
 
                 if (headers.Count == 0 && records.Count > 0)
                 {
@@ -240,7 +240,7 @@ public static class CsvUtility
                 lines.Add(string.Join(",", values.Select(EscapeCsvField)));
             }
 
-            await FileUtility.WriteLinesAsync(outputPath, lines);
+            await FileUtility.WriteLinesAsync(outputPath, lines).ConfigureAwait(false);
 
             return outputPath;
         }
@@ -257,7 +257,7 @@ public static class CsvUtility
     {
         try
         {
-            var records = await ParseCsvFileAsync(csvFilePath);
+            var records = await ParseCsvFileAsync(csvFilePath).ConfigureAwait(false);
             return JsonSerializer.Serialize(records, new JsonSerializerOptions { WriteIndented = true });
         }
         catch (Exception ex)
@@ -273,7 +273,7 @@ public static class CsvUtility
     {
         try
         {
-            var lines = await FileUtility.ReadLinesAsync(filePath);
+            var lines = await FileUtility.ReadLinesAsync(filePath).ConfigureAwait(false);
             var fileInfo = new FileInfo(filePath);
 
             return new CsvStatistics

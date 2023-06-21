@@ -58,12 +58,12 @@ class DependencyInjectionExample
 
             // Parse health data
             Console.WriteLine("📂 Parsing health data using injected parser...");
-            var healthData = await parser.ParseHealthDataAsync("./exports/export.zip");
+            var healthData = await parser.ParseHealthDataAsync("./exports/export.zip").ConfigureAwait(false);
             Console.WriteLine($"✓ Parsed {healthData.GetTotalRecordCount()} records\n");
 
             // Validate using injected validator
             Console.WriteLine("🔍 Validating data using injected validator...");
-            var validation = await validator.ValidateAllAsync(healthData);
+            var validation = await validator.ValidateAllAsync(healthData).ConfigureAwait(false);
             Console.WriteLine($"✓ Validation complete: {(validation.IsValid ? "VALID" : "INVALID")}\n");
 
             // Analyze using injected analytics
@@ -73,12 +73,12 @@ class DependencyInjectionExample
 
             // Cache data using injected cache service
             Console.WriteLine("💾 Caching data using injected cache service...");
-            await cacheService.SetAsync("current_health_data", healthData, TimeSpan.FromHours(1));
+            await cacheService.SetAsync("current_health_data", healthData, TimeSpan.FromHours(1)).ConfigureAwait(false);
             Console.WriteLine("✓ Data cached for 1 hour\n");
 
             // Retrieve from cache
             Console.WriteLine("📥 Retrieving from cache...");
-            var cachedData = await cacheService.GetAsync<HealthDataExportDto>("current_health_data");
+            var cachedData = await cacheService.GetAsync<HealthDataExportDto>("current_health_data").ConfigureAwait(false);
             if (cachedData is not null)
             {
                 Console.WriteLine($"✓ Retrieved {cachedData.GetTotalRecordCount()} records from cache\n");
@@ -87,7 +87,7 @@ class DependencyInjectionExample
             // Export using injected exporter
             Console.WriteLine("💾 Exporting data using injected exporter...");
             Directory.CreateDirectory("./output");
-            await exporter.ExportCompleteAsync(healthData, "./output/", ExportFormat.Json);
+            await exporter.ExportCompleteAsync(healthData, "./output/", ExportFormat.Json).ConfigureAwait(false);
             Console.WriteLine("✓ Export completed\n");
 
             // Display DI container status
