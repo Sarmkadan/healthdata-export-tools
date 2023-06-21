@@ -122,8 +122,11 @@ public static class CsvUtility
         if (string.IsNullOrEmpty(value))
             return string.Empty;
 
-        // Single vectorised scan beats three separate Contains calls
-        if (value.AsSpan().IndexOfAny(',', '"', '\n') < 0)
+        // Single vectorised scan beats three separate Contains calls.
+        // Also check for \r since some health data exports from Windows
+        // Zepp/Garmin apps include carriage returns in note fields.
+        if (value.AsSpan().IndexOfAny(',', '"', '\n') < 0 &&
+            !value.Contains('\r'))
             return value;
 
         return string.Concat("\"", value.Replace("\"", "\"\""), "\"");
