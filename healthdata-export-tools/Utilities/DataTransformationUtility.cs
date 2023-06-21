@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -200,7 +201,7 @@ public static class DataTransformationUtility
 /// <summary>
 /// Aggregated sleep data
 /// </summary>
-public class AggregatedSleepData
+public sealed class AggregatedSleepData
 {
     public DateTime Date { get; set; }
     public int TotalDurationMinutes { get; set; }
@@ -214,7 +215,7 @@ public class AggregatedSleepData
 /// <summary>
 /// Aggregated heart rate data
 /// </summary>
-public class AggregatedHeartRateData
+public sealed class AggregatedHeartRateData
 {
     public DateTime Hour { get; set; }
     public int AverageHeartRate { get; set; }
@@ -226,7 +227,7 @@ public class AggregatedHeartRateData
 /// <summary>
 /// Aggregated steps data
 /// </summary>
-public class AggregatedStepsData
+public sealed class AggregatedStepsData
 {
     public DateTime Date { get; set; }
     public long TotalSteps { get; set; }

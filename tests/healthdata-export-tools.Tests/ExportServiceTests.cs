@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -15,7 +16,7 @@ using Xunit;
 
 namespace HealthDataExportTools.Tests;
 
-public class ExportServiceTests
+public sealed class ExportServiceTests
 {
     private readonly ExportService _exportService;
     private readonly ILogger<ExportService> _mockLogger;

@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -290,7 +291,7 @@ public static class CsvUtility
 /// <summary>
 /// CSV file statistics
 /// </summary>
-public class CsvStatistics
+public sealed class CsvStatistics
 {
     public int RowCount { get; set; }
     public int HeaderCount { get; set; }

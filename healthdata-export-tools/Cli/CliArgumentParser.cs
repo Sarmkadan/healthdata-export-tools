@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -8,7 +9,7 @@ namespace HealthDataExportTools.Cli;
 /// <summary>
 /// Parses command-line arguments into structured options
 /// </summary>
-public class CliArgumentParser
+public sealed class CliArgumentParser
 {
     private readonly Dictionary<string, Action<string>> _argumentMap;
     private readonly CliOptions _options;

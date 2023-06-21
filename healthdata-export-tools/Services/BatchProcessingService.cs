@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -9,7 +10,7 @@ namespace HealthDataExportTools.Services;
 /// Service for batch processing of health data with progress tracking
 /// Handles large datasets efficiently with configurable batch sizes
 /// </summary>
-public class BatchProcessingService
+public sealed class BatchProcessingService
 {
     private readonly ILogger<BatchProcessingService> _logger;
 
@@ -27,7 +28,7 @@ public class BatchProcessingService
         int batchSize = 1000,
         Action<BatchProgress>? progressCallback = null)
     {
-        if (items == null || items.Count == 0)
+        if (items is null || items.Count == 0)
         {
             return new BatchProcessingResult { TotalItems = 0, ProcessedItems = 0, FailedItems = 0 };
         }
@@ -95,7 +96,7 @@ public class BatchProcessingService
         int batchSize = 1000,
         int maxParallelism = 4)
     {
-        if (items == null || items.Count == 0)
+        if (items is null || items.Count == 0)
         {
             return new BatchProcessingResult { TotalItems = 0, ProcessedItems = 0, FailedItems = 0 };
         }
@@ -177,7 +178,7 @@ public class BatchProcessingService
 /// <summary>
 /// Result of batch processing
 /// </summary>
-public class BatchProcessingResult
+public sealed class BatchProcessingResult
 {
     public int TotalItems { get; set; }
     public int ProcessedItems { get; set; }
@@ -197,7 +198,7 @@ public class BatchProcessingResult
 /// <summary>
 /// Batch processing progress information
 /// </summary>
-public class BatchProgress
+public sealed class BatchProgress
 {
     public int CurrentBatch { get; set; }
     public int TotalBatches { get; set; }

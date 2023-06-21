@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -11,7 +12,7 @@ namespace HealthDataExportTools.Data;
 /// <summary>
 /// In-memory implementation of health data repository for testing
 /// </summary>
-public class InMemoryHealthDataRepository : IHealthDataRepository
+public sealed class InMemoryHealthDataRepository : IHealthDataRepository
 {
     // Fix: Use ConcurrentDictionary instead of Dictionary to resolve thread safety issues
     private readonly ConcurrentDictionary<string, SleepData> _sleepData = [];

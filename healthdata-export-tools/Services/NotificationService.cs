@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -9,7 +10,7 @@ namespace HealthDataExportTools.Services;
 /// Service for sending notifications about export and import operations
 /// Supports logging and extensible notification channels
 /// </summary>
-public class NotificationService
+public sealed class NotificationService
 {
     private readonly ILogger<NotificationService> _logger;
     private readonly List<INotificationChannel> _channels;
@@ -25,7 +26,7 @@ public class NotificationService
     /// </summary>
     public void RegisterChannel(INotificationChannel channel)
     {
-        if (channel != null && !_channels.Contains(channel))
+        if (channel is not null && !_channels.Contains(channel))
         {
             _channels.Add(channel);
             _logger.LogInformation("Registered notification channel: {Type}", channel.GetType().Name);
@@ -75,7 +76,7 @@ public class NotificationService
             Error: {errorMessage}
             """;
 
-        if (exception != null)
+        if (exception is not null)
         {
             body += $"\nException Details: {exception.GetType().Name}\n{exception.Message}";
         }
@@ -119,7 +120,7 @@ public class NotificationService
         string operationId,
         List<string> warnings)
     {
-        if (warnings == null || warnings.Count == 0)
+        if (warnings is null || warnings.Count == 0)
             return;
 
         var warningsText = string.Join("\n  • ", warnings);
@@ -144,7 +145,7 @@ public class NotificationService
     /// </summary>
     public async Task SendNotificationAsync(NotificationMessage message)
     {
-        if (message == null)
+        if (message is null)
             return;
 
         _logger.LogInformation(
@@ -188,7 +189,7 @@ public class NotificationService
 /// <summary>
 /// Notification message structure
 /// </summary>
-public class NotificationMessage
+public sealed class NotificationMessage
 {
     public string Subject { get; set; } = string.Empty;
     public string Body { get; set; } = string.Empty;
@@ -219,7 +220,7 @@ public interface INotificationChannel
 /// <summary>
 /// Log-based notification channel (always available)
 /// </summary>
-public class LogNotificationChannel : INotificationChannel
+public sealed class LogNotificationChannel : INotificationChannel
 {
     private readonly ILogger<LogNotificationChannel> _logger;
 

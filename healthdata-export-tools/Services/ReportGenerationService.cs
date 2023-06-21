@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -9,7 +10,7 @@ namespace HealthDataExportTools.Services;
 /// Service for generating comprehensive health data reports
 /// Produces summary reports, trend analysis, and statistics
 /// </summary>
-public class ReportGenerationService
+public sealed class ReportGenerationService
 {
     private readonly ILogger<ReportGenerationService> _logger;
 
@@ -228,7 +229,7 @@ public class ReportGenerationService
 /// <summary>
 /// Health summary report
 /// </summary>
-public class HealthSummaryReport
+public sealed class HealthSummaryReport
 {
     public DateTime ReportDate { get; set; }
     public int TotalRecords { get; set; }
@@ -240,7 +241,7 @@ public class HealthSummaryReport
 /// <summary>
 /// Data type statistics
 /// </summary>
-public class DataTypeStatistic
+public sealed class DataTypeStatistic
 {
     public string DataType { get; set; } = string.Empty;
     public int RecordCount { get; set; }
@@ -253,7 +254,7 @@ public class DataTypeStatistic
 /// <summary>
 /// Daily summary report
 /// </summary>
-public class DailySummaryReport
+public sealed class DailySummaryReport
 {
     public DateTime Date { get; set; }
     public DateTime GeneratedAt { get; set; }
@@ -264,7 +265,7 @@ public class DailySummaryReport
 /// <summary>
 /// Sleep metrics
 /// </summary>
-public class SleepMetrics
+public sealed class SleepMetrics
 {
     public int TotalDurationMinutes { get; set; }
     public int AverageQuality { get; set; }
@@ -276,7 +277,7 @@ public class SleepMetrics
 /// <summary>
 /// Heart rate metrics
 /// </summary>
-public class HeartRateMetrics
+public sealed class HeartRateMetrics
 {
     public int AverageHeartRate { get; set; }
     public int MinHeartRate { get; set; }
@@ -287,7 +288,7 @@ public class HeartRateMetrics
 /// <summary>
 /// Trend analysis report
 /// </summary>
-public class TrendAnalysisReport
+public sealed class TrendAnalysisReport
 {
     public DateTime AnalysisDate { get; set; }
     public int WindowDays { get; set; }
@@ -297,7 +298,7 @@ public class TrendAnalysisReport
 /// <summary>
 /// Metric trend information
 /// </summary>
-public class MetricTrend
+public sealed class MetricTrend
 {
     public string MetricType { get; set; } = string.Empty;
     public double AverageValue { get; set; }
@@ -308,7 +309,7 @@ public class MetricTrend
 /// <summary>
 /// Date range
 /// </summary>
-public class DateRange
+public sealed class DateRange
 {
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }

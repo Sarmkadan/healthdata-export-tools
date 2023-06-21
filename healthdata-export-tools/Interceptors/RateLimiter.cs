@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -9,7 +10,7 @@ namespace HealthDataExportTools.Interceptors;
 /// Rate limiter to control the rate of operations
 /// Uses token bucket algorithm for fairness and burst handling
 /// </summary>
-public class RateLimiter
+public sealed class RateLimiter
 {
     private readonly Dictionary<string, TokenBucket> _buckets;
     private readonly ReaderWriterLockSlim _bucketsLock;
@@ -208,7 +209,7 @@ public class RateLimiter
 /// <summary>
 /// Rate limit status information
 /// </summary>
-public class RateLimitStatus
+public sealed class RateLimitStatus
 {
     public string Identifier { get; set; } = string.Empty;
     public double CurrentTokens { get; set; }
