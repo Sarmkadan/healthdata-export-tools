@@ -32,7 +32,7 @@ public sealed class ExportCompletedEvent : EventBase
         DateTime exportEndTime,
         bool wasCompressed,
         List<string> generatedFiles,
-        List<string> warnings = null)
+        List<string>? warnings = null)
         : base(exportId)
     {
         ExportFormat = exportFormat;

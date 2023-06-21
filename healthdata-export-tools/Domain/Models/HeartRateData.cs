@@ -90,7 +90,7 @@ public sealed class HeartRateData : HealthDataRecord
             { "Maximum", $"{MaximumBpm} BPM" },
             { "Resting", RestingBpm.HasValue ? $"{RestingBpm} BPM" : "N/A" },
             { "Measurements", MeasurementCount },
-            { "StressLevel", StressLevel },
+            { "StressLevel", (object?)StressLevel },
             { "CardioZone", $"{CardioZoneMinutes} min" },
             { "FatBurnZone", $"{FatBurnZoneMinutes} min" }
         };
