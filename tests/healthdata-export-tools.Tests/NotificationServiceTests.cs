@@ -38,7 +38,7 @@ public sealed class NotificationServiceTests
         };
 
         // Act
-        await _sut.SendNotificationAsync(notificationMessage);
+        await _sut.SendNotificationAsync(notificationMessage).ConfigureAwait(false);
 
         // Assert
         _mockLogger.Received(1).Log(
@@ -63,7 +63,7 @@ public sealed class NotificationServiceTests
         };
 
         // Act
-        await _sut.SendNotificationAsync(notificationMessage);
+        await _sut.SendNotificationAsync(notificationMessage).ConfigureAwait(false);
 
         // Assert
         _mockLogger.Received(1).Log(
@@ -89,7 +89,7 @@ public sealed class NotificationServiceTests
         };
 
         // Act
-        await _sut.SendNotificationAsync(notificationMessage);
+        await _sut.SendNotificationAsync(notificationMessage).ConfigureAwait(false);
 
         // Assert
         _mockLogger.Received(1).Log(
@@ -114,7 +114,7 @@ public sealed class NotificationServiceTests
         };
 
         // Act
-        await _sut.SendNotificationAsync(notificationMessage);
+        await _sut.SendNotificationAsync(notificationMessage).ConfigureAwait(false);
 
         // Assert
         _mockLogger.Received(1).Log(
@@ -141,10 +141,10 @@ public sealed class NotificationServiceTests
         };
 
         // Act
-        await _sut.SendNotificationAsync(notificationMessage);
+        await _sut.SendNotificationAsync(notificationMessage).ConfigureAwait(false);
 
         // Assert
-        await mockChannel.Received(1).SendAsync(Arg.Is<NotificationMessage>(nm => nm.Body.Contains(messageBody)));
+        await mockChannel.Received(1).SendAsync(Arg.Is<NotificationMessage>(nm => nm.Body.Contains(messageBody))).ConfigureAwait(false);
     }
 
 

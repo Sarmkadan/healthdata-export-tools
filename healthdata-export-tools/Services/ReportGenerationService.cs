@@ -64,7 +64,7 @@ public sealed class ReportGenerationService
 
             report.DeviceDistribution = deviceCounts;
 
-            return await Task.FromResult(report);
+            return await Task.FromResult(report).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -118,7 +118,7 @@ public sealed class ReportGenerationService
                 };
             }
 
-            return await Task.FromResult(report);
+            return await Task.FromResult(report).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -170,7 +170,7 @@ public sealed class ReportGenerationService
                 }
             }
 
-            return await Task.FromResult(report);
+            return await Task.FromResult(report).ConfigureAwait(false);
         }
         catch (Exception ex)
         {

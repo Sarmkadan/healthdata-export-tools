@@ -37,8 +37,8 @@ public sealed class InMemoryHealthDataRepositoryTests
         };
 
         // Act
-        await _sut.AddSleepAsync(sleepData);
-        var retrievedData = await _sut.GetSleepByIdAsync(sleepData.Id);
+        await _sut.AddSleepAsync(sleepData).ConfigureAwait(false);
+        var retrievedData = await _sut.GetSleepByIdAsync(sleepData.Id).ConfigureAwait(false);
 
         // Assert
         retrievedData.Should().NotBeNull();
@@ -57,14 +57,14 @@ public sealed class InMemoryHealthDataRepositoryTests
             DurationMinutes = 480,
             Quality = SleepQuality.Good
         };
-        await _sut.AddSleepAsync(sleepData);
+        await _sut.AddSleepAsync(sleepData).ConfigureAwait(false);
 
         sleepData.DurationMinutes = 500;
         sleepData.Quality = SleepQuality.Excellent;
 
         // Act
-        await _sut.UpdateSleepAsync(sleepData);
-        var retrievedData = await _sut.GetSleepByIdAsync(sleepData.Id);
+        await _sut.UpdateSleepAsync(sleepData).ConfigureAwait(false);
+        var retrievedData = await _sut.GetSleepByIdAsync(sleepData.Id).ConfigureAwait(false);
 
         // Assert
         retrievedData.Should().NotBeNull();
@@ -83,11 +83,11 @@ public sealed class InMemoryHealthDataRepositoryTests
             DeviceId = "TestDevice",
             DurationMinutes = 480
         };
-        await _sut.AddSleepAsync(sleepData);
+        await _sut.AddSleepAsync(sleepData).ConfigureAwait(false);
 
         // Act
-        await _sut.DeleteSleepAsync(sleepData.Id);
-        var retrievedData = await _sut.GetSleepByIdAsync(sleepData.Id);
+        await _sut.DeleteSleepAsync(sleepData.Id).ConfigureAwait(false);
+        var retrievedData = await _sut.GetSleepByIdAsync(sleepData.Id).ConfigureAwait(false);
 
         // Assert
         retrievedData.Should().BeNull();
@@ -105,12 +105,12 @@ public sealed class InMemoryHealthDataRepositoryTests
         var sleep2 = new SleepData { Id = Guid.NewGuid().ToString(), RecordDate = date2 };
         var sleep3 = new SleepData { Id = Guid.NewGuid().ToString(), RecordDate = date3 };
 
-        await _sut.AddSleepAsync(sleep1);
-        await _sut.AddSleepAsync(sleep2);
-        await _sut.AddSleepAsync(sleep3);
+        await _sut.AddSleepAsync(sleep1).ConfigureAwait(false);
+        await _sut.AddSleepAsync(sleep2).ConfigureAwait(false);
+        await _sut.AddSleepAsync(sleep3).ConfigureAwait(false);
 
         // Act
-        var results = await _sut.GetSleepRangeAsync(date1, date2);
+        var results = await _sut.GetSleepRangeAsync(date1, date2).ConfigureAwait(false);
 
         // Assert
         results.Should().HaveCount(2);
@@ -134,8 +134,8 @@ public sealed class InMemoryHealthDataRepositoryTests
         };
 
         // Act
-        await _sut.AddHeartRateAsync(hrData);
-        var retrievedData = await _sut.GetHeartRateByIdAsync(hrData.Id);
+        await _sut.AddHeartRateAsync(hrData).ConfigureAwait(false);
+        var retrievedData = await _sut.GetHeartRateByIdAsync(hrData.Id).ConfigureAwait(false);
 
         // Assert
         retrievedData.Should().NotBeNull();
@@ -146,12 +146,12 @@ public sealed class InMemoryHealthDataRepositoryTests
     public async Task GetTotalRecordCount_ReturnsCorrectCount()
     {
         // Arrange
-        await _sut.AddSleepAsync(new SleepData { Id = Guid.NewGuid().ToString(), RecordDate = DateTime.UtcNow.Date });
-        await _sut.AddHeartRateAsync(new HeartRateData { Id = Guid.NewGuid().ToString(), RecordDate = DateTime.UtcNow.Date });
-        await _sut.AddStepsAsync(new StepsData { Id = Guid.NewGuid().ToString(), RecordDate = DateTime.UtcNow.Date });
+        await _sut.AddSleepAsync(new SleepData { Id = Guid.NewGuid().ToString(), RecordDate = DateTime.UtcNow.Date }).ConfigureAwait(false);
+        await _sut.AddHeartRateAsync(new HeartRateData { Id = Guid.NewGuid().ToString(), RecordDate = DateTime.UtcNow.Date }).ConfigureAwait(false);
+        await _sut.AddStepsAsync(new StepsData { Id = Guid.NewGuid().ToString(), RecordDate = DateTime.UtcNow.Date }).ConfigureAwait(false);
 
         // Act
-        var count = await _sut.GetTotalRecordCountAsync();
+        var count = await _sut.GetTotalRecordCountAsync().ConfigureAwait(false);
 
         // Assert
         count.Should().Be(3);
@@ -163,14 +163,14 @@ public sealed class InMemoryHealthDataRepositoryTests
         // Arrange
         var oldSleep = new SleepData { Id = Guid.NewGuid().ToString(), RecordDate = DateTime.UtcNow.AddDays(-10) };
         var recentSleep = new SleepData { Id = Guid.NewGuid().ToString(), RecordDate = DateTime.UtcNow.AddDays(-1) };
-        await _sut.AddSleepAsync(oldSleep);
-        await _sut.AddSleepAsync(recentSleep);
+        await _sut.AddSleepAsync(oldSleep).ConfigureAwait(false);
+        await _sut.AddSleepAsync(recentSleep).ConfigureAwait(false);
 
         var cutOffDate = DateTime.UtcNow.AddDays(-5);
 
         // Act
-        await _sut.DeleteOldRecordsAsync(cutOffDate);
-        var remainingRecords = await _sut.GetSleepRangeAsync(DateTime.MinValue, DateTime.MaxValue);
+        await _sut.DeleteOldRecordsAsync(cutOffDate).ConfigureAwait(false);
+        var remainingRecords = await _sut.GetSleepRangeAsync(DateTime.MinValue, DateTime.MaxValue).ConfigureAwait(false);
 
         // Assert
         remainingRecords.Should().ContainSingle(s => s.Id == recentSleep.Id);
