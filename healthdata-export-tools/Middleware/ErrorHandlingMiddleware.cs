@@ -22,16 +22,18 @@ public sealed class ErrorHandlingMiddleware : IMiddleware
     /// <summary>
     /// Handle exceptions and transform them to error responses
     /// </summary>
-    public async Task ProcessAsync(MiddlewareContext context)
+    public async Task ProcessAsync(MiddlewareContext context, Func<MiddlewareContext, Task> next)
     {
         try
         {
-            await Task.CompletedTask;
+            await next(context);
         }
         catch (Exception ex)
         {
             context.ContinueProcessing = false;
             context.Result = HandleException(ex, context);
+            // Do not re-throw if it's handled; the result is set in context.
+            // If the user wants to re-throw, they can check context.Exception in the next layer.
         }
     }
 
