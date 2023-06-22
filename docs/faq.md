@@ -83,12 +83,41 @@ var results = await batchService.ProcessDirectoryAsync("./exports/", ExportForma
 
 ### Q: Can I filter data by date range?
 
-**A**: Yes, after parsing:
+**A**: Yes. Parse the full export first, then filter in-memory using LINQ before exporting:
+
 ```csharp
-var filteredData = data.SleepRecords
+// Parse the full Zepp export
+var parser = new HealthDataParserService(new ValidationService());
+var json   = await File.ReadAllTextAsync("zepp_export.json");
+var collection = await parser.ParseJsonAsync(json);
+
+// Filter sleep records to a specific date range
+var startDate = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+var endDate   = new DateTime(2024, 3, 31, 23, 59, 59, DateTimeKind.Utc);
+
+var filtered = collection.SleepRecords
+    .Where(s => s.RecordDate >= startDate && s.RecordDate <= endDate)
+    .ToList();
+
+// Export only the filtered records
+var exporter = new ExportService();
+await exporter.ExportSleepToCsvAsync(filtered, "./output/sleep_q1_2024.csv");
+```
+
+You can apply the same `.Where()` pattern to any collection:
+
+```csharp
+var hrRecords   = collection.HeartRateRecords
+    .Where(h => h.RecordDate >= startDate && h.RecordDate <= endDate)
+    .ToList();
+
+var spo2Records = collection.SpO2Records
     .Where(s => s.RecordDate >= startDate && s.RecordDate <= endDate)
     .ToList();
 ```
+
+> **Tip**: `RecordDate` is stored as UTC. Ensure your `startDate` / `endDate` are also UTC
+> (or convert with `.ToUniversalTime()`) to avoid off-by-one errors on timezone boundaries.
 
 ### Q: What happens to invalid records?
 
