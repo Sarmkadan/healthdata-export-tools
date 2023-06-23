@@ -234,6 +234,87 @@ public sealed class ExportService
     }
 
     /// <summary>
+    /// Export health data to separate JSON files per data type:
+    /// sleep.json, heart_rate.json, spo2.json, steps.json.
+    /// </summary>
+    public async Task ExportToJsonPerTypeAsync(HealthDataCollection collection, string outputDirectory)
+    {
+        if (!Directory.Exists(outputDirectory))
+            Directory.CreateDirectory(outputDirectory);
+
+        var options = new JsonSerializerOptions
+        {
+            WriteIndented = true,
+            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+        };
+
+        var tasks = new List<Task>();
+
+        if (collection.SleepRecords.Count > 0)
+        {
+            var path = Path.Combine(outputDirectory, "sleep.json");
+            tasks.Add(WriteJsonFileAsync(new
+            {
+                DataType = "Sleep",
+                ExportDate = DateTime.UtcNow.ToIso8601(),
+                RecordCount = collection.SleepRecords.Count,
+                Records = collection.SleepRecords
+            }, path, options));
+        }
+
+        if (collection.HeartRateRecords.Count > 0)
+        {
+            var path = Path.Combine(outputDirectory, "heart_rate.json");
+            tasks.Add(WriteJsonFileAsync(new
+            {
+                DataType = "HeartRate",
+                ExportDate = DateTime.UtcNow.ToIso8601(),
+                RecordCount = collection.HeartRateRecords.Count,
+                Records = collection.HeartRateRecords
+            }, path, options));
+        }
+
+        if (collection.SpO2Records.Count > 0)
+        {
+            var path = Path.Combine(outputDirectory, "spo2.json");
+            tasks.Add(WriteJsonFileAsync(new
+            {
+                DataType = "SpO2",
+                ExportDate = DateTime.UtcNow.ToIso8601(),
+                RecordCount = collection.SpO2Records.Count,
+                Records = collection.SpO2Records
+            }, path, options));
+        }
+
+        if (collection.StepsRecords.Count > 0)
+        {
+            var path = Path.Combine(outputDirectory, "steps.json");
+            tasks.Add(WriteJsonFileAsync(new
+            {
+                DataType = "Steps",
+                ExportDate = DateTime.UtcNow.ToIso8601(),
+                RecordCount = collection.StepsRecords.Count,
+                Records = collection.StepsRecords
+            }, path, options));
+        }
+
+        await Task.WhenAll(tasks).ConfigureAwait(false);
+    }
+
+    private static async Task WriteJsonFileAsync(object data, string path, JsonSerializerOptions options)
+    {
+        try
+        {
+            var json = JsonSerializer.Serialize(data, options);
+            await File.WriteAllTextAsync(path, json, Encoding.UTF8).ConfigureAwait(false);
+        }
+        catch (IOException ex)
+        {
+            throw new ExportException("Failed to write JSON file", path, "JSON", ex);
+        }
+    }
+
+    /// <summary>
     /// Export complete dataset
     /// </summary>
     public async Task ExportCompleteAsync(HealthDataCollection collection, string outputDirectory, ExportFormat format)
