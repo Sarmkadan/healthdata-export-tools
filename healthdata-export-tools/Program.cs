@@ -117,9 +117,23 @@ class Program
                     Console.WriteLine("  ✓ Exported to CSV");
                     break;
 
+                case ExportFormat.Html:
+                    var chartExporter = (ChartExportService?)serviceProvider.GetService(typeof(ChartExportService));
+                    if (chartExporter is not null)
+                    {
+                        await chartExporter.ExportToHtmlChartsAsync(sampleData, Path.Combine(options.OutputPath, "charts.html"));
+                        Console.WriteLine("  ✓ Exported to HTML Charts");
+                    }
+                    break;
+
                 case ExportFormat.All:
                     await exporter.ExportCompleteAsync(sampleData, options.OutputPath, ExportFormat.Json);
                     await exporter.ExportCompleteAsync(sampleData, options.OutputPath, ExportFormat.Csv);
+                    var allChartExporter = (ChartExportService?)serviceProvider.GetService(typeof(ChartExportService));
+                    if (allChartExporter is not null)
+                    {
+                        await allChartExporter.ExportToHtmlChartsAsync(sampleData, Path.Combine(options.OutputPath, "charts.html"));
+                    }
                     Console.WriteLine("  ✓ Exported to all formats");
                     break;
             }
