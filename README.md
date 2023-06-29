@@ -373,7 +373,66 @@ await cacheService.SetAsync("health_data_2024", data, TimeSpan.FromHours(1));
 var cachedData = await cacheService.GetAsync<HealthDataExportDto>("health_data_2024");
 ```
 
-### Example 10: Async Event Handling
+### Example 10: Generate Interactive HTML Charts
+
+```csharp
+var collection = new HealthDataCollection
+{
+    HeartRateRecords = heartRateData,
+    StepsRecords     = stepsData,
+    SleepRecords     = sleepData,
+    SpO2Records      = spo2Data,
+    ActivityRecords  = activityData
+};
+
+var chartService = new ChartExportService();
+await chartService.ExportToHtmlChartsAsync(collection, "health_dashboard.html");
+
+// Or with fine-grained control
+var opts = new ChartExportOptions { Title = "Q1 2024 Health Report", IncludeActivityChart = true };
+await chartService.ExportToHtmlChartsAsync(collection, "q1_report.html", opts);
+```
+
+### Example 11: Generate Weekly Summary Reports
+
+```csharp
+var reportService = new ReportGenerationService(logger);
+
+var weeklyReports = await reportService.GenerateWeeklySummaryReportAsync(
+    sleepData, heartRateData, stepsData, spo2Data, activityData);
+
+foreach (var week in weeklyReports)
+{
+    Console.WriteLine($"Week {week.WeekIdentifier}: score={week.WeeklyHealthScore}/100, steps={week.TotalSteps:N0}");
+    if (week.Changes is not null)
+        Console.WriteLine($"  ▲▼ Steps: {week.Changes.StepsChangePercent:+0.0;-0.0}% | Sleep: {week.Changes.SleepDurationChangePercent:+0.0;-0.0}%");
+}
+
+await reportService.ExportWeeklySummaryToJsonAsync(weeklyReports, "weekly_summary.json");
+```
+
+### Example 12: Compare Two Health Periods
+
+```csharp
+var comparisonService = new DataComparisonService();
+
+// Option A: compare by pre-built collections
+var result = await comparisonService.ComparePeriodsAsync(thisWeekCollection, lastWeekCollection);
+Console.WriteLine(result.NarrativeSummary);
+
+// Option B: compare two date ranges within one collection
+var result2 = await comparisonService.CompareByDateRangeAsync(
+    allData,
+    new DateTime(2024, 1,  1), new DateTime(2024, 1,  7),   // baseline
+    new DateTime(2024, 1, 15), new DateTime(2024, 1, 21));   // comparison
+
+Console.WriteLine($"Sleep change: {result2.SleepDurationChangePercentage:+0.0;-0.0}%");
+Console.WriteLine($"Steps change: {result2.StepsChangePercentage:+0.0;-0.0}%");
+
+await comparisonService.ExportToJsonAsync(result2, "period_comparison.json");
+```
+
+### Example 13: Async Event Handling
 
 ```csharp
 var eventBus = new EventBus();
@@ -486,6 +545,177 @@ public class ValidationService
     public Task<ValidationResultDto> ValidateAllAsync(HealthDataExportDto data);
 }
 ```
+
+#### ChartExportService
+
+**Purpose**: Export health data to interactive HTML charts rendered with Chart.js.
+
+```csharp
+public class ChartExportService
+{
+    /// Export all available metrics to a self-contained HTML file (default options)
+    public Task ExportToHtmlChartsAsync(HealthDataCollection collection, string outputPath);
+
+    /// Export with configurable chart selection and layout options
+    public Task ExportToHtmlChartsAsync(HealthDataCollection collection, string outputPath, ChartExportOptions options);
+}
+
+public class ChartExportOptions
+{
+    public string Title { get; set; }              // Report title (default: "Health Data Charts")
+    public bool IncludeSummaryTable { get; set; }  // Statistics table above the charts (default: true)
+    public bool IncludeSpO2Chart { get; set; }     // SpO2 line chart (default: true)
+    public bool IncludeActivityChart { get; set; } // Activity dual-axis chart (default: true)
+    public bool IncludeSleepCompositionChart { get; set; } // Stacked sleep stages chart (default: true)
+}
+```
+
+**Example**:
+
+```csharp
+var service = new ChartExportService();
+
+// Export with all charts
+await service.ExportToHtmlChartsAsync(collection, "health_report.html");
+
+// Export with custom options
+var options = new ChartExportOptions
+{
+    Title = "My Weekly Health Overview",
+    IncludeSpO2Chart = true,
+    IncludeSleepCompositionChart = true
+};
+await service.ExportToHtmlChartsAsync(collection, "weekly.html", options);
+```
+
+Generated HTML is self-contained and loads Chart.js from a CDN. Charts included:
+- **Heart Rate**: line chart with avg / min / max BPM per day
+- **Daily Steps**: bar chart
+- **Sleep Duration**: bar chart (hours per night)
+- **Sleep Composition**: stacked bar chart (deep / REM / light / awake minutes)
+- **SpO2**: line chart with avg and min values, y-axis capped at 85–100 %
+- **Activity**: dual-axis bar+line chart (calories burned and session duration)
+
+---
+
+#### ReportGenerationService — Weekly Summary Reports
+
+**Purpose**: Aggregate health records into ISO-week reports with week-over-week trend deltas and a composite health score.
+
+```csharp
+public class ReportGenerationService
+{
+    /// Generate weekly reports from core metrics
+    public Task<List<WeeklySummaryReport>> GenerateWeeklySummaryReportAsync(
+        List<SleepData> sleepData,
+        List<HeartRateData> heartRateData,
+        List<StepsData> stepsData);
+
+    /// Generate weekly reports including SpO2 and activity data
+    public Task<List<WeeklySummaryReport>> GenerateWeeklySummaryReportAsync(
+        List<SleepData> sleepData,
+        List<HeartRateData> heartRateData,
+        List<StepsData> stepsData,
+        List<SpO2Data> spo2Data,
+        List<ActivityData> activityData);
+
+    /// Persist the list of weekly reports to a JSON file
+    public Task ExportWeeklySummaryToJsonAsync(List<WeeklySummaryReport> reports, string outputPath);
+}
+```
+
+**Key fields on `WeeklySummaryReport`**:
+
+| Field | Description |
+|---|---|
+| `WeekIdentifier` | ISO year-week key, e.g. `"2024-03"` |
+| `AverageSleepDurationMinutes` | Mean nightly sleep across the week |
+| `TotalDeepSleepMinutes` / `TotalRemSleepMinutes` | Accumulated deep/REM sleep |
+| `AverageHeartRate` / `MinimumHeartRate` / `MaximumHeartRate` | Heart-rate stats |
+| `TotalSteps` / `TotalDistanceKm` | Step totals |
+| `AverageSpO2` / `MinimumSpO2` / `TotalLowSpO2Events` | Blood oxygen stats |
+| `TotalActivitySessions` / `TotalActivityMinutes` / `TotalCaloriesBurned` | Activity totals |
+| `WeeklyHealthScore` | Composite score 0–100 based on sleep, HR, SpO2, and steps |
+| `Changes` | `WeekOverWeekChanges` with percentage deltas vs. prior week (null for first week) |
+
+**Example**:
+
+```csharp
+var reportService = new ReportGenerationService(logger);
+
+var reports = await reportService.GenerateWeeklySummaryReportAsync(
+    sleepRecords, heartRateRecords, stepsRecords, spo2Records, activityRecords);
+
+foreach (var week in reports)
+{
+    Console.WriteLine($"{week.WeekIdentifier}: score={week.WeeklyHealthScore}, steps={week.TotalSteps}");
+    if (week.Changes is not null)
+        Console.WriteLine($"  Steps Δ {week.Changes.StepsChangePercent:+0.0;-0.0}%");
+}
+
+// Persist to JSON
+await reportService.ExportWeeklySummaryToJsonAsync(reports, "weekly_summary.json");
+```
+
+---
+
+#### DataComparisonService
+
+**Purpose**: Compare two distinct periods of health data and quantify percentage changes across all metrics.
+
+```csharp
+public class DataComparisonService
+{
+    /// Compare two pre-built HealthDataCollection periods
+    public Task<DataComparisonResult> ComparePeriodsAsync(
+        HealthDataCollection period1,
+        HealthDataCollection period2);
+
+    /// Compare two date ranges extracted from a single collection
+    public Task<DataComparisonResult> CompareByDateRangeAsync(
+        HealthDataCollection collection,
+        DateTime period1Start, DateTime period1End,
+        DateTime period2Start, DateTime period2End);
+
+    /// Persist a DataComparisonResult to a JSON file
+    public Task ExportToJsonAsync(DataComparisonResult result, string outputPath);
+}
+```
+
+**Key fields on `DataComparisonResult`**:
+
+| Field | Description |
+|---|---|
+| `SleepDurationChangePercentage` | % change in average nightly sleep |
+| `DeepSleepChangePercentage` | % change in average deep-sleep duration |
+| `HeartRateChangePercentage` | % change in average heart rate |
+| `StepsChangePercentage` | % change in average daily steps |
+| `SpO2ChangePercentage` | % change in average SpO2 |
+| `ActivityMinutesChangePercentage` | % change in total activity minutes |
+| `CaloriesChangePercentage` | % change in total calories burned |
+| `NarrativeSummary` | Human-readable text with directional arrows (`▲ / ▼ / →`) per metric |
+
+**Example**:
+
+```csharp
+var comparisonService = new DataComparisonService();
+
+// Compare by pre-built collections
+var result = await comparisonService.ComparePeriodsAsync(thisWeekCollection, lastWeekCollection);
+Console.WriteLine(result.NarrativeSummary);
+// e.g. "Sleep duration: ▲ 8.3% (min/night) | Daily steps: ▼ 12.5% (steps)"
+
+// Compare by date ranges within one collection
+var result2 = await comparisonService.CompareByDateRangeAsync(
+    allData,
+    new DateTime(2024, 1, 1), new DateTime(2024, 1, 7),   // Period 1
+    new DateTime(2024, 1, 15), new DateTime(2024, 1, 21)); // Period 2
+
+// Export result
+await comparisonService.ExportToJsonAsync(result2, "comparison.json");
+```
+
+---
 
 ### Domain Models
 
