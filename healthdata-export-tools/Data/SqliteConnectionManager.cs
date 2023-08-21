@@ -3,7 +3,7 @@
 // CTO & Software Architect
 // =============================================================================
 
-using System.Data.SQLite;
+using Microsoft.Data.Sqlite;
 using HealthDataExportTools.Exceptions;
 using HealthDataExportTools.Utilities;
 
@@ -26,11 +26,11 @@ public class SqliteConnectionManager
     /// <summary>
     /// Get a new SQLite connection
     /// </summary>
-    public SQLiteConnection GetConnection()
+    public SqliteConnection GetConnection()
     {
         try
         {
-            var connection = new SQLiteConnection(_connectionString);
+            var connection = new SqliteConnection(_connectionString);
             return connection;
         }
         catch (Exception ex)
