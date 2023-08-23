@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -8,7 +9,7 @@ namespace HealthDataExportTools.DTOs;
 /// <summary>
 /// Data Transfer Object for comprehensive health data export
 /// </summary>
-public class HealthDataExportDto
+public sealed class HealthDataExportDto
 {
     [JsonPropertyName("exportId")]
     public string ExportId { get; set; } = Guid.NewGuid().ToString();
@@ -38,7 +39,7 @@ public class HealthDataExportDto
 /// <summary>
 /// Export summary information
 /// </summary>
-public class ExportSummary
+public sealed class ExportSummary
 {
     [JsonPropertyName("totalRecords")]
     public int TotalRecords { get; set; }
@@ -56,7 +57,7 @@ public class ExportSummary
 /// <summary>
 /// Record count summary
 /// </summary>
-public class RecordCountSummary
+public sealed class RecordCountSummary
 {
     [JsonPropertyName("sleep")]
     public int Sleep { get; set; }
@@ -77,7 +78,7 @@ public class RecordCountSummary
 /// <summary>
 /// Date range DTO
 /// </summary>
-public class DateRangeDto
+public sealed class DateRangeDto
 {
     [JsonPropertyName("start")]
     public DateTime Start { get; set; }
@@ -92,7 +93,7 @@ public class DateRangeDto
 /// <summary>
 /// Sleep data export DTO
 /// </summary>
-public class SleepExportDto
+public sealed class SleepExportDto
 {
     [JsonPropertyName("date")]
     public DateTime Date { get; set; }
@@ -122,7 +123,7 @@ public class SleepExportDto
 /// <summary>
 /// Heart rate data export DTO
 /// </summary>
-public class HeartRateExportDto
+public sealed class HeartRateExportDto
 {
     [JsonPropertyName("timestamp")]
     public DateTime Timestamp { get; set; }
@@ -140,7 +141,7 @@ public class HeartRateExportDto
 /// <summary>
 /// SpO2 data export DTO
 /// </summary>
-public class SpO2ExportDto
+public sealed class SpO2ExportDto
 {
     [JsonPropertyName("timestamp")]
     public DateTime Timestamp { get; set; }
@@ -158,7 +159,7 @@ public class SpO2ExportDto
 /// <summary>
 /// Steps data export DTO
 /// </summary>
-public class StepsExportDto
+public sealed class StepsExportDto
 {
     [JsonPropertyName("date")]
     public DateTime Date { get; set; }
@@ -179,7 +180,7 @@ public class StepsExportDto
 /// <summary>
 /// Export metadata
 /// </summary>
-public class ExportMetadata
+public sealed class ExportMetadata
 {
     [JsonPropertyName("version")]
     public string Version { get; set; } = "1.0.0";

@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -8,7 +9,7 @@ namespace HealthDataExportTools.Integration;
 /// <summary>
 /// Retry handler for resilient operations with exponential backoff
 /// </summary>
-public class RetryHandler
+public sealed class RetryHandler
 {
     private readonly ILogger<RetryHandler> _logger;
     private readonly int _maxRetries;
@@ -154,7 +155,7 @@ public class RetryHandler
 /// <summary>
 /// Retry policy configuration
 /// </summary>
-public class RetryPolicy
+public sealed class RetryPolicy
 {
     public int MaxRetries { get; set; } = 3;
     public int InitialDelayMs { get; set; } = 100;

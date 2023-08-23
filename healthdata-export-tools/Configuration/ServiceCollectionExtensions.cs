@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -23,7 +24,7 @@ public static class ServiceCollectionExtensions
         this IServiceCollection services,
         Action<HealthDataExportOptions>? configure = null)
     {
-        if (configure != null)
+        if (configure is not null)
             services.Configure(configure);
         else
             services.Configure<HealthDataExportOptions>(x => { });
@@ -85,7 +86,7 @@ public static class ServiceCollectionExtensions
 /// <summary>
 /// Configuration builder for fluent API setup
 /// </summary>
-public class HealthDataExportConfigurationBuilder
+public sealed class HealthDataExportConfigurationBuilder
 {
     private readonly IServiceCollection _services;
     private readonly HealthDataExportOptions _options;

@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -9,7 +10,7 @@ namespace HealthDataExportTools.Events;
 /// Implements event bus with pub-sub pattern for decoupled event handling
 /// Thread-safe implementation with async support
 /// </summary>
-public class EventBus : IEventPublisher
+public sealed class EventBus : IEventPublisher
 {
     private readonly Dictionary<Type, List<Delegate>> _handlers;
     private readonly ReaderWriterLockSlim _handlersLock;
@@ -27,7 +28,7 @@ public class EventBus : IEventPublisher
     /// </summary>
     public void Subscribe<TEvent>(Func<TEvent, Task> handler) where TEvent : class, IEvent
     {
-        if (handler == null)
+        if (handler is null)
             throw new ArgumentNullException(nameof(handler));
 
         _handlersLock.EnterWriteLock();
@@ -55,7 +56,7 @@ public class EventBus : IEventPublisher
     /// </summary>
     public void Unsubscribe<TEvent>(Func<TEvent, Task> handler) where TEvent : class, IEvent
     {
-        if (handler == null)
+        if (handler is null)
             return;
 
         _handlersLock.EnterWriteLock();
@@ -86,7 +87,7 @@ public class EventBus : IEventPublisher
     /// </summary>
     public async Task PublishAsync<TEvent>(TEvent @event) where TEvent : class, IEvent
     {
-        if (@event == null)
+        if (@event is null)
             throw new ArgumentNullException(nameof(@event));
 
         _handlersLock.EnterReadLock();
@@ -131,7 +132,7 @@ public class EventBus : IEventPublisher
     /// </summary>
     public async Task PublishBatchAsync<TEvent>(List<TEvent> events) where TEvent : class, IEvent
     {
-        if (events == null || events.Count == 0)
+        if (events is null || events.Count == 0)
             return;
 
         _logger.LogInformation("Publishing batch of {Count} events", events.Count);

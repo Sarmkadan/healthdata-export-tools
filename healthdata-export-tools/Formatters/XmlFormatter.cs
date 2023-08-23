@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -9,7 +10,7 @@ namespace HealthDataExportTools.Formatters;
 /// Formats health data into XML (Extensible Markup Language) format
 /// Generates well-formed, indented XML with proper document structure
 /// </summary>
-public class XmlFormatter : IDataFormatter
+public sealed class XmlFormatter : IDataFormatter
 {
     private readonly ILogger<XmlFormatter> _logger;
 
@@ -66,7 +67,7 @@ public class XmlFormatter : IDataFormatter
     {
         try
         {
-            if (records == null || records.Count == 0)
+            if (records is null || records.Count == 0)
             {
                 _logger.LogWarning("Empty record collection provided to XML formatter");
                 return await Task.FromResult(GenerateEmptyXmlDocument());
@@ -134,7 +135,7 @@ public class XmlFormatter : IDataFormatter
         root.SetAttribute("ExportDate", DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss"));
         root.SetAttribute("TotalRecords", (sleepRecords?.Count ?? 0).ToString());
 
-        if (sleepRecords != null && sleepRecords.Count > 0)
+        if (sleepRecords is not null && sleepRecords.Count > 0)
         {
             // Add statistics
             var statsElement = doc.CreateElement("Statistics");
@@ -189,7 +190,7 @@ public class XmlFormatter : IDataFormatter
         var doc = new XmlDocument();
         var root = doc.CreateElement("HeartRateDataExport");
 
-        if (heartRateRecords != null && heartRateRecords.Count > 0)
+        if (heartRateRecords is not null && heartRateRecords.Count > 0)
         {
             var recordsElement = doc.CreateElement("Records");
             foreach (var record in heartRateRecords)
@@ -222,7 +223,7 @@ public class XmlFormatter : IDataFormatter
         var doc = new XmlDocument();
         var root = doc.CreateElement("SpO2DataExport");
 
-        if (spo2Records != null && spo2Records.Count > 0)
+        if (spo2Records is not null && spo2Records.Count > 0)
         {
             var recordsElement = doc.CreateElement("Records");
             foreach (var record in spo2Records)
@@ -255,7 +256,7 @@ public class XmlFormatter : IDataFormatter
         var doc = new XmlDocument();
         var root = doc.CreateElement("StepsDataExport");
 
-        if (stepsRecords != null && stepsRecords.Count > 0)
+        if (stepsRecords is not null && stepsRecords.Count > 0)
         {
             var recordsElement = doc.CreateElement("Records");
             foreach (var record in stepsRecords)
@@ -288,7 +289,7 @@ public class XmlFormatter : IDataFormatter
     {
         var errors = new List<string>();
 
-        if (records == null)
+        if (records is null)
         {
             errors.Add("Record collection is null");
             return await Task.FromResult(errors);

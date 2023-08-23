@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -9,7 +10,7 @@ namespace HealthDataExportTools.Interceptors;
 /// Collects and tracks metrics for operations
 /// Provides insights into performance and usage patterns
 /// </summary>
-public class MetricsCollector
+public sealed class MetricsCollector
 {
     private readonly Dictionary<string, OperationMetrics> _metrics;
     private readonly ReaderWriterLockSlim _metricsLock;
@@ -184,7 +185,7 @@ public class MetricsCollector
 /// <summary>
 /// Metrics for a single operation
 /// </summary>
-public class OperationMetrics
+public sealed class OperationMetrics
 {
     public string OperationName { get; set; } = string.Empty;
     public int SuccessCount { get; set; }
@@ -226,7 +227,7 @@ public class OperationMetrics
 /// <summary>
 /// Summary of all metrics
 /// </summary>
-public class MetricsSummary
+public sealed class MetricsSummary
 {
     public int TotalOperations { get; set; }
     public int TotalSuccessful { get; set; }

@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -8,7 +9,7 @@ namespace HealthDataExportTools.Domain.Models;
 /// <summary>
 /// Computed health metrics derived from multiple data sources
 /// </summary>
-public class HealthMetric : HealthDataRecord
+public sealed class HealthMetric : HealthDataRecord
 {
     /// <summary>
     /// Name of the metric (e.g., "VO2Max", "RestingHeartRate", "SleepDebt")

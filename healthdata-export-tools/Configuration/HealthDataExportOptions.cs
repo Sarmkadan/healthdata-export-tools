@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -10,7 +11,7 @@ namespace HealthDataExportTools.Configuration;
 /// <summary>
 /// Configuration options for health data export
 /// </summary>
-public class HealthDataExportOptions
+public sealed class HealthDataExportOptions
 {
     /// <summary>
     /// Input directory path for health data files

@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -9,7 +10,7 @@ namespace HealthDataExportTools.Events;
 /// Event raised when health data is successfully imported
 /// Used to trigger downstream processing like caching and indexing
 /// </summary>
-public class HealthDataImportedEvent : EventBase
+public sealed class HealthDataImportedEvent : EventBase
 {
     public int RecordCount { get; }
     public DateTime ImportStartTime { get; }
