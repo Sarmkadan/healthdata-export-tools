@@ -213,7 +213,7 @@ public sealed class HealthDataParserService
 
         try
         {
-            var lines = await File.ReadAllLinesAsync(filePath);
+            var lines = await File.ReadAllLinesAsync(filePath).ConfigureAwait(false);
             if (lines.Length < 2)
                 throw new ParsingException("CSV file has no data rows", filePath);
 

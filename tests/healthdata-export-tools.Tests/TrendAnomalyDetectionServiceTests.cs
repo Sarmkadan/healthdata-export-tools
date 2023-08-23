@@ -175,7 +175,7 @@ public sealed class TrendAnomalyDetectionServiceTests
         }
 
         // Act
-        var result = await _service.AnalyzeAsync(collection);
+        var result = await _service.AnalyzeAsync(collection).ConfigureAwait(false);
 
         // Assert
         result.Metrics.Should().HaveCount(4);
@@ -194,7 +194,7 @@ public sealed class TrendAnomalyDetectionServiceTests
         var collection = new HealthDataCollection();
 
         // Act
-        var result = await _service.AnalyzeAsync(collection);
+        var result = await _service.AnalyzeAsync(collection).ConfigureAwait(false);
 
         // Assert
         result.Metrics.Should().BeEmpty();
@@ -221,9 +221,9 @@ public sealed class TrendAnomalyDetectionServiceTests
         collection.HeartRateRecords.Add(new HeartRateData { RecordDate = DateTime.Today, AverageBpm = -1 }); // Invalid data to force error if validation was part of this.
 
         // Act
-        Func<Task> act = async () => await _service.AnalyzeAsync(collection, 30, 2.0, new CancellationToken(true)); // Pass cancelled token
+        Func<Task> act = async () => await _service.AnalyzeAsync(collection, 30, 2.0, new CancellationToken(true)).ConfigureAwait(false); // Pass cancelled token
 
         // Assert
-        await act.Should().ThrowAsync<OperationCanceledException>();
+        await act.Should().ThrowAsync<OperationCanceledException>().ConfigureAwait(false);
     }
 }

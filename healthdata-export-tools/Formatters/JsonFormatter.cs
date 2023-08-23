@@ -54,7 +54,7 @@ public sealed class JsonFormatter : IDataFormatter
                 Value = string.Empty
             };
 
-            return await Task.FromResult(JsonSerializer.Serialize(jsonObject, _jsonOptions));
+            return await Task.FromResult(JsonSerializer.Serialize(jsonObject, _jsonOptions)).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -73,7 +73,7 @@ public sealed class JsonFormatter : IDataFormatter
             if (records is null || records.Count == 0)
             {
                 _logger.LogWarning("Empty record collection provided to JSON formatter");
-                return await Task.FromResult("[]");
+                return await Task.FromResult("[]").ConfigureAwait(false);
             }
 
             var output = new
@@ -90,7 +90,7 @@ public sealed class JsonFormatter : IDataFormatter
             };
 
             _logger.LogInformation("Formatted {Count} records to JSON", records.Count);
-            return await Task.FromResult(JsonSerializer.Serialize(output, _jsonOptions));
+            return await Task.FromResult(JsonSerializer.Serialize(output, _jsonOptions)).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -107,7 +107,7 @@ public sealed class JsonFormatter : IDataFormatter
         try
         {
             if (sleepRecords is null || sleepRecords.Count == 0)
-                return await Task.FromResult("[]");
+                return await Task.FromResult("[]").ConfigureAwait(false);
 
             var output = new
             {
@@ -133,7 +133,7 @@ public sealed class JsonFormatter : IDataFormatter
             };
 
             _logger.LogInformation("Formatted {Count} sleep records to JSON", sleepRecords.Count);
-            return await Task.FromResult(JsonSerializer.Serialize(output, _jsonOptions));
+            return await Task.FromResult(JsonSerializer.Serialize(output, _jsonOptions)).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -150,7 +150,7 @@ public sealed class JsonFormatter : IDataFormatter
         try
         {
             if (heartRateRecords is null || heartRateRecords.Count == 0)
-                return await Task.FromResult("[]");
+                return await Task.FromResult("[]").ConfigureAwait(false);
 
             var output = new
             {
@@ -173,7 +173,7 @@ public sealed class JsonFormatter : IDataFormatter
             };
 
             _logger.LogInformation("Formatted {Count} heart rate records to JSON", heartRateRecords.Count);
-            return await Task.FromResult(JsonSerializer.Serialize(output, _jsonOptions));
+            return await Task.FromResult(JsonSerializer.Serialize(output, _jsonOptions)).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -190,7 +190,7 @@ public sealed class JsonFormatter : IDataFormatter
         try
         {
             if (spo2Records is null || spo2Records.Count == 0)
-                return await Task.FromResult("[]");
+                return await Task.FromResult("[]").ConfigureAwait(false);
 
             var output = new
             {
@@ -213,7 +213,7 @@ public sealed class JsonFormatter : IDataFormatter
             };
 
             _logger.LogInformation("Formatted {Count} SpO2 records to JSON", spo2Records.Count);
-            return await Task.FromResult(JsonSerializer.Serialize(output, _jsonOptions));
+            return await Task.FromResult(JsonSerializer.Serialize(output, _jsonOptions)).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -230,7 +230,7 @@ public sealed class JsonFormatter : IDataFormatter
         try
         {
             if (stepsRecords is null || stepsRecords.Count == 0)
-                return await Task.FromResult("[]");
+                return await Task.FromResult("[]").ConfigureAwait(false);
 
             var output = new
             {
@@ -255,7 +255,7 @@ public sealed class JsonFormatter : IDataFormatter
             };
 
             _logger.LogInformation("Formatted {Count} steps records to JSON", stepsRecords.Count);
-            return await Task.FromResult(JsonSerializer.Serialize(output, _jsonOptions));
+            return await Task.FromResult(JsonSerializer.Serialize(output, _jsonOptions)).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -274,7 +274,7 @@ public sealed class JsonFormatter : IDataFormatter
         if (records is null)
         {
             errors.Add("Record collection is null");
-            return await Task.FromResult(errors);
+            return await Task.FromResult(errors).ConfigureAwait(false);
         }
 
         // JSON can technically handle empty collections, but log it
@@ -292,6 +292,6 @@ public sealed class JsonFormatter : IDataFormatter
                 errors.Add($"Record {i}: RecordDate is not set");
         }
 
-        return await Task.FromResult(errors);
+        return await Task.FromResult(errors).ConfigureAwait(false);
     }
 }

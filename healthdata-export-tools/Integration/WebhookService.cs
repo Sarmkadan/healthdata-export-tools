@@ -101,7 +101,7 @@ public sealed class WebhookService
 
             try
             {
-                await Task.WhenAll(tasks);
+                await Task.WhenAll(tasks).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -134,7 +134,7 @@ public sealed class WebhookService
 
             _logger.LogDebug("Invoking webhook: {Url} for event: {EventType}", webhook.Url, eventType);
 
-            var response = await _httpClient.PostAsync(webhook.Url, content);
+            var response = await _httpClient.PostAsync(webhook.Url, content).ConfigureAwait(false);
 
             if (response.IsSuccessStatusCode)
             {

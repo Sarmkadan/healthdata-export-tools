@@ -41,7 +41,7 @@ public sealed class CacheService
         try
         {
             var cacheKey = $"{HealthDataKeyPrefix}{key}";
-            await _cacheProvider.SetAsync(cacheKey, records, _defaultTtl);
+            await _cacheProvider.SetAsync(cacheKey, records, _defaultTtl).ConfigureAwait(false);
 
             _logger.LogInformation("Cached {Count} health records with key: {Key}", records.Count, cacheKey);
         }
@@ -59,7 +59,7 @@ public sealed class CacheService
         try
         {
             var cacheKey = $"{HealthDataKeyPrefix}{key}";
-            var cached = await _cacheProvider.GetAsync<List<HealthDataRecord>>(cacheKey);
+            var cached = await _cacheProvider.GetAsync<List<HealthDataRecord>>(cacheKey).ConfigureAwait(false);
 
             if (cached is not null)
             {
@@ -83,7 +83,7 @@ public sealed class CacheService
         try
         {
             var cacheKey = $"{AnalyticsKeyPrefix}{key}";
-            await _cacheProvider.SetAsync(cacheKey, analyticsData, _defaultTtl);
+            await _cacheProvider.SetAsync(cacheKey, analyticsData, _defaultTtl).ConfigureAwait(false);
 
             _logger.LogInformation("Cached analytics data with key: {Key}", cacheKey);
         }
@@ -101,7 +101,7 @@ public sealed class CacheService
         try
         {
             var cacheKey = $"{AnalyticsKeyPrefix}{key}";
-            var cached = await _cacheProvider.GetAsync<T>(cacheKey);
+            var cached = await _cacheProvider.GetAsync<T>(cacheKey).ConfigureAwait(false);
 
             if (cached is not null)
             {
@@ -126,7 +126,7 @@ public sealed class CacheService
         {
             var fileHash = Path.GetFileName(filePath);
             var cacheKey = $"{ParseResultKeyPrefix}{fileHash}";
-            await _cacheProvider.SetAsync(cacheKey, records, _defaultTtl);
+            await _cacheProvider.SetAsync(cacheKey, records, _defaultTtl).ConfigureAwait(false);
 
             _logger.LogInformation("Cached parse result for file: {File}", filePath);
         }
@@ -145,7 +145,7 @@ public sealed class CacheService
         {
             var fileHash = Path.GetFileName(filePath);
             var cacheKey = $"{ParseResultKeyPrefix}{fileHash}";
-            return await _cacheProvider.GetAsync<List<HealthDataRecord>>(cacheKey);
+            return await _cacheProvider.GetAsync<List<HealthDataRecord>>(cacheKey).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -161,7 +161,7 @@ public sealed class CacheService
     {
         try
         {
-            await _cacheProvider.ClearAsync();
+            await _cacheProvider.ClearAsync().ConfigureAwait(false);
             _logger.LogInformation("Cache cleared");
         }
         catch (Exception ex)
@@ -177,12 +177,12 @@ public sealed class CacheService
     {
         try
         {
-            var keys = await _cacheProvider.GetKeysAsync();
+            var keys = await _cacheProvider.GetKeysAsync().ConfigureAwait(false);
             var matchingKeys = keys.Where(k => k.Contains(pattern)).ToList();
 
             foreach (var key in matchingKeys)
             {
-                await _cacheProvider.RemoveAsync(key);
+                await _cacheProvider.RemoveAsync(key).ConfigureAwait(false);
             }
 
             _logger.LogInformation("Cleared {Count} cache entries matching pattern: {Pattern}",
@@ -201,7 +201,7 @@ public sealed class CacheService
     {
         try
         {
-            return await _cacheProvider.GetStatsAsync();
+            return await _cacheProvider.GetStatsAsync().ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -218,7 +218,7 @@ public sealed class CacheService
         try
         {
             var cacheKey = $"{HealthDataKeyPrefix}{key}";
-            return await _cacheProvider.ExistsAsync(cacheKey);
+            return await _cacheProvider.ExistsAsync(cacheKey).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -234,7 +234,7 @@ public sealed class CacheService
     {
         try
         {
-            await _cacheProvider.RemoveAsync(key);
+            await _cacheProvider.RemoveAsync(key).ConfigureAwait(false);
             _logger.LogInformation("Removed cache entry: {Key}", key);
         }
         catch (Exception ex)

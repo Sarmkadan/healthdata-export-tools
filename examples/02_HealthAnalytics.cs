@@ -25,7 +25,7 @@ class HealthAnalyticsExample
             // Parse health data
             var parser = new HealthDataParserService();
             Console.WriteLine("📂 Parsing health data...");
-            var healthData = await parser.ParseHealthDataAsync("./exports/export.zip");
+            var healthData = await parser.ParseHealthDataAsync("./exports/export.zip").ConfigureAwait(false);
             Console.WriteLine("✓ Data parsed successfully\n");
 
             // Initialize analytics service
