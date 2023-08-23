@@ -53,7 +53,7 @@ public sealed class BatchProcessingService
                 _logger.LogDebug("Processing batch {Current}/{Total} ({Count} items)",
                     i + 1, batchCount, batch.Count);
 
-                await batchProcessor(batch);
+                await batchProcessor(batch).ConfigureAwait(false);
 
                 result.ProcessedItems += batch.Count;
 
@@ -128,7 +128,7 @@ public sealed class BatchProcessingService
             {
                 try
                 {
-                    await batchProcessor(batch);
+                    await batchProcessor(batch).ConfigureAwait(false);
 
                     lock (lockObj)
                     {

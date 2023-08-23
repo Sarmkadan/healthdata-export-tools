@@ -71,13 +71,13 @@ public sealed class CommandHandler
             }
 
             // Export to requested formats
-            await ExportToFormats(filteredRecords, options);
+            await ExportToFormats(filteredRecords, options).ConfigureAwait(false);
 
             // Perform analytics if requested
             if (options.Analyze)
             {
                 _logger.LogInformation("Performing analytics analysis...");
-                await ExportAnalyticsResults(new object(), options);
+                await ExportAnalyticsResults(new object(), options).ConfigureAwait(false);
             }
 
             _logger.LogInformation("Export completed successfully");

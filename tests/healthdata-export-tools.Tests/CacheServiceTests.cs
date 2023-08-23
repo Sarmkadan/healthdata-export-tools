@@ -35,7 +35,7 @@ public sealed class CacheServiceTests
         var records = new List<HealthDataRecord> { new SleepData { DeviceId = "dev1" } };
 
         // Act
-        await _cacheService.CacheHealthDataAsync(key, records);
+        await _cacheService.CacheHealthDataAsync(key, records).ConfigureAwait(false);
 
         // Assert
         await _mockCacheProvider.Received(1).SetAsync(
@@ -53,10 +53,10 @@ public sealed class CacheServiceTests
             .Returns(expectedRecords);
 
         // Act
-        var result = await _cacheService.GetCachedHealthDataAsync(key);
+        var result = await _cacheService.GetCachedHealthDataAsync(key).ConfigureAwait(false);
 
         // Assert
-        await _mockCacheProvider.Received(1).GetAsync<List<HealthDataRecord>>(Arg.Is<string>(s => s.Contains("health_data_")));
+        await _mockCacheProvider.Received(1).GetAsync<List<HealthDataRecord>>(Arg.Is<string>(s => s.Contains("health_data_"))).ConfigureAwait(false);
         result.Should().BeEquivalentTo(expectedRecords);
         _mockLogger.Received(1).LogInformation(Arg.Any<string>(), Arg.Any<string>());
     }
@@ -65,10 +65,10 @@ public sealed class CacheServiceTests
     public async Task ClearAllAsync_ShouldCallClearAsyncOnProvider()
     {
         // Act
-        await _cacheService.ClearAllAsync();
+        await _cacheService.ClearAllAsync().ConfigureAwait(false);
 
         // Assert
-        await _mockCacheProvider.Received(1).ClearAsync();
+        await _mockCacheProvider.Received(1).ClearAsync().ConfigureAwait(false);
         _mockLogger.Received(1).LogInformation(Arg.Any<string>());
     }
 
@@ -80,7 +80,7 @@ public sealed class CacheServiceTests
         _mockCacheProvider.GetStatsAsync().Returns(expectedStats);
 
         // Act
-        var stats = await _cacheService.GetStatsAsync();
+        var stats = await _cacheService.GetStatsAsync().ConfigureAwait(false);
 
         // Assert
         stats.Should().BeEquivalentTo(expectedStats);
@@ -94,10 +94,10 @@ public sealed class CacheServiceTests
         _mockCacheProvider.ExistsAsync(Arg.Is<string>(s => s.Contains("health_data_"))).Returns(true);
 
         // Act
-        var isCached = await _cacheService.IsHealthDataCachedAsync(key);
+        var isCached = await _cacheService.IsHealthDataCachedAsync(key).ConfigureAwait(false);
 
         // Assert
-        await _mockCacheProvider.Received(1).ExistsAsync(Arg.Is<string>(s => s.Contains("health_data_")));
+        await _mockCacheProvider.Received(1).ExistsAsync(Arg.Is<string>(s => s.Contains("health_data_"))).ConfigureAwait(false);
         isCached.Should().BeTrue();
     }
     
@@ -109,7 +109,7 @@ public sealed class CacheServiceTests
         var analyticsData = new { AverageSleep = 7.5 };
 
         // Act
-        await _cacheService.CacheAnalyticsAsync(key, analyticsData);
+        await _cacheService.CacheAnalyticsAsync(key, analyticsData).ConfigureAwait(false);
 
         // Assert
         await _mockCacheProvider.Received(1).SetAsync(
@@ -127,10 +127,10 @@ public sealed class CacheServiceTests
             .Returns(expectedAnalyticsData);
 
         // Act
-        var result = await _cacheService.GetCachedAnalyticsAsync<dynamic>(key);
+        var result = await _cacheService.GetCachedAnalyticsAsync<dynamic>(key).ConfigureAwait(false);
 
         // Assert
-        await _mockCacheProvider.Received(1).GetAsync<dynamic>(Arg.Is<string>(s => s.Contains("analytics_")));
+        await _mockCacheProvider.Received(1).GetAsync<dynamic>(Arg.Is<string>(s => s.Contains("analytics_"))).ConfigureAwait(false);
         result.Should().BeEquivalentTo(expectedAnalyticsData);
         _mockLogger.Received(1).LogInformation(Arg.Any<string>(), Arg.Any<string>());
     }
@@ -143,12 +143,12 @@ public sealed class CacheServiceTests
         _mockCacheProvider.GetKeysAsync().Returns(keys);
         
         // Act
-        await _cacheService.ClearPatternAsync("user1");
+        await _cacheService.ClearPatternAsync("user1").ConfigureAwait(false);
 
         // Assert
-        await _mockCacheProvider.Received(1).RemoveAsync("health_data_user1");
-        await _mockCacheProvider.Received(1).RemoveAsync("analytics_user1");
-        await _mockCacheProvider.DidNotReceive().RemoveAsync("other_data_user2");
+        await _mockCacheProvider.Received(1).RemoveAsync("health_data_user1").ConfigureAwait(false);
+        await _mockCacheProvider.Received(1).RemoveAsync("analytics_user1").ConfigureAwait(false);
+        await _mockCacheProvider.DidNotReceive().RemoveAsync("other_data_user2").ConfigureAwait(false);
         _mockLogger.Received(1).LogInformation(Arg.Any<string>(), Arg.Any<int>(), Arg.Any<string>());
     }
 }

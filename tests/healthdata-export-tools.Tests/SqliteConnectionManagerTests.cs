@@ -22,11 +22,11 @@ public sealed class SqliteConnectionManagerTests
 
         // Act
         using var connection = connectionManager.GetConnection();
-        await connection.OpenAsync();
+        await connection.OpenAsync().ConfigureAwait(false);
 
         // Assert
         connection.State.Should().Be(System.Data.ConnectionState.Open);
-        await connection.CloseAsync();
+        await connection.CloseAsync().ConfigureAwait(false);
     }
 
     [Fact]
@@ -36,17 +36,17 @@ public sealed class SqliteConnectionManagerTests
         var connectionManager = new SqliteConnectionManager(":memory:");
 
         // Act
-        await connectionManager.InitializeDatabaseAsync();
+        await connectionManager.InitializeDatabaseAsync().ConfigureAwait(false);
 
         // Assert
         using var connection = connectionManager.GetConnection();
-        await connection.OpenAsync();
+        await connection.OpenAsync().ConfigureAwait(false);
 
         var tableNames = new List<string>();
         using (var command = connection.CreateCommand())
         {
             command.CommandText = "SELECT name FROM sqlite_master WHERE type='table';";
-            using var reader = await command.ExecuteReaderAsync();
+            using var reader = await command.ExecuteReaderAsync().ConfigureAwait(false);
             while (await reader.ReadAsync())
             {
                 tableNames.Add(reader.GetString(0));
@@ -60,7 +60,7 @@ public sealed class SqliteConnectionManagerTests
         tableNames.Should().Contain("ActivityData");
         tableNames.Should().Contain("HealthMetric");
 
-        await connection.CloseAsync();
+        await connection.CloseAsync().ConfigureAwait(false);
     }
 
     [Fact]
@@ -68,10 +68,10 @@ public sealed class SqliteConnectionManagerTests
     {
         // Arrange
         var connectionManager = new SqliteConnectionManager(":memory:");
-        await connectionManager.InitializeDatabaseAsync(); // Ensure DB is initialized
+        await connectionManager.InitializeDatabaseAsync().ConfigureAwait(false); // Ensure DB is initialized
 
         // Act
-        var isConnected = await connectionManager.VerifyConnectionAsync();
+        var isConnected = await connectionManager.VerifyConnectionAsync().ConfigureAwait(false);
 
         // Assert
         isConnected.Should().BeTrue();
@@ -84,7 +84,7 @@ public sealed class SqliteConnectionManagerTests
         var connectionManager = new SqliteConnectionManager("file:///non-existent-dir/test.db");
 
         // Act
-        var isConnected = await connectionManager.VerifyConnectionAsync();
+        var isConnected = await connectionManager.VerifyConnectionAsync().ConfigureAwait(false);
 
         // Assert
         isConnected.Should().BeFalse();
@@ -110,7 +110,7 @@ public sealed class SqliteConnectionManagerTests
         // Arrange
         var tempDbPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString() + ".db");
         var connectionManager = new SqliteConnectionManager(tempDbPath);
-        await connectionManager.InitializeDatabaseAsync();
+        await connectionManager.InitializeDatabaseAsync().ConfigureAwait(false);
 
         // Act
         var exists = connectionManager.DatabaseExists();
@@ -128,7 +128,7 @@ public sealed class SqliteConnectionManagerTests
         // Arrange
         var tempDbPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString() + ".db");
         var connectionManager = new SqliteConnectionManager(tempDbPath);
-        await connectionManager.InitializeDatabaseAsync(); // Create the file
+        await connectionManager.InitializeDatabaseAsync().ConfigureAwait(false); // Create the file
 
         // Pre-Assert
         File.Exists(tempDbPath).Should().BeTrue();
@@ -146,7 +146,7 @@ public sealed class SqliteConnectionManagerTests
         // Arrange
         var tempDbPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString() + ".db");
         var connectionManager = new SqliteConnectionManager(tempDbPath);
-        await connectionManager.InitializeDatabaseAsync(); // Create tables, adding some size
+        await connectionManager.InitializeDatabaseAsync().ConfigureAwait(false); // Create tables, adding some size
 
         // Act
         var size = connectionManager.GetDatabaseSize();

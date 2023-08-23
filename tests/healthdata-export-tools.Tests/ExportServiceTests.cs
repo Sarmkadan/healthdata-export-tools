@@ -80,11 +80,11 @@ public sealed class ExportServiceTests
         var outputPath = Path.Combine(_tempDirectory, "test_export.json");
 
         // Act
-        await _exportService.ExportToJsonAsync(collection, outputPath);
+        await _exportService.ExportToJsonAsync(collection, outputPath).ConfigureAwait(false);
 
         // Assert
         File.Exists(outputPath).Should().BeTrue();
-        var jsonContent = await File.ReadAllTextAsync(outputPath);
+        var jsonContent = await File.ReadAllTextAsync(outputPath).ConfigureAwait(false);
         jsonContent.Should().Contain("\"TotalRecords\": 6");
         jsonContent.Should().Contain("\"SleepRecords\":");
         jsonContent.Should().Contain("\"HeartRateRecords\":");
@@ -102,11 +102,11 @@ public sealed class ExportServiceTests
         var outputPath = Path.Combine(_tempDirectory, "empty_export.json");
 
         // Act
-        await _exportService.ExportToJsonAsync(collection, outputPath);
+        await _exportService.ExportToJsonAsync(collection, outputPath).ConfigureAwait(false);
 
         // Assert
         File.Exists(outputPath).Should().BeTrue();
-        var jsonContent = await File.ReadAllTextAsync(outputPath);
+        var jsonContent = await File.ReadAllTextAsync(outputPath).ConfigureAwait(false);
         jsonContent.Should().Contain("\"TotalRecords\": 0");
         jsonContent.Should().Contain("\"SleepRecords\": []");
     }
@@ -127,11 +127,11 @@ public sealed class ExportServiceTests
         var outputPath = Path.Combine(_tempDirectory, "sleep_export.csv");
 
         // Act
-        await _exportService.ExportSleepToCsvAsync(sleepRecords, outputPath);
+        await _exportService.ExportSleepToCsvAsync(sleepRecords, outputPath).ConfigureAwait(false);
 
         // Assert
         File.Exists(outputPath).Should().BeTrue();
-        var csvContent = await File.ReadAllTextAsync(outputPath);
+        var csvContent = await File.ReadAllTextAsync(outputPath).ConfigureAwait(false);
         csvContent.Should().Contain("Date,Duration,DeepSleep,LightSleep,REM,Awake,Quality,Score,AvgHeartRate");
         csvContent.Should().Contain("2024-01-01,480,90,270,60,60,Good,85,60");
     }
@@ -144,7 +144,7 @@ public sealed class ExportServiceTests
         var outputDir = Path.Combine(_tempDirectory, "complete_export_all");
         
         // Act
-        await _exportService.ExportCompleteAsync(collection, outputDir, ExportFormat.All);
+        await _exportService.ExportCompleteAsync(collection, outputDir, ExportFormat.All).ConfigureAwait(false);
 
         // Assert
         Directory.Exists(outputDir).Should().BeTrue();
@@ -162,7 +162,7 @@ public sealed class ExportServiceTests
         var nonExistentDir = Path.Combine(_tempDirectory, "non_existent_output");
         
         // Act
-        await _exportService.ExportCompleteAsync(collection, nonExistentDir, ExportFormat.Json);
+        await _exportService.ExportCompleteAsync(collection, nonExistentDir, ExportFormat.Json).ConfigureAwait(false);
 
         // Assert
         Directory.Exists(nonExistentDir).Should().BeTrue();
@@ -183,11 +183,11 @@ public sealed class ExportServiceTests
         var outputPath = Path.Combine(_tempDirectory, "heart_rate_export.csv");
 
         // Act
-        await _exportService.ExportHeartRateToCsvAsync(hrRecords, outputPath);
+        await _exportService.ExportHeartRateToCsvAsync(hrRecords, outputPath).ConfigureAwait(false);
 
         // Assert
         File.Exists(outputPath).Should().BeTrue();
-        var csvContent = await File.ReadAllTextAsync(outputPath);
+        var csvContent = await File.ReadAllTextAsync(outputPath).ConfigureAwait(false);
         csvContent.Should().Contain("Date,MinBpm,MaxBpm,AvgBpm,RestingBpm,Measurements,StressLevel,CardioZone");
         csvContent.Should().Contain("2024-01-01,50,120,70,60,100,5,30");
     }
@@ -206,11 +206,11 @@ public sealed class ExportServiceTests
         var outputPath = Path.Combine(_tempDirectory, "steps_export.csv");
 
         // Act
-        await _exportService.ExportStepsToCsvAsync(stepsRecords, outputPath);
+        await _exportService.ExportStepsToCsvAsync(stepsRecords, outputPath).ConfigureAwait(false);
 
         // Assert
         File.Exists(outputPath).Should().BeTrue();
-        var csvContent = await File.ReadAllTextAsync(outputPath);
+        var csvContent = await File.ReadAllTextAsync(outputPath).ConfigureAwait(false);
         csvContent.Should().Contain("Date,Steps,DistanceKm,Calories,GoalAchievement,ActiveMinutes,Walking,Running");
         csvContent.Should().Contain("2024-01-01,10000,7.5,500,100,120,90,30");
     }
