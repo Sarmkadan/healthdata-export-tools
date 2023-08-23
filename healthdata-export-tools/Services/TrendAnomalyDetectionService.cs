@@ -183,7 +183,8 @@ public sealed class TrendAnomalyDetectionService
 
     private static double ComputeStandardDeviation(IReadOnlyList<double> values, double mean)
     {
-        if (values.Count < 2) return 0;
+        // Hotfix: Standard deviation is 0.0 for 0 or 1 samples to prevent division by zero leading to NaN.
+        if (values.Count < 2) return 0.0;
         return Math.Sqrt(values.Sum(v => Math.Pow(v - mean, 2)) / (values.Count - 1));
     }
 }
