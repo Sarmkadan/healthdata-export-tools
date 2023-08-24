@@ -24,7 +24,7 @@ public sealed class LoggingMiddleware : IMiddleware
     /// <summary>
     /// Log request start, delegate to next middleware, log completion
     /// </summary>
-    public async Task ProcessAsync(MiddlewareContext context)
+    public async Task ProcessAsync(MiddlewareContext context, Func<MiddlewareContext, Task> next)
     {
         _stopwatch.Restart();
 
@@ -32,8 +32,7 @@ public sealed class LoggingMiddleware : IMiddleware
         {
             LogRequestStart(context);
 
-            // Continue to next middleware (simulated here)
-            await Task.CompletedTask;
+            await next(context); // Invoke the next middleware in the pipeline
 
             LogRequestComplete(context);
         }
