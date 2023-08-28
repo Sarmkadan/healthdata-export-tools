@@ -5,6 +5,7 @@
 // =============================================================================
 
 using HealthDataExportTools.Domain.Enums;
+using HealthDataExportTools.Domain.Models;
 using HealthDataExportTools.Services;
 using HealthDataExportTools.Configuration;
 
@@ -126,7 +127,9 @@ public sealed class CommandHandler
     }
 
     /// <summary>
-    /// Export filtered records to all requested formats
+    /// Export filtered records to all requested formats.
+    /// For JSON, writes one file per data type (heart_rate.json, sleep.json, etc.).
+    /// For CSV, writes one file per data type (heart_rate.csv, sleep.csv, etc.).
     /// </summary>
     private async Task ExportToFormats(List<HealthDataRecord> records, CliOptions options)
     {
@@ -134,27 +137,32 @@ public sealed class CommandHandler
             ? new[] { "json", "csv", "sqlite" }
             : new[] { options.Format.ToLower() };
 
+        // Build a typed collection from the flat record list for use by ExportService
+        var collection = BuildCollection(records);
+
         foreach (var format in formats)
         {
             try
             {
                 _logger.LogInformation("Exporting to {Format} format...", format);
-                string outputFile = Path.Combine(options.OutputPath, $"health_data.{GetExtension(format)}");
 
-                // Delegate actual export to appropriate service based on format
                 switch (format)
                 {
                     case "json":
-                        // JSON export logic here
-                        _logger.LogInformation("JSON export complete: {FilePath}", outputFile);
+                        await _exportService.ExportToJsonPerTypeAsync(collection, options.OutputPath)
+                            .ConfigureAwait(false);
+                        _logger.LogInformation("JSON export complete: {OutputPath}", options.OutputPath);
                         break;
+
                     case "csv":
-                        // CSV export logic here
-                        _logger.LogInformation("CSV export complete: {FilePath}", outputFile);
+                        await _exportService.ExportCompleteAsync(collection, options.OutputPath, Domain.Enums.ExportFormat.Csv)
+                            .ConfigureAwait(false);
+                        _logger.LogInformation("CSV export complete: {OutputPath}", options.OutputPath);
                         break;
+
                     case "sqlite":
-                        // SQLite export logic here
-                        _logger.LogInformation("SQLite export complete: {FilePath}", outputFile);
+                        // SQLite export delegated to database layer
+                        _logger.LogInformation("SQLite export: records would be stored to {DatabasePath}", options.DatabasePath);
                         break;
                 }
             }
@@ -163,6 +171,38 @@ public sealed class CommandHandler
                 _logger.LogError(ex, "Failed to export to {Format} format", format);
             }
         }
+    }
+
+    /// <summary>
+    /// Group a flat list of <see cref="HealthDataRecord"/> into a typed <see cref="HealthDataCollection"/>.
+    /// </summary>
+    private static HealthDataCollection BuildCollection(List<HealthDataRecord> records)
+    {
+        var collection = new HealthDataCollection();
+
+        foreach (var record in records)
+        {
+            switch (record)
+            {
+                case SleepData sleep:
+                    collection.SleepRecords.Add(sleep);
+                    break;
+                case HeartRateData hr:
+                    collection.HeartRateRecords.Add(hr);
+                    break;
+                case SpO2Data spo2:
+                    collection.SpO2Records.Add(spo2);
+                    break;
+                case StepsData steps:
+                    collection.StepsRecords.Add(steps);
+                    break;
+                case ActivityData activity:
+                    collection.ActivityRecords.Add(activity);
+                    break;
+            }
+        }
+
+        return collection;
     }
 
     /// <summary>
