@@ -230,4 +230,121 @@ public sealed class ReportGenerationServiceTests
         reports.Should().NotBeNull();
         reports.Should().BeEmpty();
     }
+
+    [Fact]
+    public async Task GenerateWeeklySummaryReportAsync_WithSpO2AndActivity_PopulatesNewFields()
+    {
+        // Arrange
+        var today = DateTime.UtcNow.Date;
+        var spo2Data = new List<SpO2Data>
+        {
+            new SpO2Data { RecordDate = today, AveragePercentage = 97, MinimumPercentage = 94, MaximumPercentage = 99, LowSpO2Events = 1 },
+            new SpO2Data { RecordDate = today.AddDays(-1), AveragePercentage = 96, MinimumPercentage = 93, MaximumPercentage = 99, LowSpO2Events = 2 }
+        };
+        var activityData = new List<ActivityData>
+        {
+            new ActivityData
+            {
+                RecordDate = today, DurationMinutes = 45, CaloriesBurned = 350, DistanceKm = 5.0,
+                StartTime = today.AddHours(7), EndTime = today.AddHours(7).AddMinutes(45)
+            },
+            new ActivityData
+            {
+                RecordDate = today.AddDays(-1), DurationMinutes = 30, CaloriesBurned = 200, DistanceKm = 3.0,
+                StartTime = today.AddDays(-1).AddHours(7), EndTime = today.AddDays(-1).AddHours(7).AddMinutes(30)
+            }
+        };
+
+        // Act
+        var reports = await _sut.GenerateWeeklySummaryReportAsync(
+            new List<SleepData>(), new List<HeartRateData>(), new List<StepsData>(),
+            spo2Data, activityData).ConfigureAwait(false);
+
+        // Assert
+        reports.Should().NotBeEmpty();
+        var report = reports.First();
+        report.AverageSpO2.Should().Be(96); // (97 + 96) / 2 = 96.5 → 96
+        report.MinimumSpO2.Should().Be(93);
+        report.TotalLowSpO2Events.Should().Be(3);
+        report.TotalActivitySessions.Should().Be(2);
+        report.TotalActivityMinutes.Should().Be(75);
+        report.TotalActivityDistanceKm.Should().Be(8.0);
+        report.TotalCaloriesBurned.Should().Be(550); // 350 + 200
+    }
+
+    [Fact]
+    public async Task GenerateWeeklySummaryReportAsync_MultipleWeeks_AttachesWeekOverWeekChanges()
+    {
+        // Arrange — two weeks of step data
+        var baseDate = new DateTime(2024, 1, 15); // a Monday
+        var prevWeekSteps = new StepsData { RecordDate = baseDate.AddDays(-7), TotalSteps = 8000, DistanceKm = 5.6 };
+        var thisWeekSteps = new StepsData { RecordDate = baseDate, TotalSteps = 10000, DistanceKm = 7.0 };
+
+        // Act
+        var reports = await _sut.GenerateWeeklySummaryReportAsync(
+            new List<SleepData>(),
+            new List<HeartRateData>(),
+            new List<StepsData> { prevWeekSteps, thisWeekSteps },
+            new List<SpO2Data>(),
+            new List<ActivityData>()).ConfigureAwait(false);
+
+        // Assert
+        reports.Should().HaveCount(2);
+        reports[0].Changes.Should().BeNull("the first week has no prior week to compare");
+        reports[1].Changes.Should().NotBeNull();
+        reports[1].Changes!.StepsChangePercent.Should().BeApproximately(25.0, 0.01); // (10000-8000)/8000*100 = 25
+    }
+
+    [Fact]
+    public async Task GenerateWeeklySummaryReportAsync_CalculatesHealthScore()
+    {
+        // Arrange — ideal metrics for a week
+        var today = DateTime.UtcNow.Date;
+        var sleep = new SleepData { RecordDate = today.AddDays(-1), DurationMinutes = 480 }; // 8 hrs
+        var hr    = new HeartRateData { RecordDate = today.AddDays(-1), AverageBpm = 65, MinimumBpm = 50, MaximumBpm = 130 };
+        var steps = new StepsData { RecordDate = today.AddDays(-1), TotalSteps = 11000, DistanceKm = 8.0 };
+        var spo2  = new SpO2Data { RecordDate = today.AddDays(-1), AveragePercentage = 98, MinimumPercentage = 96, MaximumPercentage = 100 };
+
+        // Act
+        var reports = await _sut.GenerateWeeklySummaryReportAsync(
+            new List<SleepData> { sleep },
+            new List<HeartRateData> { hr },
+            new List<StepsData> { steps },
+            new List<SpO2Data> { spo2 },
+            new List<ActivityData>()).ConfigureAwait(false);
+
+        // Assert
+        reports.Should().NotBeEmpty();
+        reports[0].WeeklyHealthScore.Should().BeGreaterThan(50, "good metrics should push score above baseline");
+        reports[0].WeeklyHealthScore.Should().BeLessOrEqualTo(100);
+    }
+
+    [Fact]
+    public async Task ExportWeeklySummaryToJsonAsync_WritesValidJsonFile()
+    {
+        // Arrange
+        var today = DateTime.UtcNow.Date;
+        var reports = await _sut.GenerateWeeklySummaryReportAsync(
+            new List<SleepData> { new SleepData { RecordDate = today.AddDays(-1), DurationMinutes = 460, Quality = SleepQuality.Good } },
+            new List<HeartRateData> { new HeartRateData { RecordDate = today.AddDays(-1), AverageBpm = 68, MinimumBpm = 52, MaximumBpm = 110 } },
+            new List<StepsData> { new StepsData { RecordDate = today.AddDays(-1), TotalSteps = 9500 } }).ConfigureAwait(false);
+
+        var tmpFile = Path.Combine(Path.GetTempPath(), $"weekly_{Guid.NewGuid()}.json");
+        try
+        {
+            // Act
+            await _sut.ExportWeeklySummaryToJsonAsync(reports, tmpFile).ConfigureAwait(false);
+
+            // Assert
+            File.Exists(tmpFile).Should().BeTrue();
+            var json = await File.ReadAllTextAsync(tmpFile).ConfigureAwait(false);
+            json.Should().Contain("WeeklyReports");
+            json.Should().Contain("WeekCount");
+            json.Should().Contain("WeekIdentifier");
+        }
+        finally
+        {
+            if (File.Exists(tmpFile)) File.Delete(tmpFile);
+        }
+    }
 }
