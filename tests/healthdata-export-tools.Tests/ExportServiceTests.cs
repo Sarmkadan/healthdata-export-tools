@@ -121,7 +121,7 @@ public sealed class ExportServiceTests
             {
                 RecordDate = new DateTime(2024, 1, 1), DeviceId = "dev1", SleepStart = new DateTime(2024, 1, 1, 22, 0, 0),
                 SleepEnd = new DateTime(2024, 1, 2, 6, 0, 0), DurationMinutes = 480, DeepSleepMinutes = 90,
-                LightSleepMinutes = 270, RemSleepMinutes = 60, AwakeMinutes = 60, Score = 85, AverageHeartRate = 60
+                LightSleepMinutes = 270, RemSleepMinutes = 60, AwakeMinutes = 60, Score = 85, AverageHeartRate = 60, Quality = SleepQuality.Good
             }
         };
         var outputPath = Path.Combine(_tempDirectory, "sleep_export.csv");
