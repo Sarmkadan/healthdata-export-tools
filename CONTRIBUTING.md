@@ -1,34 +1,68 @@
 # Contributing to healthdata-export-tools
 
-First off, thank you for considering contributing to healthdata-export-tools! It's people like you that make the open source community such a great place to learn, inspire, and create.
+Thank you for considering contributing! This document covers everything you need to get started.
+
+## Building Locally
+
+**Prerequisites:** [.NET 10.0 SDK](https://dotnet.microsoft.com/download) or later.
+
+```bash
+# Clone the repository
+git clone https://github.com/sarmkadan/healthdata-export-tools.git
+cd healthdata-export-tools
+
+# Restore dependencies
+dotnet restore
+
+# Build in Release mode
+dotnet build --configuration Release
+
+# Build the Docker image (optional)
+docker build -t healthdata-export-tools .
+```
+
+## Running Tests
+
+```bash
+# Run all tests
+dotnet test --configuration Release --verbosity normal
+
+# Run tests with TRX output (as CI does)
+dotnet test --configuration Release --logger "trx" --results-directory ./TestResults
+```
+
+If you are adding new features or fixing bugs, include corresponding unit tests under `tests/`.
 
 ## How to Contribute
 
 ### 1. Fork & Create a Branch
 1. Fork the repository on GitHub.
-2. Clone your fork locally: `git clone https://github.com/your-username/healthdata-export-tools.git`
-3. Create a new branch for your feature or bugfix: `git checkout -b feature/your-feature-name` or `git checkout -b fix/your-bug-fix`
+2. Clone your fork: `git clone https://github.com/your-username/healthdata-export-tools.git`
+3. Create a branch: `git checkout -b feature/your-feature-name` or `git checkout -b fix/your-bug-fix`
 
-### 2. Development Requirements
-- **.NET 10.0 SDK** or later is required to build and run the project.
+### 2. Code Style & Conventions
+- The project uses `.editorconfig` for consistent formatting — most editors apply it automatically.
+- Follow the existing naming conventions (PascalCase for types, interfaces prefixed with `I`).
+- Provide XML documentation comments for all public APIs.
+- Use `file`-scoped namespaces (`namespace Foo.Bar;`) consistent with the rest of the codebase.
 
-### 3. Code Style & Conventions
-- Follow the existing code style and naming conventions within the project.
-- Provide XML documentation comments for all public APIs, classes, and methods.
-- **Keep all author headers**: If a file already has an author header, do not remove or modify it. If you create a new file, you may add your own header following the existing format.
+### 3. Commit Messages
+Use [Conventional Commits](https://www.conventionalcommits.org/) prefixes:
 
-### 4. Running Tests
-Before submitting a pull request, please ensure that all tests pass. Run the following command from the root of the project:
-```bash
-dotnet test
-```
-If you are adding new features or fixing bugs, please include corresponding unit tests.
+| Prefix | Purpose |
+|--------|---------|
+| `feat:` | New feature |
+| `fix:` | Bug fix |
+| `docs:` | Documentation only |
+| `test:` | Adding or updating tests |
+| `refactor:` | Code change that is neither a feature nor a fix |
+| `ci:` | CI/CD changes |
 
-### 5. Submit a Pull Request
-1. Commit your changes with clear, descriptive commit messages.
-2. Push your branch to your fork on GitHub.
-3. Open a Pull Request against the `main` branch of the original repository.
-4. Provide a detailed description of the changes in your PR, including any related issue numbers.
+### 4. Pull Request Guidelines
+1. Ensure all tests pass locally before opening a PR.
+2. Keep PRs focused — one logical change per PR.
+3. Open a Pull Request against `main` with a clear description of what was changed and why.
+4. Reference any related issues with `Fixes #<number>` or `Closes #<number>`.
 
 ## Reporting Issues
 
