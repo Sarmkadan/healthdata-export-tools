@@ -62,6 +62,11 @@ public sealed class CliOptions
     public bool Analyze { get; set; } = false;
 
     /// <summary>
+    /// Compare two periods of data
+    /// </summary>
+    public bool Compare { get; set; } = false;
+
+    /// <summary>
     /// Enable verbose console output
     /// </summary>
     public bool Verbose { get; set; } = false;
