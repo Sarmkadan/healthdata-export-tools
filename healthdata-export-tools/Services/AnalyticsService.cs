@@ -16,6 +16,9 @@ public sealed class AnalyticsService
     /// <summary>
     /// Calculate average sleep duration over a period
     /// </summary>
+    /// <param name="records">List of sleep data records.</param>
+    /// <param name="days">Number of days to analyze.</param>
+    /// <returns>Average sleep duration in hours.</returns>
     public double CalculateAverageSleepDuration(List<SleepData> records, int days = 7)
     {
         if (records.Count == 0) return 0;

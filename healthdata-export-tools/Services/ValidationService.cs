@@ -18,6 +18,8 @@ public sealed class ValidationService : IValidationService
     /// <summary>
     /// Validate a sleep data record
     /// </summary>
+    /// <param name="data">The sleep data record to validate.</param>
+    /// <returns>A <see cref="ValidationResult"/> indicating whether the record is valid.</returns>
     public ValidationResult ValidateSleepData(SleepData data)
     {
         var result = new ValidationResult();
