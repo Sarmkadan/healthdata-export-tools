@@ -149,11 +149,67 @@ dotnet build -c Release
 
 ### Using Docker
 
-Build and run in a Docker container:
+Run the Health Data Export Tools in a Docker container:
+
+#### Build and run with Docker
 
 ```bash
+# Build the Docker image
 docker build -t healthdata-export-tools:latest .
-docker run -v $(pwd)/exports:/app/exports -v $(pwd)/output:/app/output healthdata-export-tools
+
+# Run the container with default arguments
+# The application will process sample data and export to the output directory
+docker run --rm \
+  -v $(pwd)/exports:/data/exports:ro \
+  -v $(pwd)/output:/data/output \
+  -v $(pwd)/healthdata.db:/data/healthdata.db \
+  healthdata-export-tools:latest
+```
+
+#### Using docker-compose
+
+```bash
+# Start the service
+docker-compose up -d
+
+# View logs
+docker-compose logs -f healthdata-exporter
+
+# Stop the service
+docker-compose down
+```
+
+#### Custom configuration
+
+You can override default paths and settings via environment variables:
+
+```bash
+docker run --rm \
+  -v $(pwd)/my-data:/data/exports:ro \
+  -v $(pwd)/reports:/data/output \
+  -v $(pwd)/my-health.db:/data/healthdata.db \
+  -e EXPORT_FORMAT=Json \
+  -e VERBOSE_LOGGING=true \
+  healthdata-export-tools:latest
+```
+
+#### Available environment variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `INPUT_PATH` | Path to input data directory | `/data/exports` |
+| `OUTPUT_PATH` | Path to output directory | `/data/output` |
+| `DATABASE_PATH` | Path to SQLite database file | `/data/healthdata.db` |
+| `EXPORT_FORMAT` | Export format (Json, Csv, Html, All) | `All` |
+| `VERBOSE_LOGGING` | Enable verbose logging | `false` |
+
+#### Health monitoring
+
+The container includes a health check that verifies the application is running:
+
+```bash
+# Check container health status
+docker inspect --format='{{json .State.Health}}' healthdata-export-tools
 ```
 
 ## Quick Start
@@ -910,6 +966,16 @@ Filter to a specific class:
 ```bash
 dotnet run --project benchmarks/healthdata-export-tools.Benchmarks -c Release -- --filter "*Analytics*"
 ```
+
+### Benchmark Results
+
+| Method | Mean | Error | StdDev | Gen0 | Allocated |
+|:---|:---|:---|:---|:---|:---|
+| `Parse40Records` | 70.14 us | 1.402 us | 3.438 us | 2.0752 | 17.56 KB |
+| `Parse200Records` | 331.03 us | 6.523 us | 11.253 us | 10.2539 | 84.81 KB |
+| `FormatSleepCsv` | 26.90 us | 0.883 us | 2.549 us | 4.3945 | 37.12 KB |
+| `FormatHeartRateCsv` | 11.82 us | 0.236 us | 0.522 us | 3.1433 | 25.71 KB |
+| `FormatStepsCsv` | 23.10 us | 0.460 us | 1.320 us | 4.3945 | 36.05 KB |
 
 ## Troubleshooting
 

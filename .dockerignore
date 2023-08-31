@@ -1,0 +1,54 @@
+# Common .dockerignore patterns for .NET applications
+
+# Build output directories
+bin/
+obj/
+
+# Version control
+.git/
+.gitignore
+
+# Visual Studio specific
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# macOS
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
+
+# Test results
+TestResults/
+
+# NuGet packages
+packages/
+*.nupkg
+
+# Logs
+logs/
+*.log
+
+# Runtime data
+/data/*
+!/data/.gitkeep
+
+# Local development files
+.env
+*.env
+.env.local
+.env.development.local
+
+# Docker
+.docker/
+Dockerfile*
+*.dockerfile
+
+# Build artifacts
+*.cache
+*.tmp
+*.swp

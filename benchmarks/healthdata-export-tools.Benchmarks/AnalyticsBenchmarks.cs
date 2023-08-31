@@ -17,7 +17,7 @@ namespace HealthDataExportTools.Benchmarks;
 /// and trend analysis over a realistic 30-day dataset.
 /// </summary>
 [MemoryDiagnoser]
-public sealed class AnalyticsBenchmarks
+public class AnalyticsBenchmarks
 {
     private AnalyticsService _analytics = null!;
     private HealthDataCollection _collection = null!;
