@@ -12,10 +12,16 @@ using HealthDataExportTools.Domain.Enums;
 
 namespace HealthDataExportTools.Tests;
 
+/// <summary>
+/// Tests for the InMemoryHealthDataRepository class.
+/// </summary>
 public sealed class InMemoryHealthDataRepositoryTests
 {
     private readonly InMemoryHealthDataRepository _sut;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="InMemoryHealthDataRepositoryTests"/> class.
+    /// </summary>
     public InMemoryHealthDataRepositoryTests()
     {
         _sut = new InMemoryHealthDataRepository();
@@ -24,6 +30,11 @@ public sealed class InMemoryHealthDataRepositoryTests
     [Fact]
     public async Task AddAndGetSleepData_ReturnsCorrectData()
     {
+        /// <summary>
+        /// Tests that adding and retrieving sleep data returns the correct data.
+        /// </summary>
+        /// <param name="sleepData">The sleep data to add.</param>
+        /// <returns>A task that represents the asynchronous operation.</returns>
         // Arrange
         var sleepData = new SleepData
         {
@@ -48,6 +59,11 @@ public sealed class InMemoryHealthDataRepositoryTests
     [Fact]
     public async Task UpdateSleepData_ReflectsChanges()
     {
+        /// <summary>
+        /// Tests that updating sleep data reflects the changes.
+        /// </summary>
+        /// <param name="sleepData">The sleep data to add and update.</param>
+        /// <returns>A task that represents the asynchronous operation.</returns>
         // Arrange
         var sleepData = new SleepData
         {
@@ -75,6 +91,11 @@ public sealed class InMemoryHealthDataRepositoryTests
     [Fact]
     public async Task DeleteSleepData_RemovesData()
     {
+        /// <summary>
+        /// Tests that deleting sleep data removes the data.
+        /// </summary>
+        /// <param name="sleepData">The sleep data to add and delete.</param>
+        /// <returns>A task that represents the asynchronous operation.</returns>
         // Arrange
         var sleepData = new SleepData
         {
@@ -96,6 +117,12 @@ public sealed class InMemoryHealthDataRepositoryTests
     [Fact]
     public async Task GetSleepRange_ReturnsCorrectData()
     {
+        /// <summary>
+        /// Tests that getting sleep data within a range returns the correct data.
+        /// </summary>
+        /// <param name="date1">The start date of the range.</param>
+        /// <param name="date2">The end date of the range.</param>
+        /// <returns>A task that represents the asynchronous operation.</returns>
         // Arrange
         var date1 = DateTime.UtcNow.Date.AddDays(-2);
         var date2 = DateTime.UtcNow.Date.AddDays(-1);
@@ -122,6 +149,11 @@ public sealed class InMemoryHealthDataRepositoryTests
     [Fact]
     public async Task AddAndGetHeartRateData_ReturnsCorrectData()
     {
+        /// <summary>
+        /// Tests that adding and retrieving heart rate data returns the correct data.
+        /// </summary>
+        /// <param name="hrData">The heart rate data to add.</param>
+        /// <returns>A task that represents the asynchronous operation.</returns>
         // Arrange
         var hrData = new HeartRateData
         {
@@ -145,6 +177,10 @@ public sealed class InMemoryHealthDataRepositoryTests
     [Fact]
     public async Task GetTotalRecordCount_ReturnsCorrectCount()
     {
+        /// <summary>
+        /// Tests that getting the total record count returns the correct count.
+        /// </summary>
+        /// <returns>A task that represents the asynchronous operation.</returns>
         // Arrange
         await _sut.AddSleepAsync(new SleepData { Id = Guid.NewGuid().ToString(), RecordDate = DateTime.UtcNow.Date }).ConfigureAwait(false);
         await _sut.AddHeartRateAsync(new HeartRateData { Id = Guid.NewGuid().ToString(), RecordDate = DateTime.UtcNow.Date }).ConfigureAwait(false);
@@ -160,6 +196,11 @@ public sealed class InMemoryHealthDataRepositoryTests
     [Fact]
     public async Task DeleteOldRecords_RemovesRecordsBeforeDate()
     {
+        /// <summary>
+        /// Tests that deleting old records removes records before the specified date.
+        /// </summary>
+        /// <param name="cutOffDate">The date before which records should be deleted.</param>
+        /// <returns>A task that represents the asynchronous operation.</returns>
         // Arrange
         var oldSleep = new SleepData { Id = Guid.NewGuid().ToString(), RecordDate = DateTime.UtcNow.AddDays(-10) };
         var recentSleep = new SleepData { Id = Guid.NewGuid().ToString(), RecordDate = DateTime.UtcNow.AddDays(-1) };
