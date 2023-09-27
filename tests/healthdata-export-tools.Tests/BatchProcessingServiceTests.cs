@@ -12,11 +12,17 @@ using Xunit;
 
 namespace HealthDataExportTools.Tests;
 
+/// <summary>
+/// Tests for the <see cref="BatchProcessingService"/> class.
+/// </summary>
 public sealed class BatchProcessingServiceTests
 {
     private readonly ILogger<BatchProcessingService> _mockLogger;
     private readonly BatchProcessingService _batchProcessingService;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="BatchProcessingServiceTests"/> class.
+    /// </summary>
     public BatchProcessingServiceTests()
     {
         _mockLogger = Substitute.For<ILogger<BatchProcessingService>>();
