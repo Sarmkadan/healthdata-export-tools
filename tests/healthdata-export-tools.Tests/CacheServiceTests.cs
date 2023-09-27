@@ -14,12 +14,29 @@ using Xunit;
 
 namespace HealthDataExportTools.Tests;
 
+/// <summary>
+/// Tests for the CacheService class.
+/// </summary>
 public sealed class CacheServiceTests
 {
+    /// <summary>
+    /// The mock cache provider used in these tests.
+    /// </summary>
     internal readonly ICacheProvider _mockCacheProvider;
+    
+    /// <summary>
+    /// The mock logger used in these tests.
+    /// </summary>
     internal readonly ILogger<CacheService> _mockLogger;
+    
+    /// <summary>
+    /// The instance of CacheService being tested.
+    /// </summary>
     internal readonly CacheService _cacheService;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CacheServiceTests"/> class.
+    /// </summary>
     public CacheServiceTests()
     {
         _mockCacheProvider = Substitute.For<ICacheProvider>();
@@ -27,6 +44,9 @@ public sealed class CacheServiceTests
         _cacheService = new CacheService(_mockCacheProvider, _mockLogger);
     }
 
+    /// <summary>
+    /// Verifies that CacheHealthDataAsync calls SetAsync on the provider.
+    /// </summary>
     [Fact]
     public async Task CacheHealthDataAsync_ShouldCallSetAsyncOnProvider()
     {
@@ -43,6 +63,9 @@ public sealed class CacheServiceTests
         _mockLogger.Received(1).LogInformation(Arg.Any<string>(), Arg.Any<int>(), Arg.Any<string>());
     }
 
+    /// <summary>
+    /// Verifies that GetCachedHealthDataAsync calls GetAsync on the provider.
+    /// </summary>
     [Fact]
     public async Task GetCachedHealthDataAsync_ShouldCallGetAsyncOnProvider()
     {
@@ -61,6 +84,9 @@ public sealed class CacheServiceTests
         _mockLogger.Received(1).LogInformation(Arg.Any<string>(), Arg.Any<string>());
     }
 
+    /// <summary>
+    /// Verifies that ClearAllAsync calls ClearAsync on the provider.
+    /// </summary>
     [Fact]
     public async Task ClearAllAsync_ShouldCallClearAsyncOnProvider()
     {
@@ -72,6 +98,9 @@ public sealed class CacheServiceTests
         _mockLogger.Received(1).LogInformation(Arg.Any<string>());
     }
 
+    /// <summary>
+    /// Verifies that GetStatsAsync returns the stats from the provider.
+    /// </summary>
     [Fact]
     public async Task GetStatsAsync_ShouldReturnStatsFromProvider()
     {
@@ -86,6 +115,9 @@ public sealed class CacheServiceTests
         stats.Should().BeEquivalentTo(expectedStats);
     }
 
+    /// <summary>
+    /// Verifies that IsHealthDataCachedAsync calls ExistsAsync on the provider.
+    /// </summary>
     [Fact]
     public async Task IsHealthDataCachedAsync_ShouldCallExistsAsyncOnProvider()
     {
@@ -101,6 +133,9 @@ public sealed class CacheServiceTests
         isCached.Should().BeTrue();
     }
     
+    /// <summary>
+    /// Verifies that CacheAnalyticsAsync calls SetAsync on the provider.
+    /// </summary>
     [Fact]
     public async Task CacheAnalyticsAsync_ShouldCallSetAsyncOnProvider()
     {
@@ -117,6 +152,9 @@ public sealed class CacheServiceTests
         _mockLogger.Received(1).LogInformation(Arg.Any<string>(), Arg.Any<string>());
     }
 
+    /// <summary>
+    /// Verifies that GetCachedAnalyticsAsync calls GetAsync on the provider.
+    /// </summary>
     [Fact]
     public async Task GetCachedAnalyticsAsync_ShouldCallGetAsyncOnProvider()
     {
@@ -135,6 +173,9 @@ public sealed class CacheServiceTests
         _mockLogger.Received(1).LogInformation(Arg.Any<string>(), Arg.Any<string>());
     }
 
+    /// <summary>
+    /// Verifies that ClearPatternAsync removes matching keys.
+    /// </summary>
     [Fact]
     public async Task ClearPatternAsync_ShouldRemoveMatchingKeys()
     {
