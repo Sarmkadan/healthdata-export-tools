@@ -9,13 +9,14 @@ using HealthDataExportTools.Domain.Models;
 using HealthDataExportTools.Services;
 using Xunit;
 
-namespace HealthDataExportTools.Tests;
-
+/// <summary>
+/// Tests for the ChartExportService class.
+/// </summary>
 public sealed class ChartExportServiceTests : IDisposable
 {
-    private readonly ChartExportService _chartExportService;
-    private readonly string _tempDirectory;
-
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ChartExportServiceTests"/> class.
+    /// </summary>
     public ChartExportServiceTests()
     {
         _chartExportService = new ChartExportService();
@@ -23,6 +24,19 @@ public sealed class ChartExportServiceTests : IDisposable
         Directory.CreateDirectory(_tempDirectory);
     }
 
+    /// <summary>
+    /// The ChartExportService instance used in tests.
+    /// </summary>
+    private readonly ChartExportService _chartExportService;
+
+    /// <summary>
+    /// The temporary directory used for test files.
+    /// </summary>
+    private readonly string _tempDirectory;
+
+    /// <summary>
+    /// Releases all resources used by the <see cref="ChartExportServiceTests"/> class.
+    /// </summary>
     public void Dispose()
     {
         if (Directory.Exists(_tempDirectory))
@@ -31,6 +45,10 @@ public sealed class ChartExportServiceTests : IDisposable
         }
     }
 
+    /// <summary>
+    /// Creates a sample HealthDataCollection instance.
+    /// </summary>
+    /// <returns>A sample HealthDataCollection instance.</returns>
     private HealthDataCollection CreateSampleCollection()
     {
         var collection = new HealthDataCollection();
@@ -40,6 +58,9 @@ public sealed class ChartExportServiceTests : IDisposable
         return collection;
     }
 
+    /// <summary>
+    /// Tests that ExportToHtmlChartsAsync generates valid HTML.
+    /// </summary>
     [Fact]
     public async Task ExportToHtmlChartsAsync_ShouldGenerateValidHtml()
     {
@@ -63,6 +84,9 @@ public sealed class ChartExportServiceTests : IDisposable
         content.Should().Contain("8"); // Sleep (480 mins = 8 hours)
     }
 
+    /// <summary>
+    /// Tests that ExportToHtmlChartsAsync handles an empty collection.
+    /// </summary>
     [Fact]
     public async Task ExportToHtmlChartsAsync_ShouldHandleEmptyCollection()
     {
@@ -83,6 +107,9 @@ public sealed class ChartExportServiceTests : IDisposable
         content.Should().NotContain("new Chart(");
     }
 
+    /// <summary>
+    /// Tests that ExportToHtmlChartsAsync includes the SpO2 chart when SpO2 data is present.
+    /// </summary>
     [Fact]
     public async Task ExportToHtmlChartsAsync_WithSpO2Records_ShouldIncludeSpO2Chart()
     {
@@ -109,6 +136,9 @@ public sealed class ChartExportServiceTests : IDisposable
         content.Should().Contain("94"); // min SpO2 value
     }
 
+    /// <summary>
+    /// Tests that ExportToHtmlChartsAsync respects the disabled charts option.
+    /// </summary>
     [Fact]
     public async Task ExportToHtmlChartsAsync_WithOptions_ShouldRespectDisabledCharts()
     {
@@ -141,6 +171,9 @@ public sealed class ChartExportServiceTests : IDisposable
         content.Should().NotContain("<table class=\"stats-table\">");
     }
 
+    /// <summary>
+    /// Tests that ExportToHtmlChartsAsync includes the sleep composition chart when sleep data is present.
+    /// </summary>
     [Fact]
     public async Task ExportToHtmlChartsAsync_WithSleepData_ShouldIncludeSleepCompositionChart()
     {
@@ -169,6 +202,9 @@ public sealed class ChartExportServiceTests : IDisposable
         content.Should().Contain("72");  // REM minutes
     }
 
+    /// <summary>
+    /// Tests that ExportToHtmlChartsAsync includes the summary table when all data is present.
+    /// </summary>
     [Fact]
     public async Task ExportToHtmlChartsAsync_WithAllData_ShouldIncludeSummaryTable()
     {
