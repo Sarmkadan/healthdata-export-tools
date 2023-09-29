@@ -6,8 +6,17 @@ using Xunit;
 
 namespace HealthDataExportTools.Tests;
 
+/// <summary>
+/// Provides unit tests for the <see cref="DataTransformationUtility"/> class.
+/// Tests various data transformation operations including aggregation, filtering, and outlier removal.
+/// </summary>
 public class DataTransformationUtilityTests
 {
+    /// <summary>
+    /// Tests that <see cref="DataTransformationUtility.AggregateSleepByDate"/> correctly aggregates sleep data by date.
+    /// Verifies that multiple sleep records for the same date are properly combined into a single aggregated record
+    /// with correct total duration, average duration, and count.
+    /// </summary>
     [Fact]
     public void AggregateSleepByDate_ShouldCorrectlyAggregateData()
     {
@@ -29,6 +38,11 @@ public class DataTransformationUtilityTests
         result[date.Date].Count.Should().Be(2);
     }
 
+    /// <summary>
+    /// Tests that <see cref="DataTransformationUtility.AggregateHeartRateByHour"/> correctly aggregates heart rate data by hour.
+    /// Verifies that heart rate readings within the same hour are properly aggregated with correct average, minimum,
+    /// and maximum BPM values.
+    /// </summary>
     [Fact]
     public void AggregateHeartRateByHour_ShouldCorrectlyAggregateData()
     {
@@ -52,6 +66,11 @@ public class DataTransformationUtilityTests
         result[hour].Count.Should().Be(2);
     }
 
+    /// <summary>
+    /// Tests that <see cref="DataTransformationUtility.AggregateStepsByDay"/> correctly aggregates step tracking data by day.
+    /// Verifies that multiple step records for the same date are properly combined with correct totals for steps, distance,
+    /// and calories burned, along with average calculations.
+    /// </summary>
     [Fact]
     public void AggregateStepsByDay_ShouldCorrectlyAggregateData()
     {
@@ -75,6 +94,10 @@ public class DataTransformationUtilityTests
         result[date.Date].Count.Should().Be(2);
     }
 
+    /// <summary>
+    /// Tests that <see cref="DataTransformationUtility.FilterByDateRange"/> correctly filters health data records by date range.
+    /// Verifies that only records within the specified date range are returned, including boundary dates.
+    /// </summary>
     [Fact]
     public void FilterByDateRange_ShouldReturnCorrectSubset()
     {
@@ -97,6 +120,10 @@ public class DataTransformationUtilityTests
         result.Should().AllSatisfy(r => r.RecordDate.Should().BeOnOrAfter(startDate).And.BeOnOrBefore(endDate));
     }
 
+    /// <summary>
+    /// Tests that <see cref="DataTransformationUtility.RemoveOutliers"/> correctly removes extreme values from a dataset.
+    /// Verifies that statistical outliers are identified and removed using standard deviation thresholding.
+    /// </summary>
     [Fact]
     public void RemoveOutliers_ShouldRemoveExtremeValues()
     {
@@ -111,6 +138,10 @@ public class DataTransformationUtilityTests
         result.Should().HaveCount(7);
     }
 
+    /// <summary>
+    /// Tests that <see cref="DataTransformationUtility.CalculateMovingAverage"/> correctly calculates moving averages for a dataset.
+    /// Verifies that a rolling window average is computed for each position in the dataset, with edge cases handled appropriately.
+    /// </summary>
     [Fact]
     public void CalculateMovingAverage_ShouldReturnSmoothedValues()
     {
