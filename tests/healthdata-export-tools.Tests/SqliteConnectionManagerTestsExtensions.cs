@@ -18,13 +18,17 @@ public static class SqliteConnectionManagerTestsExtensions
     /// <summary>
     /// Extension method to verify that a database connection is properly initialized and contains expected tables.
     /// </summary>
-    /// <param name="connectionManager">The connection manager to verify</param>
-    /// <param name="expectedTableNames">List of table names that should exist in the database</param>
+    /// <param name="connectionManager">The connection manager to verify. Cannot be null.</param>
+    /// <param name="expectedTableNames">List of table names that should exist in the database. Cannot be null.</param>
     /// <returns>True if verification succeeds, false otherwise</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="connectionManager"/> or <paramref name="expectedTableNames"/> is null.</exception>
     public static async Task<bool> VerifyDatabaseInitializedAsync(
         this SqliteConnectionManager connectionManager,
         params string[] expectedTableNames)
     {
+        ArgumentNullException.ThrowIfNull(connectionManager);
+        ArgumentNullException.ThrowIfNull(expectedTableNames);
+
         // Verify connection is valid
         var isConnected = await connectionManager.VerifyConnectionAsync().ConfigureAwait(false);
         if (!isConnected)
@@ -64,13 +68,18 @@ public static class SqliteConnectionManagerTestsExtensions
     /// <summary>
     /// Extension method to create a test database with sample data for testing purposes.
     /// </summary>
-    /// <param name="connectionManager">The connection manager</param>
-    /// <param name="sampleDataCount">Number of sample records to insert</param>
+    /// <param name="connectionManager">The connection manager. Cannot be null.</param>
+    /// <param name="sampleDataCount">Number of sample records to insert. Must be non-negative.</param>
     /// <returns>Task representing the async operation</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="connectionManager"/> is null.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="sampleDataCount"/> is negative.</exception>
     public static async Task CreateTestDatabaseWithSampleDataAsync(
         this SqliteConnectionManager connectionManager,
         int sampleDataCount = 10)
     {
+        ArgumentNullException.ThrowIfNull(connectionManager);
+        ArgumentOutOfRangeException.ThrowIfNegative(sampleDataCount);
+
         await connectionManager.InitializeDatabaseAsync().ConfigureAwait(false);
 
         using var connection = connectionManager.GetConnection();
@@ -113,13 +122,18 @@ public static class SqliteConnectionManagerTestsExtensions
     /// <summary>
     /// Extension method to get the current record count for a specific table.
     /// </summary>
-    /// <param name="connectionManager">The connection manager</param>
-    /// <param name="tableName">Name of the table to count records in</param>
+    /// <param name="connectionManager">The connection manager. Cannot be null.</param>
+    /// <param name="tableName">Name of the table to count records in. Cannot be null or empty.</param>
     /// <returns>Number of records in the table</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="connectionManager"/> or <paramref name="tableName"/> is null.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="tableName"/> is empty or whitespace.</exception>
     public static async Task<long> GetTableRecordCountAsync(
         this SqliteConnectionManager connectionManager,
         string tableName)
     {
+        ArgumentNullException.ThrowIfNull(connectionManager);
+        ArgumentException.ThrowIfNullOrEmpty(tableName, nameof(tableName));
+
         using var connection = connectionManager.GetConnection();
         await connection.OpenAsync().ConfigureAwait(false);
 
@@ -135,15 +149,22 @@ public static class SqliteConnectionManagerTestsExtensions
     /// <summary>
     /// Extension method to verify that a database file has the expected size range.
     /// </summary>
-    /// <param name="connectionManager">The connection manager</param>
-    /// <param name="minSizeBytes">Minimum expected size in bytes</param>
-    /// <param name="maxSizeBytes">Maximum expected size in bytes</param>
+    /// <param name="connectionManager">The connection manager. Cannot be null.</param>
+    /// <param name="minSizeBytes">Minimum expected size in bytes. Must be non-negative.</param>
+    /// <param name="maxSizeBytes">Maximum expected size in bytes. Must be non-negative and greater than or equal to <paramref name="minSizeBytes"/>.</param>
     /// <returns>True if size is within expected range, false otherwise</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="connectionManager"/> is null.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="minSizeBytes"/> or <paramref name="maxSizeBytes"/> is negative, or when <paramref name="maxSizeBytes"/> is less than <paramref name="minSizeBytes"/>.</exception>
     public static bool VerifyDatabaseSize(
         this SqliteConnectionManager connectionManager,
         long minSizeBytes,
         long maxSizeBytes)
     {
+        ArgumentNullException.ThrowIfNull(connectionManager);
+        ArgumentOutOfRangeException.ThrowIfNegative(minSizeBytes);
+        ArgumentOutOfRangeException.ThrowIfNegative(maxSizeBytes);
+        ArgumentOutOfRangeException.ThrowIfLessThan(maxSizeBytes, minSizeBytes);
+
         var size = connectionManager.GetDatabaseSize();
         return size >= minSizeBytes && size <= maxSizeBytes;
     }
