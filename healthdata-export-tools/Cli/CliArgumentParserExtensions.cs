@@ -8,19 +8,24 @@
 namespace HealthDataExportTools.Cli;
 
 /// <summary>
-/// Extension methods for CliArgumentParser providing additional functionality
+/// Extension methods for <see cref="CliArgumentParser"/> providing additional functionality
 /// </summary>
 public static class CliArgumentParserExtensions
 {
     /// <summary>
     /// Parses command-line arguments with default validation enabled
     /// </summary>
-    /// <param name="parser">The parser instance</param>
-    /// <param name="args">Command-line arguments</param>
+    /// <param name="parser">The parser instance. Cannot be null.</param>
+    /// <param name="args">Command-line arguments. Cannot be null.</param>
     /// <returns>Parsed options</returns>
-    /// <exception cref="ArgumentException">Thrown if validation fails</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="parser"/> is null.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="args"/> is null.</exception>
+    /// <exception cref="ArgumentException">Thrown if validation fails.</exception>
     public static CliOptions ParseWithValidation(this CliArgumentParser parser, string[] args)
     {
+        ArgumentNullException.ThrowIfNull(parser);
+        ArgumentNullException.ThrowIfNull(args);
+
         var options = parser.Parse(args);
         var errors = parser.Validate();
 
@@ -36,12 +41,17 @@ public static class CliArgumentParserExtensions
     /// <summary>
     /// Parses command-line arguments and returns whether validation passed
     /// </summary>
-    /// <param name="parser">The parser instance</param>
-    /// <param name="args">Command-line arguments</param>
-    /// <param name="options">Parsed options if successful</param>
-    /// <returns>True if parsing and validation succeeded; false otherwise</returns>
+    /// <param name="parser">The parser instance. Cannot be null.</param>
+    /// <param name="args">Command-line arguments. Cannot be null.</param>
+    /// <param name="options">Parsed options if successful; otherwise null.</param>
+    /// <returns>True if parsing and validation succeeded; false otherwise.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="parser"/> is null.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="args"/> is null.</exception>
     public static bool TryParse(this CliArgumentParser parser, string[] args, out CliOptions? options)
     {
+        ArgumentNullException.ThrowIfNull(parser);
+        ArgumentNullException.ThrowIfNull(args);
+
         try
         {
             options = parser.Parse(args);
@@ -65,11 +75,16 @@ public static class CliArgumentParserExtensions
     /// <summary>
     /// Gets a summary of the parsed options for display purposes
     /// </summary>
-    /// <param name="parser">The parser instance</param>
-    /// <param name="options">Parsed options</param>
-    /// <returns>Formatted summary string</returns>
+    /// <param name="parser">The parser instance. Cannot be null.</param>
+    /// <param name="options">Parsed options. Cannot be null.</param>
+    /// <returns>Formatted summary string.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="parser"/> is null.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="options"/> is null.</exception>
     public static string GetSummary(this CliArgumentParser parser, CliOptions options)
     {
+        ArgumentNullException.ThrowIfNull(parser);
+        ArgumentNullException.ThrowIfNull(options);
+
         var summary = new System.Text.StringBuilder();
         summary.AppendLine("=== CLI Options Summary ===");
         summary.AppendLine($"Input Path: {options.InputPath}");
@@ -82,6 +97,7 @@ public static class CliArgumentParserExtensions
         summary.AppendLine($"End Date: {options.EndDate ?? "Not specified"}");
         summary.AppendLine($"Validate: {options.Validate}");
         summary.AppendLine($"Analyze: {options.Analyze}");
+        summary.AppendLine($"Compare: {options.Compare}");
         summary.AppendLine($"Compress: {options.Compress}");
         summary.AppendLine($"Parallel: {options.Parallel}");
         summary.AppendLine($"Max Parallelism: {options.MaxParallelism}");
@@ -96,11 +112,16 @@ public static class CliArgumentParserExtensions
     /// <summary>
     /// Checks if the parsed options indicate a help or version request
     /// </summary>
-    /// <param name="parser">The parser instance</param>
-    /// <param name="options">Parsed options</param>
-    /// <returns>True if help or version should be displayed</returns>
+    /// <param name="parser">The parser instance. Cannot be null.</param>
+    /// <param name="options">Parsed options. Cannot be null.</param>
+    /// <returns>True if help or version should be displayed; otherwise false.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="parser"/> is null.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="options"/> is null.</exception>
     public static bool ShouldShowHelpOrVersion(this CliArgumentParser parser, CliOptions options)
     {
+        ArgumentNullException.ThrowIfNull(parser);
+        ArgumentNullException.ThrowIfNull(options);
+
         return options.Help || options.Version;
     }
 }
