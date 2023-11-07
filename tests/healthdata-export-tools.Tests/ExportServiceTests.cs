@@ -16,12 +16,22 @@ using Xunit;
 
 namespace HealthDataExportTools.Tests;
 
+/// <summary>
+/// Contains unit tests for <see cref="ExportService"/> verifying its export
+/// functionality for JSON and CSV formats, handling of empty collections,
+/// directory creation, and various data types.
+/// </summary>
 public sealed class ExportServiceTests
 {
     private readonly ExportService _exportService;
     private readonly ILogger<ExportService> _mockLogger;
     private readonly string _tempDirectory;
 
+    /// <summary>
+    /// Initializes a new instance of <see cref="ExportServiceTests"/>.
+    /// Sets up a mock logger, creates an <see cref="ExportService"/> instance,
+    /// and prepares a temporary directory for test output files.
+    /// </summary>
     public ExportServiceTests()
     {
         _mockLogger = Substitute.For<ILogger<ExportService>>();
@@ -30,8 +40,9 @@ public sealed class ExportServiceTests
         Directory.CreateDirectory(_tempDirectory);
     }
 
-    // Since XUnit doesn't have a direct "AfterAll" equivalent for a class,
-    // we can implement IDisposable to clean up the temporary directory.
+    /// <summary>
+    /// Cleans up the temporary directory created for the tests.
+    /// </summary>
     public void Dispose()
     {
         if (Directory.Exists(_tempDirectory))
@@ -72,6 +83,11 @@ public sealed class ExportServiceTests
         return collection;
     }
 
+    /// <summary>
+    /// Verifies that <see cref="ExportService.ExportToJsonAsync"/> creates a valid JSON
+    /// file containing all expected sections and a correct total record count.
+    /// </summary>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Fact]
     public async Task ExportToJsonAsync_ShouldCreateValidJsonFile()
     {
@@ -94,6 +110,11 @@ public sealed class ExportServiceTests
         jsonContent.Should().Contain("\"Metrics\":");
     }
 
+    /// <summary>
+    /// Ensures that exporting an empty <see cref="HealthDataCollection"/> still
+    /// produces a JSON file with a total record count of zero and empty arrays.
+    /// </summary>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Fact]
     public async Task ExportToJsonAsync_ShouldHandleEmptyCollection()
     {
@@ -111,6 +132,11 @@ public sealed class ExportServiceTests
         jsonContent.Should().Contain("\"SleepRecords\": []");
     }
 
+    /// <summary>
+    /// Checks that <see cref="ExportService.ExportSleepToCsvAsync"/> creates a CSV file
+    /// with the correct header and a row representing the provided sleep record.
+    /// </summary>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Fact]
     public async Task ExportSleepToCsvAsync_ShouldCreateValidCsvFile()
     {
@@ -136,6 +162,11 @@ public sealed class ExportServiceTests
         csvContent.Should().Contain("2024-01-01,480,90,270,60,60,Good,85,60");
     }
 
+    /// <summary>
+    /// Validates that <see cref="ExportService.ExportCompleteAsync"/> exports all
+    /// supported formats when <see cref="ExportFormat.All"/> is specified.
+    /// </summary>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Fact]
     public async Task ExportCompleteAsync_ShouldExportAllFormatsWhenSpecified()
     {
@@ -154,6 +185,11 @@ public sealed class ExportServiceTests
         File.Exists(Path.Combine(outputDir, "steps.csv")).Should().BeTrue();
     }
 
+    /// <summary>
+    /// Confirms that <see cref="ExportService.ExportCompleteAsync"/> creates the
+    /// output directory if it does not already exist when exporting JSON only.
+    /// </summary>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Fact]
     public async Task ExportCompleteAsync_ShouldCreateOutputDirectoryIfNotExists()
     {
@@ -169,6 +205,11 @@ public sealed class ExportServiceTests
         File.Exists(Path.Combine(nonExistentDir, "health_data.json")).Should().BeTrue();
     }
     
+    /// <summary>
+    /// Ensures that <see cref="ExportService.ExportHeartRateToCsvAsync"/> produces a CSV
+    /// file with the correct header and data row for a heart rate record.
+    /// </summary>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Fact]
     public async Task ExportHeartRateToCsvAsync_ShouldCreateValidCsvFile()
     {
@@ -192,6 +233,11 @@ public sealed class ExportServiceTests
         csvContent.Should().Contain("2024-01-01,50,120,70,60,100,5,30");
     }
 
+    /// <summary>
+    /// Verifies that <see cref="ExportService.ExportStepsToCsvAsync"/> creates a CSV file
+    /// with the appropriate header and a row representing a steps record.
+    /// </summary>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Fact]
     public async Task ExportStepsToCsvAsync_ShouldCreateValidCsvFile()
     {
