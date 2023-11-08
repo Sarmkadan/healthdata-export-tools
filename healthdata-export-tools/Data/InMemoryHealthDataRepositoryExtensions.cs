@@ -18,10 +18,13 @@ public static class InMemoryHealthDataRepositoryExtensions
     /// Gets the most recent sleep record by date
     /// </summary>
     /// <param name="repository">The repository instance</param>
+    /// <exception cref="ArgumentNullException"><paramref name="repository"/> is null</exception>
     /// <param name="date">The date to search</param>
     /// <returns>The most recent sleep record for the specified date, or null if not found</returns>
     public static async Task<SleepData?> GetMostRecentSleepAsync(this InMemoryHealthDataRepository repository, DateTime date)
     {
+        ArgumentNullException.ThrowIfNull(repository);
+
         var records = await repository.GetSleepByDateAsync(date);
         return records.OrderByDescending(r => r.RecordDate).FirstOrDefault();
     }
@@ -30,10 +33,13 @@ public static class InMemoryHealthDataRepositoryExtensions
     /// Gets the most recent heart rate record by date
     /// </summary>
     /// <param name="repository">The repository instance</param>
+    /// <exception cref="ArgumentNullException"><paramref name="repository"/> is null</exception>
     /// <param name="date">The date to search</param>
     /// <returns>The most recent heart rate record for the specified date, or null if not found</returns>
     public static async Task<HeartRateData?> GetMostRecentHeartRateAsync(this InMemoryHealthDataRepository repository, DateTime date)
     {
+        ArgumentNullException.ThrowIfNull(repository);
+
         var record = await repository.GetHeartRateByDateAsync(date);
         return record;
     }
@@ -42,10 +48,13 @@ public static class InMemoryHealthDataRepositoryExtensions
     /// Gets the most recent SpO2 record by date
     /// </summary>
     /// <param name="repository">The repository instance</param>
+    /// <exception cref="ArgumentNullException"><paramref name="repository"/> is null</exception>
     /// <param name="date">The date to search</param>
     /// <returns>The most recent SpO2 record for the specified date, or null if not found</returns>
     public static async Task<SpO2Data?> GetMostRecentSpO2Async(this InMemoryHealthDataRepository repository, DateTime date)
     {
+        ArgumentNullException.ThrowIfNull(repository);
+
         var record = await repository.GetSpO2ByDateAsync(date);
         return record;
     }
@@ -54,10 +63,13 @@ public static class InMemoryHealthDataRepositoryExtensions
     /// Gets the most recent steps record by date
     /// </summary>
     /// <param name="repository">The repository instance</param>
+    /// <exception cref="ArgumentNullException"><paramref name="repository"/> is null</exception>
     /// <param name="date">The date to search</param>
     /// <returns>The most recent steps record for the specified date, or null if not found</returns>
     public static async Task<StepsData?> GetMostRecentStepsAsync(this InMemoryHealthDataRepository repository, DateTime date)
     {
+        ArgumentNullException.ThrowIfNull(repository);
+
         var record = await repository.GetStepsByDateAsync(date);
         return record;
     }
@@ -66,28 +78,31 @@ public static class InMemoryHealthDataRepositoryExtensions
     /// Gets average heart rate for a specific date
     /// </summary>
     /// <param name="repository">The repository instance</param>
+    /// <exception cref="ArgumentNullException"><paramref name="repository"/> is null</exception>
     /// <param name="date">The date to calculate average for</param>
     /// <returns>Average heart rate in beats per minute, or null if no data exists</returns>
     public static async Task<int?> GetAverageHeartRateAsync(this InMemoryHealthDataRepository repository, DateTime date)
     {
+        ArgumentNullException.ThrowIfNull(repository);
+
         var records = await repository.GetHeartRateRangeAsync(date.Date, date.Date.AddDays(1).AddTicks(-1));
 
-        if (records.Count == 0)
-        {
-            return null;
-        }
-
-        return (int)Math.Round(records.Average(r => r.AverageBpm));
+        return records.Count == 0
+            ? null
+            : (int)Math.Round(records.Average(r => r.AverageBpm));
     }
 
     /// <summary>
     /// Gets total steps for a specific date
     /// </summary>
     /// <param name="repository">The repository instance</param>
+    /// <exception cref="ArgumentNullException"><paramref name="repository"/> is null</exception>
     /// <param name="date">The date to calculate total for</param>
     /// <returns>Total steps for the date, or null if no data exists</returns>
     public static async Task<int?> GetTotalStepsAsync(this InMemoryHealthDataRepository repository, DateTime date)
     {
+        ArgumentNullException.ThrowIfNull(repository);
+
         var record = await repository.GetStepsByDateAsync(date);
         return record?.TotalSteps;
     }
@@ -96,28 +111,31 @@ public static class InMemoryHealthDataRepositoryExtensions
     /// Gets average SpO2 percentage for a specific date
     /// </summary>
     /// <param name="repository">The repository instance</param>
+    /// <exception cref="ArgumentNullException"><paramref name="repository"/> is null</exception>
     /// <param name="date">The date to calculate average for</param>
     /// <returns>Average SpO2 percentage, or null if no data exists</returns>
     public static async Task<int?> GetAverageSpO2Async(this InMemoryHealthDataRepository repository, DateTime date)
     {
+        ArgumentNullException.ThrowIfNull(repository);
+
         var records = await repository.GetSpO2RangeAsync(date.Date, date.Date.AddDays(1).AddTicks(-1));
 
-        if (records.Count == 0)
-        {
-            return null;
-        }
-
-        return (int)Math.Round(records.Average(r => r.AveragePercentage));
+        return records.Count == 0
+            ? null
+            : (int)Math.Round(records.Average(r => r.AveragePercentage));
     }
 
     /// <summary>
     /// Checks if any health data exists for a specific date across all data types
     /// </summary>
     /// <param name="repository">The repository instance</param>
+    /// <exception cref="ArgumentNullException"><paramref name="repository"/> is null</exception>
     /// <param name="date">The date to check</param>
     /// <returns>True if any data exists for the date, false otherwise</returns>
     public static async Task<bool> HasDataForDateAsync(this InMemoryHealthDataRepository repository, DateTime date)
     {
+        ArgumentNullException.ThrowIfNull(repository);
+
         return await repository.AnyRecordsExistAsync(date);
     }
 
@@ -125,9 +143,13 @@ public static class InMemoryHealthDataRepositoryExtensions
     /// Gets the latest record across all data types for a specific date
     /// </summary>
     /// <param name="repository">The repository instance</param>
+    /// <exception cref="ArgumentNullException"><paramref name="repository"/> is null</exception>
+    /// <param name="date">The date to retrieve the latest record for</param>
     /// <returns>Tuple containing the data type and record, or null if no data exists</returns>
     public static async Task<(HealthDataType DataType, object? Record)?> GetLatestRecordAsync(this InMemoryHealthDataRepository repository, DateTime date)
     {
+        ArgumentNullException.ThrowIfNull(repository);
+
         var hasData = await repository.HasDataForDateAsync(date);
 
         if (!hasData)
@@ -162,24 +184,24 @@ public static class InMemoryHealthDataRepositoryExtensions
             .OrderByDescending(c => c.Item2)
             .FirstOrDefault();
 
-        if (latest != default)
-        {
-            return (latest.Item1, latest.Item3);
-        }
-
-        return null;
+        return latest != default
+            ? (latest.Item1, latest.Item3)
+            : null;
     }
 
     /// <summary>
     /// Gets all records for a specific date grouped by data type
     /// </summary>
     /// <param name="repository">The repository instance</param>
+    /// <exception cref="ArgumentNullException"><paramref name="repository"/> is null</exception>
     /// <param name="date">The date to retrieve records for</param>
     /// <returns>Dictionary mapping data types to their records for the specified date</returns>
     public static async Task<Dictionary<HealthDataType, List<object>>> GetRecordsByDateGroupedAsync(
         this InMemoryHealthDataRepository repository,
         DateTime date)
     {
+        ArgumentNullException.ThrowIfNull(repository);
+
         var result = new Dictionary<HealthDataType, List<object>>
         {
             { HealthDataType.Sleep, [] },
