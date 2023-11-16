@@ -72,4 +72,28 @@ int durationMinutes = ExportServiceExtensions.DurationMinutes;
 int deepSleepMinutes = ExportServiceExtensions.DeepSleepMinutes;
 ```
 
+## InMemoryHealthDataRepositoryExtensions
+
+The `InMemoryHealthDataRepositoryExtensions` class provides in-memory data access methods for retrieving health metrics like sleep, heart rate, and steps. It offers efficient, lightweight access to health data stored in memory, ideal for scenarios requiring fast lookups or temporary data processing.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Data;
+
+// Retrieve the most recent sleep record
+var mostRecentSleep = await InMemoryHealthDataRepositoryExtensions.GetMostRecentSleepAsync();
+
+// Check if data exists for a specific date
+bool hasData = await InMemoryHealthDataRepositoryExtensions.HasDataForDateAsync("2024-03-20");
+
+// Get total steps and average heart rate
+int? totalSteps = await InMemoryHealthDataRepositoryExtensions.GetTotalStepsAsync();
+int? avgHeartRate = await InMemoryHealthDataRepositoryExtensions.GetAverageHeartRateAsync();
+
+// Get the latest record of any type
+var latestRecord = await InMemoryHealthDataRepositoryExtensions.GetLatestRecordAsync();
+
+// Group all records by date
+var recordsByDate = await InMemoryHealthDataRepositoryExtensions.GetRecordsByDateGroupedAsync();
 ```
