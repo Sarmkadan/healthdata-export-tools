@@ -4,6 +4,8 @@
 // CTO & Software Architect
 // =============================================================================
 
+using System.Text.Json.Nodes;
+
 namespace HealthDataExportTools.Utilities;
 
 /// <summary>
@@ -70,7 +72,7 @@ public static class JsonUtility
     {
         try
         {
-            var doc = JsonDocument.Parse(json);
+            using var doc = JsonDocument.Parse(json);
             return JsonSerializer.Serialize(doc, DefaultOptions);
         }
         catch (JsonException)
@@ -104,19 +106,45 @@ public static class JsonUtility
     {
         try
         {
-            var doc1 = JsonDocument.Parse(json1);
-            var doc2 = JsonDocument.Parse(json2);
+            var node1 = JsonNode.Parse(json1);
+            var node2 = JsonNode.Parse(json2);
 
-            using var stream = new MemoryStream();
-            using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true });
-            doc2.RootElement.WriteTo(writer);
-            writer.Flush();
-            return Encoding.UTF8.GetString(stream.ToArray());
+            var merged = MergeNodes(node1, node2);
+
+            return merged is null
+                ? "null"
+                : merged.ToJsonString(new JsonSerializerOptions { WriteIndented = true });
         }
         catch (JsonException ex)
         {
             throw new HealthDataException("Error merging JSON objects", ex);
         }
+    }
+
+    /// <summary>
+    /// Recursively merge two JSON nodes, with values from <paramref name="second"/> overriding
+    /// values from <paramref name="first"/>. Objects are merged property-by-property; any other
+    /// value kind (arrays, scalars) is simply overridden by the second node when present.
+    /// </summary>
+    private static JsonNode? MergeNodes(JsonNode? first, JsonNode? second)
+    {
+        if (second is null)
+            return first?.DeepClone();
+
+        if (first is JsonObject firstObject && second is JsonObject secondObject)
+        {
+            var result = new JsonObject();
+
+            foreach (var property in firstObject)
+                result[property.Key] = property.Value?.DeepClone();
+
+            foreach (var property in secondObject)
+                result[property.Key] = MergeNodes(firstObject[property.Key], property.Value);
+
+            return result;
+        }
+
+        return second.DeepClone();
     }
 
     /// <summary>
@@ -126,7 +154,7 @@ public static class JsonUtility
     {
         try
         {
-            var doc = JsonDocument.Parse(json);
+            using var doc = JsonDocument.Parse(json);
             var pathParts = path.Split('.');
 
             JsonElement current = doc.RootElement;
@@ -138,7 +166,7 @@ public static class JsonUtility
                     // Handle array access like "records[0]"
                     var bracketIndex = part.IndexOf('[');
                     var propName = part[..bracketIndex];
-                    var arrayIndex = int.Parse(part[(bracketIndex + 1)..part.LastIndexOf(']')]);
+                    var arrayIndex = int.Parse(part[(bracketIndex + 1)..part.LastIndexOf(']')], CultureInfo.InvariantCulture);
 
                     if (current.TryGetProperty(propName, out var arrayElement))
                     {
@@ -169,7 +197,7 @@ public static class JsonUtility
     {
         try
         {
-            var doc = JsonDocument.Parse(json);
+            using var doc = JsonDocument.Parse(json);
             var options = new JsonSerializerOptions { WriteIndented = false };
             return JsonSerializer.Serialize(doc, options);
         }
@@ -188,7 +216,7 @@ public static class JsonUtility
 
         try
         {
-            var doc = JsonDocument.Parse(json);
+            using var doc = JsonDocument.Parse(json);
 
             foreach (var field in requiredFields)
             {
