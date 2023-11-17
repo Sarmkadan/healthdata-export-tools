@@ -140,10 +140,17 @@ public static class DataTransformationUtility
                     var interpolatedTime = current.RecordDate.Add(
                         TimeSpan.FromSeconds(gap.TotalSeconds * j));
 
-                    var interpolatedValue = Lerp(0.0, 0.0, j / (double)interpolatedCount);
+                    // Clone the record through its concrete runtime type so subtype-specific
+                    // fields (heart rate, steps, sleep stages, etc.) survive the interpolation.
+                    var interpolated = CloneRecord(current);
+                    interpolated.RecordDate = interpolatedTime;
+                    interpolated.CreatedUtc = DateTime.UtcNow;
+                    interpolated.ModifiedUtc = DateTime.UtcNow;
+                    interpolated.Notes = string.IsNullOrEmpty(interpolated.Notes)
+                        ? "Interpolated"
+                        : $"{interpolated.Notes} (Interpolated)";
 
-                    // Create interpolated record (clone and update)
-                    // This is simplified; actual implementation would depend on model structure
+                    result.Add(interpolated);
                 }
             }
         }
@@ -156,6 +163,22 @@ public static class DataTransformationUtility
     /// Linear interpolation helper
     /// </summary>
     private static double Lerp(double a, double b, double t) => a + (b - a) * t;
+
+    /// <summary>
+    /// Clone a health data record preserving its concrete runtime type, so subtype-specific
+    /// properties are copied without needing per-type interpolation logic.
+    /// </summary>
+    private static HealthDataRecord CloneRecord(HealthDataRecord source)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+
+        var concreteType = source.GetType();
+        var json = System.Text.Json.JsonSerializer.Serialize(source, concreteType);
+        var clone = (HealthDataRecord?)System.Text.Json.JsonSerializer.Deserialize(json, concreteType);
+
+        return clone ?? throw new InvalidOperationException(
+            $"Failed to clone record of type '{concreteType.FullName}' for interpolation.");
+    }
 
     /// <summary>
     /// Remove outliers using IQR method
