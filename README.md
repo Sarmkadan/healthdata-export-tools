@@ -97,3 +97,41 @@ var latestRecord = await InMemoryHealthDataRepositoryExtensions.GetLatestRecordA
 // Group all records by date
 var recordsByDate = await InMemoryHealthDataRepositoryExtensions.GetRecordsByDateGroupedAsync();
 ```
+
+## MockValidationService
+
+The `MockValidationService` class provides a mock implementation of the `IValidationService` interface, allowing for easy testing and validation of health data. It offers methods for validating sleep data, heart rate data, SpO2 data, steps data, activity data, and health metrics.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Services;
+
+// Create a new instance of MockValidationService
+var mockValidationService = new MockValidationService();
+
+// Validate sleep data
+var sleepData = new SleepData();
+var validationResult = mockValidationService.ValidateSleepData(sleepData);
+
+// Validate heart rate data
+var heartRateData = new HeartRateData();
+var heartRateValidationResult = mockValidationService.ValidateHeartRateData(heartRateData);
+
+// Validate SpO2 data
+var spo2Data = new SpO2Data();
+var spo2ValidationResult = mockValidationService.ValidateSpO2Data(spo2Data);
+
+// Validate steps data
+var stepsData = new StepsData();
+var stepsValidationResult = mockValidationService.ValidateStepsData(stepsData);
+
+// Validate activity data
+var activityData = new ActivityData();
+var activityValidationResult = mockValidationService.ValidateActivityData(activityData);
+
+// Validate health metric
+var healthMetric = new HealthMetric();
+var healthValidationResult = mockValidationService.ValidateHealthMetric(healthMetric);
+```
+```
