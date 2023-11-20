@@ -134,4 +134,87 @@ var activityValidationResult = mockValidationService.ValidateActivityData(activi
 var healthMetric = new HealthMetric();
 var healthValidationResult = mockValidationService.ValidateHealthMetric(healthMetric);
 ```
+
+## HealthDataParserServiceTests
+
+The `HealthDataParserServiceTests` class contains comprehensive unit tests for the `HealthDataParserService` class. It tests various parsing scenarios including JSON parsing, device type detection, and collection merging functionality to ensure robust health data processing.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Services;
+using HealthDataExportTools.Domain.Enums;
+
+// Create a parser service with validation
+var validationService = new MockValidationService();
+var parserService = new HealthDataParserService(validationService);
+
+// Test JSON parsing with all health data types
+var jsonContent = @"{
+    ""sleep"": [{
+        ""recordDate"": ""2024-01-01T00:00:00Z"",
+        ""deviceId"": ""my_zepp_watch"",
+        ""sleepStart"": ""2024-01-01T22:00:00Z"",
+        ""sleepEnd"": ""2024-01-02T06:00:00Z"",
+        ""durationMinutes"": 480,
+        ""deepSleepMinutes"": 90,
+        ""lightSleepMinutes"": 270,
+        ""remSleepMinutes"": 60,
+        ""awakeMinutes"": 60,
+        ""quality"": ""3"",
+        ""score"": 85
+    }],
+    ""heartRate"": [{
+        ""recordDate"": ""2024-01-01T12:00:00Z"",
+        ""deviceId"": ""my_zepp_watch"",
+        ""minimumBpm"": 50,
+        ""maximumBpm"": 120,
+        ""averageBpm"": 70,
+        ""restingBpm"": 60,
+        ""measurementCount"": 100
+    }],
+    ""spO2"": [{
+        ""recordDate"": ""2024-01-01T03:00:00Z"",
+        ""deviceId"": ""my_zepp_watch"",
+        ""minimumPercentage"": 95,
+        ""maximumPercentage"": 99,
+        ""averagePercentage"": 97,
+        ""restingPercentage"": 98,
+        ""measurementCount"": 50
+    }],
+    ""steps"": [{
+        ""recordDate"": ""2024-01-01T23:59:59Z"",
+        ""deviceId"": ""my_zepp_watch"",
+        ""totalSteps"": 10000,
+        ""distanceKm"": 7.5,
+        ""caloriesBurned"": 500,
+        ""dailyGoal"": 10000,
+        ""activeMinutes"": 120
+    }]
+}";
+
+// Parse JSON and verify results
+var collection = await parserService.ParseJsonAsync(jsonContent);
+
+// Verify all data types were parsed
+collection.SleepRecords.Should().HaveCount(1);
+collection.HeartRateRecords.Should().HaveCount(1);
+collection.SpO2Records.Should().HaveCount(1);
+collection.StepsRecords.Should().HaveCount(1);
+
+// Test device type detection
+var deviceType = parserService.DetectDeviceType("my_zepp_watch");
+deviceType.Should().Be(DeviceType.Zepp);
+
+// Test collection merging
+var collection1 = new HealthDataCollection {
+    SleepRecords = { new SleepData { DeviceId = "device1" } }
+};
+var collection2 = new HealthDataCollection {
+    HeartRateRecords = { new HeartRateData { DeviceId = "device2" } }
+};
+var merged = parserService.MergeCollections(collection1, collection2);
+merged.SleepRecords.Should().HaveCount(1);
+merged.HeartRateRecords.Should().HaveCount(1);
+```
 ```
