@@ -148,9 +148,19 @@ public sealed class NotificationService
         if (message is null)
             return;
 
-        _logger.LogInformation(
-            "Sending {Type} notification: {Subject}",
-            message.Type, message.Subject);
+        var logLevel = message.Type switch
+        {
+            NotificationType.Error => LogLevel.Error,
+            NotificationType.Warning => LogLevel.Warning,
+            NotificationType.Success => LogLevel.Information,
+            NotificationType.Info => LogLevel.Information,
+            _ => LogLevel.Information
+        };
+
+        _logger.Log(
+            logLevel,
+            "Sending {Type} notification: {Subject} - {Body}",
+            message.Type, message.Subject, message.Body);
 
         var tasks = _channels.Select(channel => SendToChannelAsync(channel, message)).ToList();
 

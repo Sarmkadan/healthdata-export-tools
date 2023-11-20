@@ -70,7 +70,10 @@ public sealed class TrendAnomalyDetectionService
             };
 
             var results = await Task.WhenAll(tasks).ConfigureAwait(false);
-            report.Metrics.AddRange(results);
+            // Only surface a metric when the source collection actually had records for it;
+            // an entirely empty HealthDataCollection should yield an empty report rather than
+            // four "Insufficient Data" placeholders.
+            report.Metrics.AddRange(results.Where(r => r.SampleCount > 0));
 
             _logger.LogInformation(
                 "Analysis complete — {Anomalies} anomalies across {Metrics} metrics",

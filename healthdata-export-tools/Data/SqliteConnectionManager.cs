@@ -13,15 +13,33 @@ namespace HealthDataExportTools.Data;
 /// <summary>
 /// Manages SQLite database connections and initialization
 /// </summary>
-public sealed class SqliteConnectionManager
+public sealed class SqliteConnectionManager : IDisposable
 {
     private readonly string _databasePath;
     private readonly string _connectionString;
+    private readonly SqliteConnection? _keepAliveConnection;
 
     public SqliteConnectionManager(string databasePath)
     {
         _databasePath = databasePath;
         _connectionString = string.Format(Constants.Database.SqliteConnectionTemplate, databasePath);
+
+        // An in-memory database only persists for the lifetime of a single connection,
+        // and a shared-cache in-memory database is destroyed as soon as its last open
+        // connection closes. Each SqliteConnectionManager consumer opens and closes its
+        // own connections (GetConnection/InitializeDatabaseAsync/etc.), so without a
+        // shared cache plus a connection kept open for the manager's lifetime, every new
+        // connection to ":memory:" would see an empty, unrelated (or destroyed) database.
+        if (string.Equals(databasePath, ":memory:", StringComparison.OrdinalIgnoreCase))
+        {
+            // Plain ":memory:" gives each connection its own private database even with
+            // Cache=Shared. A named in-memory database (Mode=Memory) is required for the
+            // shared cache to actually be shared across separate SqliteConnection instances.
+            var memoryDbName = $"SqliteConnectionManager_{Guid.NewGuid():N}";
+            _connectionString = $"Data Source={memoryDbName};Mode=Memory;Cache=Shared;";
+            _keepAliveConnection = new SqliteConnection(_connectionString);
+            _keepAliveConnection.Open();
+        }
     }
 
     /// <summary>
@@ -253,4 +271,12 @@ public sealed class SqliteConnectionManager
     /// Get connection string
     /// </summary>
     public string GetConnectionString() => _connectionString;
+
+    /// <summary>
+    /// Releases the keep-alive connection used to back a shared-cache in-memory database, if any.
+    /// </summary>
+    public void Dispose()
+    {
+        _keepAliveConnection?.Dispose();
+    }
 }

@@ -79,7 +79,6 @@ public sealed class NotificationServiceTests
     {
         // Arrange
         var messageBody = "Test Error Message";
-        var exception = new Exception("Test Exception");
         var notificationMessage = new NotificationMessage
         {
             Subject = "Test Subject",
@@ -92,11 +91,14 @@ public sealed class NotificationServiceTests
         await _sut.SendNotificationAsync(notificationMessage).ConfigureAwait(false);
 
         // Assert
+        // SendNotificationAsync logs the notification message itself; it does not receive
+        // an Exception instance (NotificationMessage has no such field), so the logged
+        // exception argument is always null here.
         _mockLogger.Received(1).Log(
             LogLevel.Error,
             Arg.Any<EventId>(),
             Arg.Is<object>(o => o.ToString().Contains(messageBody)),
-            exception, // The actual service logs the exception, not passes it to SendNotificationAsync directly
+            null,
             Arg.Any<Func<object, Exception, string>>());
     }
 

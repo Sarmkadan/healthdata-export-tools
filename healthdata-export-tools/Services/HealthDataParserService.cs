@@ -90,8 +90,11 @@ public sealed class HealthDataParserService
 
             return Task.FromResult(collection);
         }
-        catch (JsonException ex)
+        catch (Exception ex) when (ex is JsonException or FormatException or InvalidOperationException or KeyNotFoundException)
         {
+            // JsonException covers malformed JSON syntax; FormatException/InvalidOperationException
+            // cover well-formed JSON with values that don't match the expected shape (e.g. a
+            // non-date string in a date field, or a missing required property).
             throw new ParsingException("Failed to parse JSON content", ex.Message, 0, ex);
         }
     }
@@ -307,6 +310,6 @@ public sealed class HealthDataCollection
     public int GetTotalRecordCount()
     {
         return SleepRecords.Count + HeartRateRecords.Count + SpO2Records.Count +
-               StepsRecords.Count + ActivityRecords.Count;
+               StepsRecords.Count + ActivityRecords.Count + Metrics.Count;
     }
 }

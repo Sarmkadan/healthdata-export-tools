@@ -30,7 +30,7 @@ public sealed class BatchProcessingService
     {
         if (items is null || items.Count == 0)
         {
-            return new BatchProcessingResult { TotalItems = 0, ProcessedItems = 0, FailedItems = 0 };
+            return new BatchProcessingResult { TotalItems = 0, ProcessedItems = 0, FailedItems = 0, IsSuccessful = true };
         }
 
         var result = new BatchProcessingResult
@@ -98,7 +98,7 @@ public sealed class BatchProcessingService
     {
         if (items is null || items.Count == 0)
         {
-            return new BatchProcessingResult { TotalItems = 0, ProcessedItems = 0, FailedItems = 0 };
+            return new BatchProcessingResult { TotalItems = 0, ProcessedItems = 0, FailedItems = 0, IsSuccessful = true };
         }
 
         var result = new BatchProcessingResult

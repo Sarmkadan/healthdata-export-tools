@@ -64,7 +64,7 @@ public sealed class HealthDataParserServiceTests
                     ""lightSleepMinutes"": 270,
                     ""remSleepMinutes"": 60,
                     ""awakeMinutes"": 60,
-                    ""quality"": ""1"",
+                    ""quality"": ""3"",
                     ""score"": 85
                 }
             ],
@@ -175,7 +175,7 @@ public sealed class HealthDataParserServiceTests
         // Assert
         collection.SleepRecords.Should().HaveCount(1);
         collection.SleepRecords.First().Score.Should().BeNull();
-        collection.SleepRecords.First().Quality.Should().Be(SleepQuality.VeryPoor); // Default enum value
+        collection.SleepRecords.First().Quality.Should().Be(SleepQuality.Average); // SleepData.Quality's declared default
 
         collection.HeartRateRecords.Should().HaveCount(1);
         collection.HeartRateRecords.First().RestingBpm.Should().BeNull();

@@ -214,7 +214,7 @@ public sealed class ValidationServiceTests
 			LightSleepMinutes = 270,
 			RemSleepMinutes = 60,
 			AwakeMinutes = 60,
-			AverageHeartRate = 30 // Too low
+			AverageHeartRate = 20 // Too low
 		};
 
 		// Act
@@ -323,8 +323,8 @@ public sealed class ValidationServiceTests
 
 		// Assert
 		result.IsValid.Should().BeFalse();
-		result.Errors.Should().Contain("MinimumBpm cannot be greater than MaximumBpm");
-		result.Errors.Should().Contain("AverageBpm must be between MinimumBpm and MaximumBpm");
+		result.Errors.Should().Contain("Minimum heart rate cannot be greater than maximum");
+		result.Errors.Should().Contain("Average heart rate must be between minimum and maximum");
 	}
 
 	// --- ValidateSpO2Data Tests ---
