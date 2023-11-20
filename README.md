@@ -314,3 +314,38 @@ intensityDistribution.MediumIntensity.Should().Be(1);
 intensityDistribution.HighIntensity.Should().Be(1);
 intensityDistribution.TotalCalories.Should().Be(750);
 ```
+
+## DomainModelTests
+
+The `DomainModelTests` class contains unit tests for various domain models, including `SleepData`, `StepsData`, `HeartRateData`, and `SpO2Data`. It tests the calculation of sleep quality, deep sleep percentage, goal achievement, and other metrics. The following example demonstrates how to use the `DomainModelTests` class to test the calculation of sleep quality:
+
+```csharp
+var sleepData = new SleepData
+{
+    DurationMinutes = 480,
+    DeepSleepMinutes = 90,
+    LightSleepMinutes = 270,
+    RemSleepMinutes = 60,
+    AwakeMinutes = 60
+};
+
+var quality = sleepData.CalculateQuality();
+quality.Should().Be(SleepQuality.Good);
+
+var deepSleepPercentage = sleepData.GetDeepSleepPercentage();
+deepSleepPercentage.Should().BeApproximately(18.75, 0.01);
+```
+
+## MockValidationService
+
+The `MockValidationService` class provides a mock implementation of the `IValidationService` interface, allowing for easy testing and validation of health data. 
+
+## HealthDataParserServiceTests
+
+The `HealthDataParserServiceTests` class contains comprehensive unit tests for the `HealthDataParserService` class. 
+
+```csharp
+var parserService = new HealthDataParserService(new MockValidationService());
+var deviceType = parserService.DetectDeviceType("my_zepp_watch");
+deviceType.Should().Be(DeviceType.Zepp);
+```
