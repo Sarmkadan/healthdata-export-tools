@@ -217,4 +217,100 @@ var merged = parserService.MergeCollections(collection1, collection2);
 merged.SleepRecords.Should().HaveCount(1);
 merged.HeartRateRecords.Should().HaveCount(1);
 ```
+
+## AnalyticsServiceTests
+
+The `AnalyticsServiceTests` class contains comprehensive unit tests for the `AnalyticsService` class. It tests various analytics calculations including sleep duration, heart rate, steps, trends, health scores, and quality analysis for different health metrics like sleep, SpO2, and activity intensity.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Services;
+using HealthDataExportTools.Domain.Models;
+using FluentAssertions;
+
+// Create an analytics service instance
+var analyticsService = new AnalyticsService();
+
+// Test sleep duration calculation
+var sleepRecords = new List<SleepData>
+{
+    new SleepData { RecordDate = DateTime.UtcNow.AddDays(-1), DurationMinutes = 480 },
+    new SleepData { RecordDate = DateTime.UtcNow.AddDays(-2), DurationMinutes = 540 },
+    new SleepData { RecordDate = DateTime.UtcNow.AddDays(-3), DurationMinutes = 420 }
+};
+
+var avgSleepDuration = analyticsService.CalculateAverageSleepDuration(sleepRecords, 7);
+avgSleepDuration.Should().BeApproximately(8.5, 0.001); // 8.5 hours average
+
+// Test heart rate calculation
+var heartRateRecords = new List<HeartRateData>
+{
+    new HeartRateData { RecordDate = DateTime.UtcNow.AddDays(-1), AverageBpm = 65 },
+    new HeartRateData { RecordDate = DateTime.UtcNow.AddDays(-2), AverageBpm = 68 },
+    new HeartRateData { RecordDate = DateTime.UtcNow.AddDays(-3), AverageBpm = 72 }
+};
+
+var avgHeartRate = analyticsService.CalculateAverageHeartRate(heartRateRecords, 7);
+avgHeartRate.Should().Be(68);
+
+// Test steps calculation
+var stepsRecords = new List<StepsData>
+{
+    new StepsData { RecordDate = DateTime.UtcNow.AddDays(-1), TotalSteps = 12000 },
+    new StepsData { RecordDate = DateTime.UtcNow.AddDays(-2), TotalSteps = 8500 },
+    new StepsData { RecordDate = DateTime.UtcNow.AddDays(-3), TotalSteps = 11000 }
+};
+
+var totalSteps = analyticsService.CalculateTotalSteps(stepsRecords, 7);
+totalSteps.Should().Be(31500);
+
+// Test trend analysis
+var values = new List<int> { 10, 12, 15, 18, 22, 25, 30, 35, 40, 45 };
+var trendResult = analyticsService.AnalyzeTrend(values, 10);
+trendResult.Status.Should().Be("Improving");
+trendResult.PercentChange.Should().BeGreaterThan(10);
+
+// Test health score calculation
+var collection = new HealthDataCollection
+{
+    SleepRecords = { new SleepData { DurationMinutes = 450, DeepSleepMinutes = 90, RemSleepMinutes = 75 } },
+    HeartRateRecords = { new HeartRateData { AverageBpm = 65 } },
+    SpO2Records = { new SpO2Data { AveragePercentage = 98 } },
+    StepsRecords = { new StepsData { TotalSteps = 10500 } }
+};
+
+var healthScore = analyticsService.CalculateHealthScore(collection);
+healthScore.Should().BeGreaterThan(50);
+
+// Test sleep quality analysis
+var sleepQualityReport = analyticsService.AnalyzeSleepQuality(sleepRecords);
+sleepQualityReport.TotalNights.Should().Be(3);
+sleepQualityReport.ExcellentNights.Should().Be(0);
+
+// Test SpO2 health analysis
+var spo2Records = new List<SpO2Data>
+{
+    new SpO2Data { AveragePercentage = 98, MinimumPercentage = 95, LowSpO2Events = 0 },
+    new SpO2Data { AveragePercentage = 92, MinimumPercentage = 88, LowSpO2Events = 2 }
+};
+
+var spo2Report = analyticsService.AnalyzeSpO2Health(spo2Records, 30);
+spo2Report.AverageSpO2.Should().Be(95);
+spo2Report.Status.Should().Be("Alert - Concerning");
+
+// Test activity intensity analysis
+var activityRecords = new List<ActivityData>
+{
+    new ActivityData { IntensityLevel = 25, CaloriesBurned = 150 }, // Low
+    new ActivityData { IntensityLevel = 55, CaloriesBurned = 250 }, // Medium
+    new ActivityData { IntensityLevel = 85, CaloriesBurned = 350 }  // High
+};
+
+var intensityDistribution = analyticsService.AnalyzeActivityIntensity(activityRecords, 7);
+intensityDistribution.TotalActivities.Should().Be(3);
+intensityDistribution.LowIntensity.Should().Be(1);
+intensityDistribution.MediumIntensity.Should().Be(1);
+intensityDistribution.HighIntensity.Should().Be(1);
+intensityDistribution.TotalCalories.Should().Be(750);
 ```
