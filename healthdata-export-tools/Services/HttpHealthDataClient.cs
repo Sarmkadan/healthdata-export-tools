@@ -44,12 +44,12 @@ public sealed class HttpHealthDataClient
             var queryParams = new List<string>();
 
             if (startDate.HasValue)
-                queryParams.Add($"startDate={startDate:yyyy-MM-dd}");
+                queryParams.Add($"startDate={startDate.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}");
 
             if (endDate.HasValue)
-                queryParams.Add($"endDate={endDate:yyyy-MM-dd}");
+                queryParams.Add($"endDate={endDate.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}");
 
-            queryParams.Add($"deviceType={deviceType}");
+            queryParams.Add($"deviceType={Uri.EscapeDataString(deviceType)}");
 
             var query = string.Join("&", queryParams);
             var url = $"{apiUrl}?{query}";

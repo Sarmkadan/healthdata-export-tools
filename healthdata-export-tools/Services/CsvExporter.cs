@@ -102,7 +102,7 @@ public sealed class CsvExporter : IHealthDataExporter
 
             foreach (var r in records)
             {
-                WriteFieldIf(csv, all || columns.Contains("Date"),         r.RecordDate.ToString(options.DateFormat));
+                WriteFieldIf(csv, all || columns.Contains("Date"),         r.RecordDate.ToString(options.DateFormat, CultureInfo.InvariantCulture));
                 WriteFieldIf(csv, all || columns.Contains("Duration"),     r.DurationMinutes);
                 WriteFieldIf(csv, all || columns.Contains("DeepSleep"),    r.DeepSleepMinutes);
                 WriteFieldIf(csv, all || columns.Contains("LightSleep"),   r.LightSleepMinutes);
@@ -154,7 +154,7 @@ public sealed class CsvExporter : IHealthDataExporter
 
             foreach (var r in records)
             {
-                WriteFieldIf(csv, all || columns.Contains("Date"),         r.RecordDate.ToString(options.DateFormat));
+                WriteFieldIf(csv, all || columns.Contains("Date"),         r.RecordDate.ToString(options.DateFormat, CultureInfo.InvariantCulture));
                 WriteFieldIf(csv, all || columns.Contains("MinBpm"),       r.MinimumBpm);
                 WriteFieldIf(csv, all || columns.Contains("MaxBpm"),       r.MaximumBpm);
                 WriteFieldIf(csv, all || columns.Contains("AvgBpm"),       r.AverageBpm);
@@ -202,7 +202,7 @@ public sealed class CsvExporter : IHealthDataExporter
 
             foreach (var r in records)
             {
-                WriteFieldIf(csv, all || columns.Contains("Date"),           r.RecordDate.ToString(options.DateFormat));
+                WriteFieldIf(csv, all || columns.Contains("Date"),           r.RecordDate.ToString(options.DateFormat, CultureInfo.InvariantCulture));
                 WriteFieldIf(csv, all || columns.Contains("MinPercentage"),  r.MinimumPercentage);
                 WriteFieldIf(csv, all || columns.Contains("MaxPercentage"),  r.MaximumPercentage);
                 WriteFieldIf(csv, all || columns.Contains("AvgPercentage"),  r.AveragePercentage);
@@ -245,7 +245,7 @@ public sealed class CsvExporter : IHealthDataExporter
 
             foreach (var r in records)
             {
-                WriteFieldIf(csv, all || columns.Contains("Date"),            r.RecordDate.ToString(options.DateFormat));
+                WriteFieldIf(csv, all || columns.Contains("Date"),            r.RecordDate.ToString(options.DateFormat, CultureInfo.InvariantCulture));
                 WriteFieldIf(csv, all || columns.Contains("Steps"),           r.TotalSteps);
                 WriteFieldIf(csv, all || columns.Contains("DistanceKm"),      r.DistanceKm);
                 WriteFieldIf(csv, all || columns.Contains("Calories"),        r.CaloriesBurned);

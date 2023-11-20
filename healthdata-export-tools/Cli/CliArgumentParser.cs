@@ -72,21 +72,21 @@ public sealed class CliArgumentParser
         // Validate date format if provided
         if (!string.IsNullOrEmpty(_options.StartDate))
         {
-            if (!DateTime.TryParse(_options.StartDate, out _))
+            if (!DateTime.TryParse(_options.StartDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out _))
                 errors.Add($"Invalid start date format: {_options.StartDate}");
         }
 
         if (!string.IsNullOrEmpty(_options.EndDate))
         {
-            if (!DateTime.TryParse(_options.EndDate, out _))
+            if (!DateTime.TryParse(_options.EndDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out _))
                 errors.Add($"Invalid end date format: {_options.EndDate}");
         }
 
         // Validate date range
         if (!string.IsNullOrEmpty(_options.StartDate) && !string.IsNullOrEmpty(_options.EndDate))
         {
-            if (DateTime.TryParse(_options.StartDate, out var start) &&
-                DateTime.TryParse(_options.EndDate, out var end))
+            if (DateTime.TryParse(_options.StartDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out var start) &&
+                DateTime.TryParse(_options.EndDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out var end))
             {
                 if (start > end)
                     errors.Add("Start date cannot be after end date");
@@ -161,10 +161,10 @@ public sealed class CliArgumentParser
             { "help", v => _options.Help = true },
             { "version", v => _options.Version = true },
             { "no-parallel", v => _options.Parallel = false },
-            { "max-parallelism", v => _options.MaxParallelism = int.Parse(v) },
+            { "max-parallelism", v => _options.MaxParallelism = int.Parse(v, CultureInfo.InvariantCulture) },
             { "cache", v => _options.EnableCache = true },
             { "no-cache", v => _options.EnableCache = false },
-            { "cache-duration", v => _options.CacheDurationMinutes = int.Parse(v) },
+            { "cache-duration", v => _options.CacheDurationMinutes = int.Parse(v, CultureInfo.InvariantCulture) },
         };
     }
 

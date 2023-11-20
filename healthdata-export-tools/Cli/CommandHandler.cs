@@ -102,12 +102,14 @@ public sealed class CommandHandler
         var filtered = records.AsEnumerable();
 
         // Filter by date range
-        if (!string.IsNullOrEmpty(options.StartDate) && DateTime.TryParse(options.StartDate, out var start))
+        if (!string.IsNullOrEmpty(options.StartDate) &&
+            DateTime.TryParse(options.StartDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out var start))
         {
             filtered = filtered.Where(r => r.RecordDate >= start);
         }
 
-        if (!string.IsNullOrEmpty(options.EndDate) && DateTime.TryParse(options.EndDate, out var end))
+        if (!string.IsNullOrEmpty(options.EndDate) &&
+            DateTime.TryParse(options.EndDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out var end))
         {
             filtered = filtered.Where(r => r.RecordDate <= end);
         }
