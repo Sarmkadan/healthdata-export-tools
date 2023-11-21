@@ -490,6 +490,65 @@ deletedSleep.Should().BeNull();
 await repository.DeleteOldRecordsAsync(DateTime.UtcNow.AddDays(-30));
 ```
 
+## BatchProcessingServiceTests
+
+The `BatchProcessingServiceTests` class contains comprehensive unit tests for the `BatchProcessingService` class. It tests batch processing functionality including sequential and parallel batch processing, error handling, progress tracking, and batch partitioning scenarios.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Services;
+using FluentAssertions;
+
+// Create a batch processing service
+var logger = Substitute.For<ILogger<BatchProcessingService>>();
+var batchProcessingService = new BatchProcessingService(logger);
+
+// Test sequential batch processing
+var items = Enumerable.Range(1, 100).ToList();
+var processedItems = new List<int>();
+
+var result = await batchProcessingService.ProcessInBatchesAsync(
+    items,
+    async batch => 
+    {
+        await Task.Delay(1);
+        lock (processedItems)
+        {
+            processedItems.AddRange(batch);
+        }
+    },
+    batchSize: 10
+);
+
+result.TotalItems.Should().Be(100);
+result.ProcessedItems.Should().Be(100);
+result.IsSuccessful.Should().BeTrue();
+
+// Test parallel batch processing
+var parallelResult = await batchProcessingService.ProcessInParallelBatchesAsync(
+    items,
+    async batch => 
+    {
+        await Task.Delay(1);
+        lock (processedItems)
+        {
+            processedItems.AddRange(batch);
+        }
+    },
+    batchSize: 10,
+    maxParallelism: 4
+);
+
+parallelResult.TotalItems.Should().Be(100);
+parallelResult.ProcessedItems.Should().Be(100);
+parallelResult.IsSuccessful.Should().BeTrue();
+
+// Test batch partitioning
+var batches = batchProcessingService.PartitionIntoBatches(items, 3);
+batches.Should().HaveCount(34); // 33 batches of 3 items + 1 batch of 1 item
+```
+
 ## DomainModelTests
 
 The `DomainModelTests` class contains unit tests for various domain models, including `SleepData`, `StepsData`, `HeartRateData`, and `SpO2Data`. It tests the calculation of sleep quality, deep sleep percentage, goal achievement, and other metrics. The following example demonstrates how to use the `DomainModelTests` class to test the calculation of sleep quality:
