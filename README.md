@@ -98,6 +98,107 @@ var latestRecord = await InMemoryHealthDataRepositoryExtensions.GetLatestRecordA
 var recordsByDate = await InMemoryHealthDataRepositoryExtensions.GetRecordsByDateGroupedAsync();
 ```
 
+## ValidationServiceTests
+
+The `ValidationServiceTests` class contains comprehensive unit tests for the `ValidationService` class, covering validation scenarios for various health data types including sleep, heart rate, SpO2, steps, activity, and general health metrics. It tests both valid and invalid data scenarios to ensure robust validation logic.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Services;
+using HealthDataExportTools.Domain.Models;
+using FluentAssertions;
+
+// Create validation service instance
+var validationService = new ValidationService();
+
+// Validate sleep data with valid values
+var validSleepData = new SleepData
+{
+    RecordDate = DateTime.UtcNow.Date,
+    SleepStart = DateTime.UtcNow.AddHours(-8),
+    SleepEnd = DateTime.UtcNow,
+    DurationMinutes = 480,
+    DeepSleepMinutes = 90,
+    LightSleepMinutes = 270,
+    RemSleepMinutes = 60,
+    AwakeMinutes = 60,
+    AverageHeartRate = 65,
+    Score = 80,
+    Quality = SleepQuality.Good
+};
+
+var sleepValidationResult = validationService.ValidateSleepData(validSleepData);
+sleepValidationResult.IsValid.Should().BeTrue();
+sleepValidationResult.Errors.Should().BeEmpty();
+
+// Validate heart rate data with invalid BPM ranges
+var invalidHeartRateData = new HeartRateData
+{
+    RecordDate = DateTime.UtcNow.Date,
+    MinimumBpm = 150,
+    MaximumBpm = 100, // Invalid: min > max
+    AverageBpm = 120
+};
+
+var hrValidationResult = validationService.ValidateHeartRateData(invalidHeartRateData);
+hrValidationResult.IsValid.Should().BeFalse();
+hrValidationResult.Errors.Should().Contain("Minimum heart rate cannot be greater than maximum");
+
+// Validate SpO2 data with valid values
+var validSpO2Data = new SpO2Data
+{
+    RecordDate = DateTime.UtcNow.Date,
+    MinimumPercentage = 95,
+    MaximumPercentage = 99,
+    AveragePercentage = 97,
+    RestingPercentage = 98,
+    MeasurementCount = 50
+};
+
+var spo2ValidationResult = validationService.ValidateSpO2Data(validSpO2Data);
+spo2ValidationResult.IsValid.Should().BeTrue();
+
+// Validate steps data with negative total steps
+var invalidStepsData = new StepsData
+{
+    RecordDate = DateTime.UtcNow.Date,
+    TotalSteps = -100 // Invalid: negative steps
+};
+
+var stepsValidationResult = validationService.ValidateStepsData(invalidStepsData);
+stepsValidationResult.IsValid.Should().BeFalse();
+stepsValidationResult.Errors.Should().Contain("TotalSteps must be non-negative");
+
+// Validate activity data with empty activity type
+var invalidActivityData = new ActivityData
+{
+    ActivityType = "", // Invalid: empty
+    RecordDate = DateTime.UtcNow.Date,
+    StartTime = DateTime.UtcNow.AddHours(-1),
+    EndTime = DateTime.UtcNow,
+    DurationMinutes = 60
+};
+
+var activityValidationResult = validationService.ValidateActivityData(invalidActivityData);
+activityValidationResult.IsValid.Should().BeFalse();
+activityValidationResult.Errors.Should().Contain("ActivityType cannot be empty");
+
+// Validate health metric with valid values
+var validHealthMetric = new HealthMetric
+{
+    MetricName = "Weight",
+    RecordDate = DateTime.UtcNow.Date,
+    Value = 75.5,
+    Unit = "kg",
+    NormalRangeLow = 60,
+    NormalRangeHigh = 80
+};
+
+var healthMetricValidationResult = validationService.ValidateHealthMetric(validHealthMetric);
+healthMetricValidationResult.IsValid.Should().BeTrue();
+```
+
 ## MockValidationService
 
 The `MockValidationService` class provides a mock implementation of the `IValidationService` interface, allowing for easy testing and validation of health data. It offers methods for validating sleep data, heart rate data, SpO2 data, steps data, activity data, and health metrics.
@@ -334,6 +435,107 @@ quality.Should().Be(SleepQuality.Good);
 
 var deepSleepPercentage = sleepData.GetDeepSleepPercentage();
 deepSleepPercentage.Should().BeApproximately(18.75, 0.01);
+```
+
+## ValidationServiceTests
+
+The `ValidationServiceTests` class contains comprehensive unit tests for the `ValidationService` class, covering validation scenarios for various health data types including sleep, heart rate, SpO2, steps, activity, and general health metrics. It tests both valid and invalid data scenarios to ensure robust validation logic.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Services;
+using HealthDataExportTools.Domain.Models;
+using FluentAssertions;
+
+// Create validation service instance
+var validationService = new ValidationService();
+
+// Validate sleep data with valid values
+var validSleepData = new SleepData
+{
+    RecordDate = DateTime.UtcNow.Date,
+    SleepStart = DateTime.UtcNow.AddHours(-8),
+    SleepEnd = DateTime.UtcNow,
+    DurationMinutes = 480,
+    DeepSleepMinutes = 90,
+    LightSleepMinutes = 270,
+    RemSleepMinutes = 60,
+    AwakeMinutes = 60,
+    AverageHeartRate = 65,
+    Score = 80,
+    Quality = SleepQuality.Good
+};
+
+var sleepValidationResult = validationService.ValidateSleepData(validSleepData);
+sleepValidationResult.IsValid.Should().BeTrue();
+sleepValidationResult.Errors.Should().BeEmpty();
+
+// Validate heart rate data with invalid BPM ranges
+var invalidHeartRateData = new HeartRateData
+{
+    RecordDate = DateTime.UtcNow.Date,
+    MinimumBpm = 150,
+    MaximumBpm = 100, // Invalid: min > max
+    AverageBpm = 120
+};
+
+var hrValidationResult = validationService.ValidateHeartRateData(invalidHeartRateData);
+hrValidationResult.IsValid.Should().BeFalse();
+hrValidationResult.Errors.Should().Contain("Minimum heart rate cannot be greater than maximum");
+
+// Validate SpO2 data with valid values
+var validSpO2Data = new SpO2Data
+{
+    RecordDate = DateTime.UtcNow.Date,
+    MinimumPercentage = 95,
+    MaximumPercentage = 99,
+    AveragePercentage = 97,
+    RestingPercentage = 98,
+    MeasurementCount = 50
+};
+
+var spo2ValidationResult = validationService.ValidateSpO2Data(validSpO2Data);
+spo2ValidationResult.IsValid.Should().BeTrue();
+
+// Validate steps data with negative total steps
+var invalidStepsData = new StepsData
+{
+    RecordDate = DateTime.UtcNow.Date,
+    TotalSteps = -100 // Invalid: negative steps
+};
+
+var stepsValidationResult = validationService.ValidateStepsData(invalidStepsData);
+stepsValidationResult.IsValid.Should().BeFalse();
+stepsValidationResult.Errors.Should().Contain("TotalSteps must be non-negative");
+
+// Validate activity data with empty activity type
+var invalidActivityData = new ActivityData
+{
+    ActivityType = "", // Invalid: empty
+    RecordDate = DateTime.UtcNow.Date,
+    StartTime = DateTime.UtcNow.AddHours(-1),
+    EndTime = DateTime.UtcNow,
+    DurationMinutes = 60
+};
+
+var activityValidationResult = validationService.ValidateActivityData(invalidActivityData);
+activityValidationResult.IsValid.Should().BeFalse();
+activityValidationResult.Errors.Should().Contain("ActivityType cannot be empty");
+
+// Validate health metric with valid values
+var validHealthMetric = new HealthMetric
+{
+    MetricName = "Weight",
+    RecordDate = DateTime.UtcNow.Date,
+    Value = 75.5,
+    Unit = "kg",
+    NormalRangeLow = 60,
+    NormalRangeHigh = 80
+};
+
+var healthMetricValidationResult = validationService.ValidateHealthMetric(validHealthMetric);
+healthMetricValidationResult.IsValid.Should().BeTrue();
 ```
 
 ## MockValidationService
