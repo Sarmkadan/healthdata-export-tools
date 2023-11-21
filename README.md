@@ -416,6 +416,80 @@ intensityDistribution.HighIntensity.Should().Be(1);
 intensityDistribution.TotalCalories.Should().Be(750);
 ```
 
+## InMemoryHealthDataRepositoryTests
+
+The `InMemoryHealthDataRepositoryTests` class contains comprehensive unit tests for the `InMemoryHealthDataRepository` class. It tests various CRUD operations and data management scenarios for sleep, heart rate, and steps data stored in memory.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Data;
+using HealthDataExportTools.Domain.Models;
+using FluentAssertions;
+
+// Create an in-memory repository instance
+var repository = new InMemoryHealthDataRepository();
+
+// Add sleep data
+var sleepData = new SleepData
+{
+    Id = Guid.NewGuid().ToString(),
+    RecordDate = DateTime.UtcNow.Date,
+    DeviceId = "TestDevice",
+    DurationMinutes = 480,
+    Quality = SleepQuality.Good,
+    DeepSleepMinutes = 100,
+    RemSleepMinutes = 80
+};
+
+await repository.AddSleepAsync(sleepData);
+
+// Retrieve sleep data by ID
+var retrievedSleep = await repository.GetSleepByIdAsync(sleepData.Id);
+retrievedSleep.Should().NotBeNull();
+
+// Update sleep data
+sleepData.DurationMinutes = 500;
+await repository.UpdateSleepAsync(sleepData);
+var updatedSleep = await repository.GetSleepByIdAsync(sleepData.Id);
+updatedSleep!.DurationMinutes.Should().Be(500);
+
+// Add heart rate data
+var hrData = new HeartRateData
+{
+    Id = Guid.NewGuid().ToString(),
+    RecordDate = DateTime.UtcNow.Date,
+    DeviceId = "TestDevice",
+    AverageBpm = 70,
+    MinimumBpm = 60,
+    MaximumBpm = 80
+};
+
+await repository.AddHeartRateAsync(hrData);
+
+// Retrieve heart rate data by ID
+var retrievedHr = await repository.GetHeartRateByIdAsync(hrData.Id);
+retrievedHr.Should().NotBeNull();
+
+// Get total record count
+var totalRecords = await repository.GetTotalRecordCountAsync();
+totalRecords.Should().Be(2);
+
+// Get sleep data within a date range
+var sleepRange = await repository.GetSleepRangeAsync(
+    DateTime.UtcNow.AddDays(-2),
+    DateTime.UtcNow.AddDays(-1)
+);
+
+// Delete sleep data
+await repository.DeleteSleepAsync(sleepData.Id);
+var deletedSleep = await repository.GetSleepByIdAsync(sleepData.Id);
+deletedSleep.Should().BeNull();
+
+// Delete old records (older than 30 days)
+await repository.DeleteOldRecordsAsync(DateTime.UtcNow.AddDays(-30));
+```
+
 ## DomainModelTests
 
 The `DomainModelTests` class contains unit tests for various domain models, including `SleepData`, `StepsData`, `HeartRateData`, and `SpO2Data`. It tests the calculation of sleep quality, deep sleep percentage, goal achievement, and other metrics. The following example demonstrates how to use the `DomainModelTests` class to test the calculation of sleep quality:
