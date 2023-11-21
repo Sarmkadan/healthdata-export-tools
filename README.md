@@ -511,6 +511,54 @@ var deepSleepPercentage = sleepData.GetDeepSleepPercentage();
 deepSleepPercentage.Should().BeApproximately(18.75, 0.01);
 ```
 
+## SqliteConnectionManagerTests
+
+The `SqliteConnectionManagerTests` class contains comprehensive unit tests for the `SqliteConnectionManager` class, covering database connection management, initialization, verification, and file operations. It tests scenarios for opening connections, creating database files, verifying connection states, and managing database files including existence checks and deletion.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Data;
+using FluentAssertions;
+
+// Create a connection manager instance
+var connectionManager = new SqliteConnectionManager("test_database.db");
+
+// Verify non-existent database returns false
+bool existsBefore = connectionManager.DatabaseExists();
+existsBefore.Should().BeFalse();
+
+// Initialize database and verify tables are created
+await connectionManager.InitializeDatabaseAsync();
+
+// Verify connection is open
+bool isConnected = await connectionManager.VerifyConnectionAsync();
+isConnected.Should().BeTrue();
+
+// Get an open connection
+var connection = await connectionManager.GetConnection();
+connection.Should().NotBeNull();
+
+// Verify database now exists
+bool existsAfter = connectionManager.DatabaseExists();
+existsAfter.Should().BeTrue();
+
+// Get database file size
+long size = await connectionManager.GetDatabaseSize();
+size.Should().BeGreaterThan(0);
+
+// Delete database file
+await connectionManager.DeleteDatabase();
+
+// Verify database no longer exists
+bool existsAfterDelete = connectionManager.DatabaseExists();
+existsAfterDelete.Should().BeFalse();
+
+// Verify connection returns false after database deletion
+bool isConnectedAfterDelete = await connectionManager.VerifyConnectionAsync();
+isConnectedAfterDelete.Should().BeFalse();
+```
+
 ## ValidationServiceTests
 
 The `ValidationServiceTests` class contains comprehensive unit tests for the `ValidationService` class, covering validation scenarios for various health data types including sleep, heart rate, SpO2, steps, activity, and general health metrics. It tests both valid and invalid data scenarios to ensure robust validation logic.
