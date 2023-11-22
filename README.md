@@ -570,6 +570,59 @@ var deepSleepPercentage = sleepData.GetDeepSleepPercentage();
 deepSleepPercentage.Should().BeApproximately(18.75, 0.01);
 ```
 
+## CacheServiceTests
+
+The `CacheServiceTests` class contains comprehensive unit tests for the `CacheService` class. It tests caching operations including storing and retrieving health data, analytics, clearing cache entries, checking cache existence, and managing cache patterns.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Cache;
+using HealthDataExportTools.Domain.Models;
+using FluentAssertions;
+using Microsoft.Extensions.Logging;
+using NSubstitute;
+
+// Create a mock cache provider and logger
+var mockCacheProvider = Substitute.For<ICacheProvider>();
+var mockLogger = Substitute.For<ILogger<CacheService>>();
+
+// Create the cache service instance
+var cacheService = new CacheService(mockCacheProvider, mockLogger);
+
+// Cache health data
+var healthDataKey = "user1_health_data";
+var healthData = new List<HealthDataRecord> { new SleepData { DeviceId = "device1" } };
+await cacheService.CacheHealthDataAsync(healthDataKey, healthData);
+
+// Retrieve cached health data
+var cachedHealthData = await cacheService.GetCachedHealthDataAsync(healthDataKey);
+cachedHealthData.Should().NotBeNull();
+
+// Check if health data is cached
+var isCached = await cacheService.IsHealthDataCachedAsync(healthDataKey);
+isCached.Should().BeTrue();
+
+// Cache analytics data
+var analyticsKey = "user1_analytics";
+var analyticsData = new { AverageSleep = 7.5, StepsGoalAchieved = true };
+await cacheService.CacheAnalyticsAsync(analyticsKey, analyticsData);
+
+// Retrieve cached analytics
+var cachedAnalytics = await cacheService.GetCachedAnalyticsAsync<dynamic>(analyticsKey);
+cachedAnalytics.Should().NotBeNull();
+
+// Get cache statistics
+var stats = await cacheService.GetStatsAsync();
+stats.ItemCount.Should().BeGreaterOrEqualTo(2);
+
+// Clear all cache entries
+await cacheService.ClearAllAsync();
+
+// Clear cache entries matching a pattern
+await cacheService.ClearPatternAsync("user1");
+```
+
 ## SqliteConnectionManagerTests
 
 The `SqliteConnectionManagerTests` class contains comprehensive unit tests for the `SqliteConnectionManager` class, covering database connection management, initialization, verification, and file operations. It tests scenarios for opening connections, creating database files, verifying connection states, and managing database files including existence checks and deletion.
