@@ -898,3 +898,93 @@ var parserService = new HealthDataParserService(new MockValidationService());
 var deviceType = parserService.DetectDeviceType("my_zepp_watch");
 deviceType.Should().Be(DeviceType.Zepp);
 ```
+
+## ReportGenerationServiceTests
+
+The `ReportGenerationServiceTests` class contains comprehensive unit tests for the `ReportGenerationService` class. It tests various report generation scenarios including summary reports, daily reports, weekly reports, trend analysis, and JSON export functionality to ensure robust report generation across different health data types.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Services;
+using HealthDataExportTools.Domain.Models;
+using HealthDataExportTools.Domain.Enums;
+using FluentAssertions;
+using NSubstitute;
+using Microsoft.Extensions.Logging;
+
+// Create mock logger
+var mockLogger = Substitute.For<ILogger<ReportGenerationService>>();
+
+// Create report generation service instance
+var reportService = new ReportGenerationService(mockLogger);
+
+// Test summary report generation with valid records
+var healthRecords = new List<HealthDataRecord>
+{
+    new SleepData { RecordDate = DateTime.UtcNow.AddDays(-2), DurationMinutes = 480, Quality = SleepQuality.Good, DeviceId = "DeviceA" },
+    new HeartRateData { RecordDate = DateTime.UtcNow.AddDays(-1), AverageBpm = 70, DeviceId = "DeviceA" },
+    new StepsData { RecordDate = DateTime.UtcNow, TotalSteps = 10000, DeviceId = "DeviceB" }
+};
+
+var summaryReport = await reportService.GenerateSummaryReportAsync(healthRecords);
+summaryReport.TotalRecords.Should().Be(3);
+summaryReport.DeviceDistribution.Should().ContainKey("DeviceA").And.ContainKey("DeviceB");
+
+// Test daily report generation
+var today = DateTime.UtcNow.Date;
+var sleepData = new List<SleepData>
+{
+    new SleepData { RecordDate = today.AddHours(1), DurationMinutes = 400, Quality = SleepQuality.Good, DeepSleepMinutes = 100, RemSleepMinutes = 80 },
+    new SleepData { RecordDate = today.AddHours(2), DurationMinutes = 500, Quality = SleepQuality.Excellent, DeepSleepMinutes = 120, RemSleepMinutes = 90 }
+};
+
+var heartRateData = new List<HeartRateData>
+{
+    new HeartRateData { RecordDate = today.AddHours(3), AverageBpm = 65, MinimumBpm = 50, MaximumBpm = 80 },
+    new HeartRateData { RecordDate = today.AddHours(4), AverageBpm = 75, MinimumBpm = 60, MaximumBpm = 90 }
+};
+
+var dailyReport = await reportService.GenerateDailyReportAsync(sleepData, heartRateData, today);
+dailyReport.Date.Should().Be(today);
+dailyReport.SleepMetrics.Should().NotBeNull();
+dailyReport.SleepMetrics!.TotalDurationMinutes.Should().Be(900);
+dailyReport.HeartRateMetrics.Should().NotBeNull();
+dailyReport.HeartRateMetrics!.AverageHeartRate.Should().Be(70);
+
+// Test weekly summary report generation
+var weeklyReports = await reportService.GenerateWeeklySummaryReportAsync(
+    new List<SleepData> { new SleepData { RecordDate = today.AddDays(-1), DurationMinutes = 460, Quality = SleepQuality.Good } },
+    new List<HeartRateData> { new HeartRateData { RecordDate = today.AddDays(-1), AverageBpm = 68, MinimumBpm = 52, MaximumBpm = 110 } },
+    new List<StepsData> { new StepsData { RecordDate = today.AddDays(-1), TotalSteps = 9500 } }
+);
+
+weeklyReports.Should().NotBeEmpty();
+weeklyReports[0].AverageSleepDurationMinutes.Should().Be(460);
+weeklyReports[0].AverageHeartRate.Should().Be(68);
+weeklyReports[0].TotalSteps.Should().Be(9500);
+
+// Test trend report generation
+var trendRecords = new List<HealthDataRecord>();
+for (int i = 0; i < 10; i++)
+{
+    trendRecords.Add(new StepsData { RecordDate = today.AddDays(-i), TotalSteps = 5000 + (i * 100), DeviceId = "DeviceX" });
+}
+
+var trendReport = await reportService.GenerateTrendReportAsync(trendRecords, 7);
+trendReport.Should().NotBeNull();
+trendReport.WindowDays.Should().Be(7);
+trendReport.MetricTrends.Should().NotBeEmpty();
+
+// Test JSON export
+var tmpFile = Path.Combine(Path.GetTempPath(), $"weekly_{Guid.NewGuid()}.json");
+try
+{
+    await reportService.ExportWeeklySummaryToJsonAsync(weeklyReports, tmpFile);
+    File.Exists(tmpFile).Should().BeTrue();
+}
+finally
+{
+    if (File.Exists(tmpFile)) File.Delete(tmpFile);
+}
+```
