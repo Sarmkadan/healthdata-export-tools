@@ -236,6 +236,69 @@ var healthMetric = new HealthMetric();
 var healthValidationResult = mockValidationService.ValidateHealthMetric(healthMetric);
 ```
 
+
+## ChartExportServiceTests
+
+The `ChartExportServiceTests` class contains comprehensive unit tests for the `ChartExportService` class. It tests various chart export scenarios including HTML generation, chart rendering, data handling, and configuration options for different health data types like SpO2 records, sleep data, and summary tables.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Services;
+using HealthDataExportTools.Domain.Models;
+using FluentAssertions;
+
+// Create a chart export service instance
+var chartExportService = new ChartExportService();
+
+// Export charts to HTML with SpO2 records
+var spo2Records = new List<SpO2Data>
+{
+    new SpO2Data { RecordDate = DateTime.UtcNow.Date.AddDays(-1), AveragePercentage = 98, MinimumPercentage = 95, MaximumPercentage = 99 },
+    new SpO2Data { RecordDate = DateTime.UtcNow.Date.AddDays(-2), AveragePercentage = 96, MinimumPercentage = 93, MaximumPercentage = 98 },
+    new SpO2Data { RecordDate = DateTime.UtcNow.Date.AddDays(-3), AveragePercentage = 97, MinimumPercentage = 94, MaximumPercentage = 99 }
+};
+
+var htmlResult = await chartExportService.ExportToHtmlChartsAsync(spo2Records);
+htmlResult.Should().NotBeNullOrEmpty();
+htmlResult.Should().Contain("SpO2");
+
+// Export charts with sleep data
+var sleepRecords = new List<SleepData>
+{
+    new SleepData { RecordDate = DateTime.UtcNow.Date.AddDays(-1), DurationMinutes = 480, DeepSleepMinutes = 90, RemSleepMinutes = 75, AwakeMinutes = 60 },
+    new SleepData { RecordDate = DateTime.UtcNow.Date.AddDays(-2), DurationMinutes = 540, DeepSleepMinutes = 105, RemSleepMinutes = 90, AwakeMinutes = 75 }
+};
+
+var sleepHtmlResult = await chartExportService.ExportToHtmlChartsAsync(sleepRecords);
+sleepHtmlResult.Should().NotBeNullOrEmpty();
+sleepHtmlResult.Should().Contain("Sleep Composition");
+
+// Export charts with all data types
+var collection = new HealthDataCollection
+{
+    SpO2Records = { new SpO2Data { AveragePercentage = 98 } },
+    SleepRecords = { new SleepData { DurationMinutes = 480 } },
+    HeartRateRecords = { new HeartRateData { AverageBpm = 70 } },
+    StepsRecords = { new StepsData { TotalSteps = 10000 } }
+};
+
+var allDataHtmlResult = await chartExportService.ExportToHtmlChartsAsync(collection);
+allDataHtmlResult.Should().NotBeNullOrEmpty();
+allDataHtmlResult.Should().Contain("Summary Table");
+
+// Export charts with disabled charts option
+var options = new ChartExportOptions
+{
+    IncludeSpO2Chart = false,
+    IncludeSleepCompositionChart = false,
+    IncludeSummaryTable = true
+};
+
+var optionsHtmlResult = await chartExportService.ExportToHtmlChartsAsync(spo2Records, options);
+optionsHtmlResult.Should().NotBeNullOrEmpty();
+```
+
 ## HealthDataParserServiceTests
 
 The `HealthDataParserServiceTests` class contains comprehensive unit tests for the `HealthDataParserService` class. It tests various parsing scenarios including JSON parsing, device type detection, and collection merging functionality to ensure robust health data processing.
