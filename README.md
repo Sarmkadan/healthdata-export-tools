@@ -633,6 +633,56 @@ var deepSleepPercentage = sleepData.GetDeepSleepPercentage();
 deepSleepPercentage.Should().BeApproximately(18.75, 0.01);
 ```
 
+## DataTransformationUtilityTests
+
+The `DataTransformationUtilityTests` class provides comprehensive unit tests for the `DataTransformationUtility` class, covering data transformation operations including aggregation, filtering, outlier removal, and statistical calculations. It tests various scenarios for transforming health data to support analytics and reporting workflows.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Utilities;
+using HealthDataExportTools.Domain.Models;
+using FluentAssertions;
+
+// Create sample health data for testing
+var sleepRecords = new List<SleepData>
+{
+    new SleepData { RecordDate = DateTime.UtcNow.Date, DurationMinutes = 400, Quality = SleepQuality.Good },
+    new SleepData { RecordDate = DateTime.UtcNow.Date, DurationMinutes = 200, Quality = SleepQuality.Average }
+};
+
+// Test sleep aggregation by date
+var sleepByDate = DataTransformationUtility.AggregateSleepByDate(sleepRecords);
+sleepByDate.Should().ContainKey(DateTime.UtcNow.Date);
+
+// Test heart rate aggregation by hour
+var heartRateRecords = new List<HeartRateData>
+{
+    new HeartRateData { RecordDate = DateTime.UtcNow.AddHours(-2), AverageBpm = 80 },
+    new HeartRateData { RecordDate = DateTime.UtcNow.AddHours(-1), AverageBpm = 100 }
+};
+var heartRateByHour = DataTransformationUtility.AggregateHeartRateByHour(heartRateRecords);
+
+// Test steps aggregation by day
+var stepsRecords = new List<StepsData>
+{
+    new StepsData { RecordDate = DateTime.UtcNow.Date, TotalSteps = 5000 },
+    new StepsData { RecordDate = DateTime.UtcNow.Date, TotalSteps = 3000 }
+};
+var stepsByDay = DataTransformationUtility.AggregateStepsByDay(stepsRecords);
+
+// Test date range filtering
+var allRecords = new List<HealthDataRecord>();
+var filteredRecords = DataTransformationUtility.FilterByDateRange(allRecords, DateTime.UtcNow.AddDays(-7), DateTime.UtcNow);
+
+// Test outlier removal
+var values = new List<double> { 10, 12, 11, 13, 100, 11, 12, 10 };
+var cleanedValues = DataTransformationUtility.RemoveOutliers(values);
+
+// Test moving average calculation
+var movingAvg = DataTransformationUtility.CalculateMovingAverage(values, 3);
+```
+
 ## CacheServiceTests
 
 The `CacheServiceTests` class contains comprehensive unit tests for the `CacheService` class. It tests caching operations including storing and retrieving health data, analytics, clearing cache entries, checking cache existence, and managing cache patterns.
