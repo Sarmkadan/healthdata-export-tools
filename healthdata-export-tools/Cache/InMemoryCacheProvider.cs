@@ -242,7 +242,17 @@ public class InMemoryCacheProvider : ICacheProvider
             size += kvp.Key.Length * sizeof(char);
             if (kvp.Value.Value != null)
             {
-                size += System.Runtime.InteropServices.Marshal.SizeOf(kvp.Value.Value);
+                // Fix: Safely estimate size by checking if the type is blittable to avoid Marshal.SizeOf throwing exceptions on managed types
+                var type = kvp.Value.Value.GetType();
+                if (type.IsValueType && !type.IsGenericType)
+                {
+                    try { size += System.Runtime.InteropServices.Marshal.SizeOf(kvp.Value.Value); }
+                    catch { size += 256; }
+                }
+                else
+                {
+                    size += 256;
+                }
             }
         }
         return size;

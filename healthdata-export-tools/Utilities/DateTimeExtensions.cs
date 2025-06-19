@@ -3,6 +3,8 @@
 // CTO & Software Architect
 // =============================================================================
 
+using System.Runtime.CompilerServices;
+
 namespace HealthDataExportTools.Utilities;
 
 /// <summary>
@@ -79,6 +81,7 @@ public static class DateTimeExtensions
     /// <summary>
     /// Check if a date is in the past
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsPast(this DateTime dateTime)
     {
         return dateTime < DateTime.UtcNow;
@@ -87,6 +90,7 @@ public static class DateTimeExtensions
     /// <summary>
     /// Check if a date is in the future
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsFuture(this DateTime dateTime)
     {
         return dateTime > DateTime.UtcNow;
@@ -95,6 +99,7 @@ public static class DateTimeExtensions
     /// <summary>
     /// Check if a date is today
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsToday(this DateTime dateTime)
     {
         return dateTime.Date == DateTime.UtcNow.Date;
