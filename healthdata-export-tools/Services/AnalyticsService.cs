@@ -134,24 +134,31 @@ public class AnalyticsService
     public SleepQualityReport AnalyzeSleepQuality(List<SleepData> records, int days = 30)
     {
         var cutoffDate = DateTime.UtcNow.AddDays(-days);
-        var filtered = records.Where(r => r.RecordDate >= cutoffDate).ToList();
 
-        if (filtered.Count == 0)
+        double totalDuration = 0, totalDeep = 0, totalRem = 0;
+        int excellentNights = 0, count = 0;
+
+        foreach (var r in records)
+        {
+            if (r.RecordDate < cutoffDate) continue;
+            totalDuration += r.DurationMinutes;
+            totalDeep     += r.DeepSleepMinutes;
+            totalRem      += r.RemSleepMinutes;
+            if (r.Quality == Domain.Enums.SleepQuality.Excellent) excellentNights++;
+            count++;
+        }
+
+        if (count == 0)
             return new SleepQualityReport { Description = "No sleep data available" };
-
-        var avgDuration = filtered.Average(r => r.DurationMinutes);
-        var avgDeep = filtered.Average(r => r.DeepSleepMinutes);
-        var avgRem = filtered.Average(r => r.RemSleepMinutes);
-        var excellentNights = filtered.Count(r => r.Quality == Domain.Enums.SleepQuality.Excellent);
 
         var report = new SleepQualityReport
         {
-            AverageDuration = avgDuration,
-            AverageDeepSleep = avgDeep,
-            AverageRemSleep = avgRem,
-            ExcellentNights = excellentNights,
-            TotalNights = filtered.Count,
-            ExcellenceRate = (excellentNights / (double)filtered.Count) * 100
+            AverageDuration  = totalDuration / count,
+            AverageDeepSleep = totalDeep / count,
+            AverageRemSleep  = totalRem / count,
+            ExcellentNights  = excellentNights,
+            TotalNights      = count,
+            ExcellenceRate   = (excellentNights / (double)count) * 100
         };
 
         report.Description = report.ExcellenceRate switch
@@ -159,7 +166,7 @@ public class AnalyticsService
             > 60 => "Excellent sleep quality",
             > 40 => "Good sleep quality",
             > 20 => "Average sleep quality",
-            _ => "Poor sleep quality"
+            _    => "Poor sleep quality"
         };
 
         return report;
@@ -171,31 +178,39 @@ public class AnalyticsService
     public SpO2HealthReport AnalyzeSpO2Health(List<SpO2Data> records, int days = 30)
     {
         var cutoffDate = DateTime.UtcNow.AddDays(-days);
-        var filtered = records.Where(r => r.RecordDate >= cutoffDate).ToList();
 
-        if (filtered.Count == 0)
+        long totalSpO2 = 0;
+        int minSpO2 = int.MaxValue;
+        int totalLowEvents = 0, daysWithLowEvents = 0, count = 0;
+
+        foreach (var r in records)
+        {
+            if (r.RecordDate < cutoffDate) continue;
+            totalSpO2 += r.AveragePercentage;
+            if (r.MinimumPercentage < minSpO2) minSpO2 = r.MinimumPercentage;
+            totalLowEvents += r.LowSpO2Events;
+            if (r.LowSpO2Events > 0) daysWithLowEvents++;
+            count++;
+        }
+
+        if (count == 0)
             return new SpO2HealthReport { Status = "No data" };
-
-        var avgSpO2 = filtered.Average(r => r.AveragePercentage);
-        var minSpO2 = filtered.Min(r => r.MinimumPercentage);
-        var totalLowEvents = filtered.Sum(r => r.LowSpO2Events);
-        var daysWithLowEvents = filtered.Count(r => r.LowSpO2Events > 0);
 
         var status = minSpO2 switch
         {
             < 85 => "Alert - Critical",
             < 90 => "Alert - Concerning",
             < 95 => "Caution - Monitor",
-            _ => "Normal"
+            _    => "Normal"
         };
 
         return new SpO2HealthReport
         {
-            AverageSpO2 = (int)avgSpO2,
-            MinimumSpO2 = minSpO2,
+            AverageSpO2    = (int)(totalSpO2 / count),
+            MinimumSpO2    = minSpO2,
             TotalLowEvents = totalLowEvents,
             DaysWithEvents = daysWithLowEvents,
-            Status = status
+            Status         = status
         };
     }
 
@@ -205,21 +220,30 @@ public class AnalyticsService
     public ActivityIntensityDistribution AnalyzeActivityIntensity(List<ActivityData> records, int days = 7)
     {
         var cutoffDate = DateTime.UtcNow.AddDays(-days);
-        var filtered = records.Where(r => r.RecordDate >= cutoffDate).ToList();
 
-        if (filtered.Count == 0)
+        int low = 0, medium = 0, high = 0, totalCalories = 0, count = 0;
+
+        foreach (var a in records)
+        {
+            if (a.RecordDate < cutoffDate) continue;
+            if      (a.IntensityLevel <= 33)  low++;
+            else if (a.IntensityLevel <= 66)  medium++;
+            else                              high++;
+            totalCalories += a.CaloriesBurned;
+            count++;
+        }
+
+        if (count == 0)
             return new ActivityIntensityDistribution();
 
-        var distribution = new ActivityIntensityDistribution
+        return new ActivityIntensityDistribution
         {
-            LowIntensity = filtered.Count(a => a.IntensityLevel <= 33),
-            MediumIntensity = filtered.Count(a => a.IntensityLevel > 33 && a.IntensityLevel <= 66),
-            HighIntensity = filtered.Count(a => a.IntensityLevel > 66),
-            TotalActivities = filtered.Count,
-            TotalCalories = filtered.Sum(a => a.CaloriesBurned)
+            LowIntensity    = low,
+            MediumIntensity = medium,
+            HighIntensity   = high,
+            TotalActivities = count,
+            TotalCalories   = totalCalories
         };
-
-        return distribution;
     }
 
     /// <summary>
@@ -227,35 +251,67 @@ public class AnalyticsService
     /// </summary>
     public int CalculateHealthScore(HealthDataCollection collection, int days = 7)
     {
-        var score = 50; // Base score
+        var score = 50;
+        var cutoff = DateTime.UtcNow.AddDays(-days);
 
-        if (collection.SleepRecords.Any())
+        if (collection.SleepRecords.Count > 0)
         {
-            var sleepHours = CalculateAverageSleepDuration(collection.SleepRecords, days);
-            if (sleepHours >= 7 && sleepHours <= 9) score += 15;
-            else if (sleepHours >= 6.5 && sleepHours <= 9.5) score += 10;
+            double total = 0; int n = 0;
+            foreach (var r in collection.SleepRecords)
+            {
+                if (r.RecordDate >= cutoff) { total += r.DurationMinutes; n++; }
+            }
+            if (n > 0)
+            {
+                var hours = total / n / 60.0;
+                if (hours >= 7 && hours <= 9)       score += 15;
+                else if (hours >= 6.5 && hours <= 9.5) score += 10;
+            }
         }
 
-        if (collection.HeartRateRecords.Any())
+        if (collection.HeartRateRecords.Count > 0)
         {
-            var avgHr = CalculateAverageHeartRate(collection.HeartRateRecords, days);
-            if (avgHr < 80) score += 15;
-            else if (avgHr < 100) score += 10;
+            long total = 0; int n = 0;
+            foreach (var r in collection.HeartRateRecords)
+            {
+                if (r.RecordDate >= cutoff) { total += r.AverageBpm; n++; }
+            }
+            if (n > 0)
+            {
+                var avg = (int)(total / n);
+                if (avg < 80)       score += 15;
+                else if (avg < 100) score += 10;
+            }
         }
 
-        if (collection.SpO2Records.Any())
+        if (collection.SpO2Records.Count > 0)
         {
-            var avgSpO2 = CalculateAverageSpO2(collection.SpO2Records, days);
-            if (avgSpO2 >= 95) score += 15;
-            else if (avgSpO2 >= 90) score += 10;
+            long total = 0; int n = 0;
+            foreach (var r in collection.SpO2Records)
+            {
+                if (r.RecordDate >= cutoff) { total += r.AveragePercentage; n++; }
+            }
+            if (n > 0)
+            {
+                var avg = (int)(total / n);
+                if (avg >= 95)      score += 15;
+                else if (avg >= 90) score += 10;
+            }
         }
 
-        if (collection.StepsRecords.Any())
+        if (collection.StepsRecords.Count > 0)
         {
-            var totalSteps = CalculateTotalSteps(collection.StepsRecords, days);
-            var avgSteps = totalSteps / Math.Max(1, collection.StepsRecords.Count);
-            if (avgSteps >= 10000) score += 15;
-            else if (avgSteps >= 7000) score += 10;
+            long total = 0; int n = 0;
+            foreach (var r in collection.StepsRecords)
+            {
+                if (r.RecordDate >= cutoff) { total += r.TotalSteps; n++; }
+            }
+            if (n > 0)
+            {
+                var avg = (int)(total / n);
+                if (avg >= 10000)      score += 15;
+                else if (avg >= 7000)  score += 10;
+            }
         }
 
         return Math.Min(score, 100);
