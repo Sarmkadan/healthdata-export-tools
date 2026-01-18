@@ -12,7 +12,7 @@ namespace HealthDataExportTools.Services;
 /// <summary>
 /// Service for validating health data integrity and consistency
 /// </summary>
-public class ValidationService
+public class ValidationService : IValidationService
 {
     /// <summary>
     /// Validate a sleep data record
