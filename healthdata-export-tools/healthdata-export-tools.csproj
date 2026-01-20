@@ -19,7 +19,7 @@
     <RepositoryUrl>https://github.com/sarmkadan/healthdata-export-tools</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <Version>1.0.0</Version>
+    <Version>2.0.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
