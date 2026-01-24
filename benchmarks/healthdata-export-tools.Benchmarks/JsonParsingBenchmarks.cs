@@ -3,6 +3,8 @@
 // CTO & Software Architect
 // =============================================================================
 
+#nullable enable
+
 using System.Text;
 using BenchmarkDotNet.Attributes;
 using HealthDataExportTools.Services;
