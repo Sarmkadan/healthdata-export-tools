@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -13,7 +14,7 @@ using HealthDataExportTools.Domain.Enums;
 
 namespace HealthDataExportTools.Tests;
 
-public class ReportGenerationServiceTests
+public sealed class ReportGenerationServiceTests
 {
     private readonly ILogger<ReportGenerationService> _mockLogger;
     private readonly ReportGenerationService _sut;

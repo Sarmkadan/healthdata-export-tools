@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -11,7 +12,7 @@ namespace HealthDataExportTools.Services;
 /// Detects statistical anomalies and computes directional trends across all tracked health
 /// metrics using Z-score analysis over a configurable rolling window.
 /// </summary>
-public class TrendAnomalyDetectionService
+public sealed class TrendAnomalyDetectionService
 {
     private readonly ILogger<TrendAnomalyDetectionService> _logger;
 

@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -18,7 +19,7 @@ namespace HealthDataExportTools.Tests
         }
     }
 
-    public class TestFixture
+    public sealed class TestFixture
     {
         public ServiceProvider ServiceProvider { get; private set; }
 

@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -16,7 +17,7 @@ namespace HealthDataExportTools.Services;
 /// <summary>
 /// Service for exporting health data to various formats
 /// </summary>
-public class ExportService
+public sealed class ExportService
 {
     /// <summary>
     /// Export health data collection to JSON
@@ -208,7 +209,7 @@ public class ExportService
 }
 
 /// <summary>CSV record for sleep data</summary>
-public class SleepCsvRecord
+public sealed class SleepCsvRecord
 {
     public string? Date { get; set; }
     public int Duration { get; set; }
@@ -222,7 +223,7 @@ public class SleepCsvRecord
 }
 
 /// <summary>CSV record for heart rate data</summary>
-public class HeartRateCsvRecord
+public sealed class HeartRateCsvRecord
 {
     public string? Date { get; set; }
     public int MinBpm { get; set; }
@@ -235,7 +236,7 @@ public class HeartRateCsvRecord
 }
 
 /// <summary>CSV record for steps data</summary>
-public class StepsCsvRecord
+public sealed class StepsCsvRecord
 {
     public string? Date { get; set; }
     public int Steps { get; set; }

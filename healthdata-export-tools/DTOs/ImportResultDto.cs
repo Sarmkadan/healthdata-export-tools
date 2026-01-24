@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -8,7 +9,7 @@ namespace HealthDataExportTools.DTOs;
 /// <summary>
 /// Data Transfer Object for import operation results
 /// </summary>
-public class ImportResultDto
+public sealed class ImportResultDto
 {
     [JsonPropertyName("importId")]
     public string ImportId { get; set; } = Guid.NewGuid().ToString();
@@ -78,7 +79,7 @@ public class ImportResultDto
 /// <summary>
 /// Information about validation errors during import
 /// </summary>
-public class ValidationError
+public sealed class ValidationError
 {
     [JsonPropertyName("recordIndex")]
     public int RecordIndex { get; set; }
@@ -96,7 +97,7 @@ public class ValidationError
 /// <summary>
 /// Date range information
 /// </summary>
-public class DateRangeInfo
+public sealed class DateRangeInfo
 {
     [JsonPropertyName("startDate")]
     public DateTime? StartDate { get; set; }
@@ -105,7 +106,7 @@ public class DateRangeInfo
     public DateTime? EndDate { get; set; }
 
     [JsonPropertyName("daysCovered")]
-    public int DaysCovered => EndDate != null && StartDate != null
+    public int DaysCovered => EndDate is not null && StartDate is not null
         ? (int)(EndDate - StartDate)?.TotalDays
         : 0;
 }
@@ -113,7 +114,7 @@ public class DateRangeInfo
 /// <summary>
 /// Statistics about imported data
 /// </summary>
-public class ImportStatistics
+public sealed class ImportStatistics
 {
     [JsonPropertyName("sleepRecords")]
     public int SleepRecords { get; set; }

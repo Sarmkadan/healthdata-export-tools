@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -9,7 +10,7 @@ namespace HealthDataExportTools.Cache;
 /// In-memory cache provider with expiration and statistics tracking
 /// Thread-safe implementation using ReaderWriterLockSlim
 /// </summary>
-public class InMemoryCacheProvider : ICacheProvider
+public sealed class InMemoryCacheProvider : ICacheProvider
 {
     private readonly Dictionary<string, (object? Value, DateTime? ExpiresAt, int AccessCount, DateTime? LastAccess)> _cache;
     private readonly ReaderWriterLockSlim _lock;
@@ -38,7 +39,7 @@ public class InMemoryCacheProvider : ICacheProvider
             if (_cache.TryGetValue(key, out var entry))
             {
                 // Check if expired
-                if (entry.ExpiresAt != null && DateTime.UtcNow > entry.ExpiresAt)
+                if (entry.ExpiresAt is not null && DateTime.UtcNow > entry.ExpiresAt)
                 {
                     _lock.ExitReadLock();
                     _lock.EnterWriteLock();
@@ -93,7 +94,7 @@ public class InMemoryCacheProvider : ICacheProvider
         _lock.EnterWriteLock();
         try
         {
-            DateTime? expiresAt = expiration != null ? DateTime.UtcNow.Add(expiration.Value) : null;
+            DateTime? expiresAt = expiration is not null ? DateTime.UtcNow.Add(expiration.Value) : null;
             _cache[key] = (value, expiresAt, 0, null);
 
             _logger.LogDebug("Cache set for key: {Key}, expires: {Expires}",
@@ -143,7 +144,7 @@ public class InMemoryCacheProvider : ICacheProvider
         {
             if (_cache.TryGetValue(key, out var entry))
             {
-                if (entry.ExpiresAt != null && DateTime.UtcNow > entry.ExpiresAt)
+                if (entry.ExpiresAt is not null && DateTime.UtcNow > entry.ExpiresAt)
                 {
                     return Task.FromResult(false);
                 }
@@ -185,7 +186,7 @@ public class InMemoryCacheProvider : ICacheProvider
         try
         {
             var keysToRemove = _cache
-                .Where(kvp => kvp.Value.ExpiresAt != null && DateTime.UtcNow > kvp.Value.ExpiresAt)
+                .Where(kvp => kvp.Value.ExpiresAt is not null && DateTime.UtcNow > kvp.Value.ExpiresAt)
                 .Select(kvp => kvp.Key)
                 .ToList();
 
@@ -213,7 +214,7 @@ public class InMemoryCacheProvider : ICacheProvider
         {
             // Count non-expired entries
             var validCount = _cache.Count(kvp =>
-                kvp.Value.ExpiresAt == null || DateTime.UtcNow <= kvp.Value.ExpiresAt);
+                kvp.Value.ExpiresAt is null || DateTime.UtcNow <= kvp.Value.ExpiresAt);
 
             var stats = new CacheStats
             {
@@ -240,7 +241,7 @@ public class InMemoryCacheProvider : ICacheProvider
         foreach (var kvp in _cache)
         {
             size += kvp.Key.Length * sizeof(char);
-            if (kvp.Value.Value != null)
+            if (kvp.Value.Value is not null)
             {
                 // Fix: Safely estimate size by checking if the type is blittable to avoid Marshal.SizeOf throwing exceptions on managed types
                 var type = kvp.Value.Value.GetType();

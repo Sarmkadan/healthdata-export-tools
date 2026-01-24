@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -9,7 +10,7 @@ namespace HealthDataExportTools.Formatters;
 /// Formats health data into JSON format with proper serialization
 /// Supports pretty-printing and compact modes
 /// </summary>
-public class JsonFormatter : IDataFormatter
+public sealed class JsonFormatter : IDataFormatter
 {
     private readonly ILogger<JsonFormatter> _logger;
     private readonly JsonSerializerOptions _jsonOptions;
@@ -35,7 +36,7 @@ public class JsonFormatter : IDataFormatter
     /// </summary>
     public bool CanFormat(Type dataType)
     {
-        return dataType != null;
+        return dataType is not null;
     }
 
     /// <summary>
@@ -69,7 +70,7 @@ public class JsonFormatter : IDataFormatter
     {
         try
         {
-            if (records == null || records.Count == 0)
+            if (records is null || records.Count == 0)
             {
                 _logger.LogWarning("Empty record collection provided to JSON formatter");
                 return await Task.FromResult("[]");
@@ -105,7 +106,7 @@ public class JsonFormatter : IDataFormatter
     {
         try
         {
-            if (sleepRecords == null || sleepRecords.Count == 0)
+            if (sleepRecords is null || sleepRecords.Count == 0)
                 return await Task.FromResult("[]");
 
             var output = new
@@ -148,7 +149,7 @@ public class JsonFormatter : IDataFormatter
     {
         try
         {
-            if (heartRateRecords == null || heartRateRecords.Count == 0)
+            if (heartRateRecords is null || heartRateRecords.Count == 0)
                 return await Task.FromResult("[]");
 
             var output = new
@@ -188,7 +189,7 @@ public class JsonFormatter : IDataFormatter
     {
         try
         {
-            if (spo2Records == null || spo2Records.Count == 0)
+            if (spo2Records is null || spo2Records.Count == 0)
                 return await Task.FromResult("[]");
 
             var output = new
@@ -228,7 +229,7 @@ public class JsonFormatter : IDataFormatter
     {
         try
         {
-            if (stepsRecords == null || stepsRecords.Count == 0)
+            if (stepsRecords is null || stepsRecords.Count == 0)
                 return await Task.FromResult("[]");
 
             var output = new
@@ -270,7 +271,7 @@ public class JsonFormatter : IDataFormatter
     {
         var errors = new List<string>();
 
-        if (records == null)
+        if (records is null)
         {
             errors.Add("Record collection is null");
             return await Task.FromResult(errors);

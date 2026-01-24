@@ -18,7 +18,7 @@ namespace HealthDataExportTools.Benchmarks;
 /// for each health metric type.
 /// </summary>
 [MemoryDiagnoser]
-public class CsvFormattingBenchmarks
+public sealed class CsvFormattingBenchmarks
 {
     private CsvFormatter _formatter = null!;
     private List<SleepData> _sleepRecords = null!;
