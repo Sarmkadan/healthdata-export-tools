@@ -124,13 +124,13 @@ A comprehensive, production-grade .NET 10 library for parsing, analyzing, and ex
 Install the latest release from NuGet:
 
 ```bash
-dotnet add package healthdata-export-tools
+dotnet add package healthdata-export-tools --version 2.0.2
 ```
 
 Or via Package Manager Console:
 
 ```powershell
-Install-Package healthdata-export-tools
+Install-Package healthdata-export-tools -Version 2.0.2
 ```
 
 ### From Source
@@ -140,6 +140,7 @@ Clone the repository and build locally:
 ```bash
 git clone https://github.com/Sarmkadan/healthdata-export-tools.git
 cd healthdata-export-tools
+git checkout v2.0.2
 dotnet build -c Release
 ```
 
