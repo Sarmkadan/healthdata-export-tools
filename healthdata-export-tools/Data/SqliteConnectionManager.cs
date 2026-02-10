@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -12,7 +13,7 @@ namespace HealthDataExportTools.Data;
 /// <summary>
 /// Manages SQLite database connections and initialization
 /// </summary>
-public class SqliteConnectionManager
+public sealed class SqliteConnectionManager
 {
     private readonly string _databasePath;
     private readonly string _connectionString;
@@ -240,7 +241,7 @@ public class SqliteConnectionManager
             command.CommandText = "SELECT 1;";
             var result = await command.ExecuteScalarAsync();
             await connection.CloseAsync();
-            return result != null;
+            return result is not null;
         }
         catch
         {

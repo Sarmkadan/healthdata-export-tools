@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -12,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace HealthDataExportTools.Tests;
 
-public class NotificationServiceTests
+public sealed class NotificationServiceTests
 {
     private readonly ILogger<NotificationService> _mockLogger;
     private readonly NotificationService _sut;

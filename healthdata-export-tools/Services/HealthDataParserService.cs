@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -14,7 +15,7 @@ namespace HealthDataExportTools.Services;
 /// <summary>
 /// Service for parsing health data from various formats and devices
 /// </summary>
-public class HealthDataParserService
+public sealed class HealthDataParserService
 {
     private readonly IValidationService _validationService;
 
@@ -255,7 +256,7 @@ public class HealthDataParserService
 /// <summary>
 /// Container for parsed health data records
 /// </summary>
-public class HealthDataCollection
+public sealed class HealthDataCollection
 {
     /// <summary>
     /// Sleep records

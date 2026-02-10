@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -9,7 +10,7 @@ namespace HealthDataExportTools.Formatters;
 /// Factory for creating and managing data formatters
 /// Provides centralized access to all available formatters
 /// </summary>
-public class FormatterFactory
+public sealed class FormatterFactory
 {
     private readonly Dictionary<string, IDataFormatter> _formatters;
     private readonly ILogger<FormatterFactory> _logger;
@@ -29,7 +30,7 @@ public class FormatterFactory
         if (string.IsNullOrWhiteSpace(formatName))
             throw new ArgumentException($"Format name cannot be null or empty. Received: '{formatName}'", nameof(formatName));
 
-        if (formatter == null)
+        if (formatter is null)
             throw new ArgumentNullException(nameof(formatter), "Formatter instance cannot be null when registering a new format.");
 
         _formatters[formatName] = formatter;

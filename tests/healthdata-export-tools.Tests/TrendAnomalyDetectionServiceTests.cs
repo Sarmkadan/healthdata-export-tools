@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -14,7 +15,7 @@ using System.Threading;
 
 namespace HealthDataExportTools.Tests;
 
-public class TrendAnomalyDetectionServiceTests
+public sealed class TrendAnomalyDetectionServiceTests
 {
     private readonly ILogger<TrendAnomalyDetectionService> _mockLogger;
     private readonly TrendAnomalyDetectionService _service;

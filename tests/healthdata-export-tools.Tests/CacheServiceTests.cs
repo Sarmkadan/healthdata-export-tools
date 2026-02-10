@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -13,7 +14,7 @@ using Xunit;
 
 namespace HealthDataExportTools.Tests;
 
-public class CacheServiceTests
+public sealed class CacheServiceTests
 {
     private readonly ICacheProvider _mockCacheProvider;
     private readonly ILogger<CacheService> _mockLogger;

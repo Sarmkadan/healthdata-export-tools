@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -8,7 +9,7 @@ namespace HealthDataExportTools.DTOs;
 /// <summary>
 /// A single data point that was flagged as anomalous during Z-score analysis.
 /// </summary>
-public class AnomalyPoint
+public sealed class AnomalyPoint
 {
     /// <summary>Date of the anomalous measurement.</summary>
     [JsonPropertyName("date")]
@@ -34,7 +35,7 @@ public class AnomalyPoint
 /// <summary>
 /// Trend direction and anomaly summary for a single health metric over a rolling window.
 /// </summary>
-public class MetricTrendResult
+public sealed class MetricTrendResult
 {
     /// <summary>Name of the health metric (e.g. <c>HeartRate</c>, <c>SpO2</c>, <c>Steps</c>, <c>SleepDuration</c>).</summary>
     [JsonPropertyName("metricName")]
@@ -81,7 +82,7 @@ public class MetricTrendResult
 /// Full anomaly detection report produced by <see cref="HealthDataExportTools.Services.TrendAnomalyDetectionService"/>,
 /// covering all tracked health metrics for a given rolling window.
 /// </summary>
-public class AnomalyDetectionResultDto
+public sealed class AnomalyDetectionResultDto
 {
     /// <summary>Unique identifier for this detection report.</summary>
     [JsonPropertyName("reportId")]

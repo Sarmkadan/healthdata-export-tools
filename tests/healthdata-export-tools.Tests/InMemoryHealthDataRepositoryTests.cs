@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -11,7 +12,7 @@ using HealthDataExportTools.Domain.Enums;
 
 namespace HealthDataExportTools.Tests;
 
-public class InMemoryHealthDataRepositoryTests
+public sealed class InMemoryHealthDataRepositoryTests
 {
     private readonly InMemoryHealthDataRepository _sut;
 

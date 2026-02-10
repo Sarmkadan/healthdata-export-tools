@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -50,7 +51,7 @@ public interface ICacheProvider
 /// <summary>
 /// Cache statistics for monitoring
 /// </summary>
-public class CacheStats
+public sealed class CacheStats
 {
     public int ItemCount { get; set; }
     public long TotalSize { get; set; }
@@ -63,7 +64,7 @@ public class CacheStats
 /// <summary>
 /// Cache entry with metadata
 /// </summary>
-public class CacheEntry<T>
+public sealed class CacheEntry<T>
 {
     public string Key { get; set; } = string.Empty;
     public T? Value { get; set; }
@@ -72,5 +73,5 @@ public class CacheEntry<T>
     public int AccessCount { get; set; }
     public DateTime? LastAccessAt { get; set; }
 
-    public bool IsExpired => ExpiresAt != null && DateTime.UtcNow > ExpiresAt;
+    public bool IsExpired => ExpiresAt is not null && DateTime.UtcNow > ExpiresAt;
 }

@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -48,7 +49,7 @@ class DatabaseStorageExample
             Console.WriteLine("━━━ Stored Data Statistics ━━━\n");
 
             var storedData = await repository.GetHealthDataAsync();
-            if (storedData != null)
+            if (storedData is not null)
             {
                 Console.WriteLine($"  Sleep Records:      {storedData.SleepRecords.Count}");
                 Console.WriteLine($"  Heart Rate Records: {storedData.HeartRateRecords.Count}");
@@ -123,7 +124,7 @@ class DatabaseStorageExample
         catch (Exception ex)
         {
             Console.WriteLine($"❌ Error: {ex.Message}");
-            if (ex.InnerException != null)
+            if (ex.InnerException is not null)
                 Console.WriteLine($"   Details: {ex.InnerException.Message}");
             Environment.Exit(1);
         }

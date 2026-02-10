@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -8,7 +9,7 @@ namespace HealthDataExportTools.Tasks;
 /// <summary>
 /// Background task scheduler for deferred and recurring operations
 /// </summary>
-public class BackgroundTaskScheduler
+public sealed class BackgroundTaskScheduler
 {
     private readonly Dictionary<string, ScheduledTask> _scheduledTasks;
     private readonly ReaderWriterLockSlim _tasksLock;
@@ -230,7 +231,7 @@ public class BackgroundTaskScheduler
 /// <summary>
 /// Information about a scheduled task
 /// </summary>
-public class ScheduledTask
+public sealed class ScheduledTask
 {
     public string Id { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;

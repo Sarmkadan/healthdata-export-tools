@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -8,7 +9,7 @@ namespace HealthDataExportTools.Domain.Models;
 /// <summary>
 /// Heart rate measurements collected throughout a day
 /// </summary>
-public class HeartRateData : HealthDataRecord
+public sealed class HeartRateData : HealthDataRecord
 {
     /// <summary>
     /// Minimum heart rate recorded for the day (BPM)
@@ -131,7 +132,7 @@ public class HeartRateData : HealthDataRecord
 /// <summary>
 /// Single heart rate measurement with timestamp
 /// </summary>
-public class HeartRateMeasurement
+public sealed class HeartRateMeasurement
 {
     /// <summary>
     /// Timestamp of the measurement
