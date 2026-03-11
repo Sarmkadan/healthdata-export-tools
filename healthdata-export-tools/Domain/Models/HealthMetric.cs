@@ -100,7 +100,7 @@ public sealed class HealthMetric : HealthDataRecord
             { "Date", RecordDate.ToString("yyyy-MM-dd") },
             { "Value", $"{Value} {Unit}" },
             { "HealthStatus", HealthStatus },
-            { "Confidence", ConfidenceScore },
+            { "Confidence", (object?)ConfidenceScore },
             { "DataSources", string.Join(", ", DataSources) }
         };
 

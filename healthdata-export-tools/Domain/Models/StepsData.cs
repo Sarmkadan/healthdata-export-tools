@@ -103,7 +103,7 @@ public sealed class StepsData : HealthDataRecord
             { "ActiveMinutes", ActiveMinutes },
             { "Walking", $"{WalkingMinutes} min" },
             { "Running", $"{RunningMinutes} min" },
-            { "PeakHourly", PeakStepsPerHour }
+            { "PeakHourly", (object?)PeakStepsPerHour }
         };
     }
 
