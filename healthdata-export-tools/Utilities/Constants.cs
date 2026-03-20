@@ -138,7 +138,7 @@ public static class Constants
         /// <summary>
         /// SQLite connection string template
         /// </summary>
-        public const string SqliteConnectionTemplate = "Data Source={0};Version=3;";
+        public const string SqliteConnectionTemplate = "Data Source={0};";
 
         /// <summary>
         /// Default database file name
