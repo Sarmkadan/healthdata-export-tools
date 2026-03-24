@@ -3,6 +3,8 @@
 // CTO & Software Architect
 // =============================================================================
 
+#nullable enable
+
 using BenchmarkDotNet.Attributes;
 using HealthDataExportTools.Domain.Enums;
 using HealthDataExportTools.Domain.Models;
