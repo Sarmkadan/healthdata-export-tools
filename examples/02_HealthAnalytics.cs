@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -115,7 +116,7 @@ class HealthAnalyticsExample
         catch (Exception ex)
         {
             Console.WriteLine($"❌ Error: {ex.Message}");
-            if (ex.InnerException != null)
+            if (ex.InnerException is not null)
                 Console.WriteLine($"   Details: {ex.InnerException.Message}");
             Environment.Exit(1);
         }

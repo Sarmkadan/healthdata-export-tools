@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -78,7 +79,7 @@ class DependencyInjectionExample
             // Retrieve from cache
             Console.WriteLine("📥 Retrieving from cache...");
             var cachedData = await cacheService.GetAsync<HealthDataExportDto>("current_health_data");
-            if (cachedData != null)
+            if (cachedData is not null)
             {
                 Console.WriteLine($"✓ Retrieved {cachedData.GetTotalRecordCount()} records from cache\n");
             }
@@ -117,7 +118,7 @@ class DependencyInjectionExample
         catch (Exception ex)
         {
             Console.WriteLine($"❌ Error: {ex.Message}");
-            if (ex.InnerException != null)
+            if (ex.InnerException is not null)
                 Console.WriteLine($"   Details: {ex.InnerException.Message}");
             Environment.Exit(1);
         }

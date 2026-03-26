@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -8,7 +9,7 @@ namespace HealthDataExportTools.Cli;
 /// <summary>
 /// Encapsulates command-line options and arguments
 /// </summary>
-public class CliOptions
+public sealed class CliOptions
 {
     /// <summary>
     /// Input directory containing health data exports

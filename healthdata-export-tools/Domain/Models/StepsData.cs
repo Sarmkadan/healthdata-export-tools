@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -8,7 +9,7 @@ namespace HealthDataExportTools.Domain.Models;
 /// <summary>
 /// Daily step count and activity tracking data
 /// </summary>
-public class StepsData : HealthDataRecord
+public sealed class StepsData : HealthDataRecord
 {
     /// <summary>
     /// Total steps recorded for the day

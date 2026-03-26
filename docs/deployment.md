@@ -311,7 +311,7 @@ public static class HealthDataFunction
         }
         catch (Exception ex)
         {
-            log.LogError(ex, $"Error processing {name}");
+            log.LogError(ex, "Error processing {Name}", name);
             throw;
         }
     }

@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -11,7 +12,7 @@ namespace HealthDataExportTools.Services;
 /// Service for managing cache operations with configurable TTL
 /// Provides high-level caching interface for health data and analytics
 /// </summary>
-public class CacheService
+public sealed class CacheService
 {
     private readonly ICacheProvider _cacheProvider;
     private readonly ILogger<CacheService> _logger;
@@ -60,7 +61,7 @@ public class CacheService
             var cacheKey = $"{HealthDataKeyPrefix}{key}";
             var cached = await _cacheProvider.GetAsync<List<HealthDataRecord>>(cacheKey);
 
-            if (cached != null)
+            if (cached is not null)
             {
                 _logger.LogInformation("Retrieved cached health data: {Key}", cacheKey);
             }
@@ -102,7 +103,7 @@ public class CacheService
             var cacheKey = $"{AnalyticsKeyPrefix}{key}";
             var cached = await _cacheProvider.GetAsync<T>(cacheKey);
 
-            if (cached != null)
+            if (cached is not null)
             {
                 _logger.LogInformation("Retrieved cached analytics: {Key}", cacheKey);
             }

@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -10,7 +11,7 @@ namespace HealthDataExportTools.Domain.Models;
 /// <summary>
 /// Represents a single sleep session with detailed metrics
 /// </summary>
-public class SleepData : HealthDataRecord
+public sealed class SleepData : HealthDataRecord
 {
     /// <summary>
     /// Time when sleep started

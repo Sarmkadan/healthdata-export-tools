@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -216,7 +217,7 @@ public static class FileUtility
             using (var reader = new StreamReader(filePath, Encoding.UTF8))
             {
                 string? line;
-                while ((line = await reader.ReadLineAsync()) != null)
+                while ((line = await reader.ReadLineAsync()) is not null)
                 {
                     lines.Add(line);
                 }
