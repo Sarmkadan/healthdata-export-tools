@@ -16,7 +16,7 @@ namespace HealthDataExportTools.Benchmarks;
 /// across all four metric types (sleep, heart rate, SpO2, steps).
 /// </summary>
 [MemoryDiagnoser]
-public class JsonParsingBenchmarks
+public sealed class JsonParsingBenchmarks
 {
     private string _smallDataset = null!;   // 10 records per type (40 total)
     private string _largeDataset = null!;   // 50 records per type (200 total)

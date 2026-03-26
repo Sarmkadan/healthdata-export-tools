@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -8,7 +9,7 @@ namespace HealthDataExportTools.DTOs;
 /// <summary>
 /// Data Transfer Object for validation operation results
 /// </summary>
-public class ValidationResultDto
+public sealed class ValidationResultDto
 {
     [JsonPropertyName("validationId")]
     public string ValidationId { get; set; } = Guid.NewGuid().ToString();
@@ -50,7 +51,7 @@ public class ValidationResultDto
 /// <summary>
 /// Individual validation error detail
 /// </summary>
-public class ValidationErrorDetail
+public sealed class ValidationErrorDetail
 {
     [JsonPropertyName("recordIndex")]
     public int RecordIndex { get; set; }
@@ -91,7 +92,7 @@ public class ValidationErrorDetail
 /// <summary>
 /// Validation warning
 /// </summary>
-public class ValidationWarning
+public sealed class ValidationWarning
 {
     [JsonPropertyName("recordIndex")]
     public int RecordIndex { get; set; }
@@ -124,7 +125,7 @@ public class ValidationWarning
 /// <summary>
 /// Validation statistics
 /// </summary>
-public class ValidationStatistics
+public sealed class ValidationStatistics
 {
     [JsonPropertyName("dataTypeBreakdown")]
     public Dictionary<string, DataTypeValidationStats> DataTypeBreakdown { get; set; } = new();
@@ -145,7 +146,7 @@ public class ValidationStatistics
 /// <summary>
 /// Data type validation statistics
 /// </summary>
-public class DataTypeValidationStats
+public sealed class DataTypeValidationStats
 {
     [JsonPropertyName("totalRecords")]
     public int TotalRecords { get; set; }
@@ -163,7 +164,7 @@ public class DataTypeValidationStats
 /// <summary>
 /// Common error information
 /// </summary>
-public class CommonError
+public sealed class CommonError
 {
     [JsonPropertyName("errorCode")]
     public string ErrorCode { get; set; } = string.Empty;

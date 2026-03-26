@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -12,7 +13,7 @@ namespace HealthDataExportTools.Formatters;
 /// Formats health data into CSV (Comma-Separated Values) format
 /// Provides separate CSV files for each data type to maintain clean structure
 /// </summary>
-public class CsvFormatter : IDataFormatter
+public sealed class CsvFormatter : IDataFormatter
 {
     private readonly ILogger<CsvFormatter> _logger;
 
@@ -69,7 +70,7 @@ public class CsvFormatter : IDataFormatter
     /// </summary>
     public async Task<string> FormatCollectionAsync(List<HealthDataRecord> records)
     {
-        if (records == null || records.Count == 0)
+        if (records is null || records.Count == 0)
         {
             _logger.LogWarning("Empty record collection provided to CSV formatter");
             return string.Empty;
@@ -106,7 +107,7 @@ public class CsvFormatter : IDataFormatter
     /// </summary>
     public async Task<string> FormatSleepDataAsync(List<SleepData> sleepRecords)
     {
-        if (sleepRecords == null || sleepRecords.Count == 0)
+        if (sleepRecords is null || sleepRecords.Count == 0)
             return string.Empty;
 
         var sb = new StringBuilder();
@@ -146,7 +147,7 @@ public class CsvFormatter : IDataFormatter
     /// </summary>
     public async Task<string> FormatHeartRateDataAsync(List<HeartRateData> heartRateRecords)
     {
-        if (heartRateRecords == null || heartRateRecords.Count == 0)
+        if (heartRateRecords is null || heartRateRecords.Count == 0)
             return string.Empty;
 
         var sb = new StringBuilder();
@@ -180,7 +181,7 @@ public class CsvFormatter : IDataFormatter
     /// </summary>
     public async Task<string> FormatSpO2DataAsync(List<SpO2Data> spo2Records)
     {
-        if (spo2Records == null || spo2Records.Count == 0)
+        if (spo2Records is null || spo2Records.Count == 0)
             return string.Empty;
 
         var sb = new StringBuilder();
@@ -212,7 +213,7 @@ public class CsvFormatter : IDataFormatter
     /// </summary>
     public async Task<string> FormatStepsDataAsync(List<StepsData> stepsRecords)
     {
-        if (stepsRecords == null || stepsRecords.Count == 0)
+        if (stepsRecords is null || stepsRecords.Count == 0)
             return string.Empty;
 
         var sb = new StringBuilder();
@@ -249,7 +250,7 @@ public class CsvFormatter : IDataFormatter
     {
         var errors = new List<string>();
 
-        if (records == null)
+        if (records is null)
         {
             errors.Add("Record collection is null");
             return await Task.FromResult(errors);

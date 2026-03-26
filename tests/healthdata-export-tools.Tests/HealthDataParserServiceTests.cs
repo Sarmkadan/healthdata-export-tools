@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -14,7 +15,7 @@ using ValidationResult = HealthDataExportTools.DTOs.ValidationResultDto;
 
 namespace HealthDataExportTools.Tests;
 
-public class HealthDataParserServiceTests
+public sealed class HealthDataParserServiceTests
 {
     private readonly HealthDataParserService _parserService;
     private readonly IValidationService _mockValidationService;

@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -19,7 +20,7 @@ public interface IMiddleware
 /// <summary>
 /// Context object passed through the middleware pipeline
 /// </summary>
-public class MiddlewareContext
+public sealed class MiddlewareContext
 {
     /// <summary>
     /// Unique request identifier for correlation

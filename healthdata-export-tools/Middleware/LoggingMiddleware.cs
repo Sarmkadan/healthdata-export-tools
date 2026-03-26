@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -9,7 +10,7 @@ namespace HealthDataExportTools.Middleware;
 /// Middleware for structured logging of request/response cycles
 /// Tracks timing, request data, and execution metrics
 /// </summary>
-public class LoggingMiddleware : IMiddleware
+public sealed class LoggingMiddleware : IMiddleware
 {
     private readonly ILogger<LoggingMiddleware> _logger;
     private readonly Stopwatch _stopwatch;

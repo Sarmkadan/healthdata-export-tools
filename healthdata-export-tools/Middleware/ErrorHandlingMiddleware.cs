@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -9,7 +10,7 @@ namespace HealthDataExportTools.Middleware;
 /// Middleware for centralized error handling and exception transformation
 /// Converts exceptions into structured error responses
 /// </summary>
-public class ErrorHandlingMiddleware : IMiddleware
+public sealed class ErrorHandlingMiddleware : IMiddleware
 {
     private readonly ILogger<ErrorHandlingMiddleware> _logger;
 
@@ -108,7 +109,7 @@ public class ErrorHandlingMiddleware : IMiddleware
 /// <summary>
 /// Structured error response object
 /// </summary>
-public class ErrorResponse
+public sealed class ErrorResponse
 {
     [JsonPropertyName("errorId")]
     public string ErrorId { get; set; } = string.Empty;

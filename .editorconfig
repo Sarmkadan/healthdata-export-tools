@@ -168,3 +168,9 @@ indent_style = space
 # Markdown files
 [*.md]
 trim_trailing_whitespace = false
+
+# Namespace declarations
+csharp_style_namespace_declarations = file_scoped:warning
+
+# Using directives placement
+csharp_using_directive_placement = outside_namespace:silent

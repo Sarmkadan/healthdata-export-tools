@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -188,7 +189,7 @@ public static class ValidationHelper
     /// </summary>
     public static void EnsureNotNull<T>(T? value, string fieldName) where T : class
     {
-        if (value == null)
+        if (value is null)
         {
             throw new ValidationException(
                 $"{fieldName} cannot be null",

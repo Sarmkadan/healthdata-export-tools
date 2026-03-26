@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -64,7 +65,7 @@ public interface IDataFormatter
 /// <summary>
 /// Formatter metadata and factory information
 /// </summary>
-public class FormatterInfo
+public sealed class FormatterInfo
 {
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;

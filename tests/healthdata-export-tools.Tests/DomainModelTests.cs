@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -14,7 +15,7 @@ using Xunit;
 
 namespace HealthDataExportTools.Tests;
 
-public class DomainModelTests
+public sealed class DomainModelTests
 {
     [Fact]
     public void SleepData_CalculateQuality_DurationUnder6Hours_ReturnsPoor()

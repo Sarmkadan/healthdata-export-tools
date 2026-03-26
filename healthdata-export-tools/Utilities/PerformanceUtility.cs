@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -145,7 +146,7 @@ public static class PerformanceUtility
 /// <summary>
 /// Memory usage information
 /// </summary>
-public class MemoryUsage
+public sealed class MemoryUsage
 {
     public long WorkingSetBytes { get; set; }
     public long PrivateMemoryBytes { get; set; }
@@ -165,7 +166,7 @@ public class MemoryUsage
 /// <summary>
 /// CPU usage information
 /// </summary>
-public class CpuUsage
+public sealed class CpuUsage
 {
     public int ProcessorCount { get; set; }
     public double UserProcessorTime { get; set; }

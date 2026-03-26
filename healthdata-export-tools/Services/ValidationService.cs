@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -12,7 +13,7 @@ namespace HealthDataExportTools.Services;
 /// <summary>
 /// Service for validating health data integrity and consistency
 /// </summary>
-public class ValidationService : IValidationService
+public sealed class ValidationService : IValidationService
 {
     /// <summary>
     /// Validate a sleep data record
@@ -226,7 +227,7 @@ public class ValidationService : IValidationService
 /// <summary>
 /// Result of a validation operation
 /// </summary>
-public class ValidationResult
+public sealed class ValidationResult
 {
     /// <summary>
     /// List of validation errors

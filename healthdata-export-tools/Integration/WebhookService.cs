@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -8,7 +9,7 @@ namespace HealthDataExportTools.Integration;
 /// <summary>
 /// Service for managing webhooks that notify external systems of events
 /// </summary>
-public class WebhookService
+public sealed class WebhookService
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger<WebhookService> _logger;
@@ -61,7 +62,7 @@ public class WebhookService
         try
         {
             var webhook = _registeredWebhooks.FirstOrDefault(w => w.Id == webhookId);
-            if (webhook != null)
+            if (webhook is not null)
             {
                 _registeredWebhooks.Remove(webhook);
                 _logger.LogInformation("Webhook unregistered: {Id}", webhookId);
@@ -180,7 +181,7 @@ public class WebhookService
         try
         {
             var webhook = _registeredWebhooks.FirstOrDefault(w => w.Id == webhookId);
-            if (webhook != null)
+            if (webhook is not null)
             {
                 webhook.IsActive = isActive;
                 _logger.LogInformation("Webhook {Id} is now {State}",
@@ -199,7 +200,7 @@ public class WebhookService
 /// <summary>
 /// Webhook registration
 /// </summary>
-public class Webhook
+public sealed class Webhook
 {
     public string Id { get; set; } = string.Empty;
     public string Url { get; set; } = string.Empty;
@@ -214,7 +215,7 @@ public class Webhook
 /// <summary>
 /// Webhook request body
 /// </summary>
-public class WebhookRequest
+public sealed class WebhookRequest
 {
     [JsonPropertyName("eventType")]
     public string EventType { get; set; } = string.Empty;
