@@ -57,7 +57,7 @@ public sealed class XmlFormatter : IDataFormatter
         }
 
         _logger.LogInformation("Formatted single record to XML");
-        return await Task.FromResult(sb.ToString());
+        return await Task.FromResult(sb.ToString()).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -70,7 +70,7 @@ public sealed class XmlFormatter : IDataFormatter
             if (records is null || records.Count == 0)
             {
                 _logger.LogWarning("Empty record collection provided to XML formatter");
-                return await Task.FromResult(GenerateEmptyXmlDocument());
+                return await Task.FromResult(GenerateEmptyXmlDocument()).ConfigureAwait(false);
             }
 
             var doc = new XmlDocument();
@@ -113,7 +113,7 @@ public sealed class XmlFormatter : IDataFormatter
             }
 
             _logger.LogInformation("Formatted {Count} records to XML", records.Count);
-            return await Task.FromResult(sb.ToString());
+            return await Task.FromResult(sb.ToString()).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -179,7 +179,7 @@ public sealed class XmlFormatter : IDataFormatter
         }
 
         _logger.LogInformation("Formatted {Count} sleep records to XML", sleepRecords?.Count ?? 0);
-        return await Task.FromResult(sb.ToString());
+        return await Task.FromResult(sb.ToString()).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -212,7 +212,7 @@ public sealed class XmlFormatter : IDataFormatter
             doc.Save(writer);
         }
 
-        return await Task.FromResult(sb.ToString());
+        return await Task.FromResult(sb.ToString()).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -245,7 +245,7 @@ public sealed class XmlFormatter : IDataFormatter
             doc.Save(writer);
         }
 
-        return await Task.FromResult(sb.ToString());
+        return await Task.FromResult(sb.ToString()).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -279,7 +279,7 @@ public sealed class XmlFormatter : IDataFormatter
             doc.Save(writer);
         }
 
-        return await Task.FromResult(sb.ToString());
+        return await Task.FromResult(sb.ToString()).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -292,7 +292,7 @@ public sealed class XmlFormatter : IDataFormatter
         if (records is null)
         {
             errors.Add("Record collection is null");
-            return await Task.FromResult(errors);
+            return await Task.FromResult(errors).ConfigureAwait(false);
         }
 
         for (int i = 0; i < records.Count; i++)
@@ -303,7 +303,7 @@ public sealed class XmlFormatter : IDataFormatter
                 errors.Add($"Record {i}: Invalid XML characters in type name");
         }
 
-        return await Task.FromResult(errors);
+        return await Task.FromResult(errors).ConfigureAwait(false);
     }
 
     private void AddElement(XmlDocument doc, XmlElement parent, string elementName, string elementValue)

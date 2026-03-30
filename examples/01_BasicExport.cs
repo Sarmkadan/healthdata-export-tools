@@ -54,7 +54,7 @@ class BasicExportExample
 
             // Parse health data from ZIP file
             Console.WriteLine("📂 Parsing health data from export.zip...");
-            var healthData = await parser.ParseHealthDataAsync(Path.Combine(options.InputPath, "export.zip"));
+            var healthData = await parser.ParseHealthDataAsync(Path.Combine(options.InputPath, "export.zip")).ConfigureAwait(false);
 
             Console.WriteLine($"✓ Successfully parsed health data:");
             Console.WriteLine($"   • Sleep records:      {healthData.SleepRecords.Count}");

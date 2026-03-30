@@ -48,7 +48,7 @@ public sealed class RetryHandler
                 _logger.LogDebug("Executing operation: {Operation} (attempt {Attempt}/{MaxAttempts})",
                     operationName, attempt + 1, _maxRetries + 1);
 
-                return await operation();
+                return await operation().ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -66,7 +66,7 @@ public sealed class RetryHandler
                     "Operation {Operation} failed (attempt {Attempt}/{MaxAttempts}), retrying in {Delay}ms",
                     operationName, attempt, _maxRetries + 1, delay.TotalMilliseconds);
 
-                await Task.Delay(delay);
+                await Task.Delay(delay).ConfigureAwait(false);
                 delay = TimeSpan.FromMilliseconds(delay.TotalMilliseconds * _backoffMultiplier);
             }
         }
