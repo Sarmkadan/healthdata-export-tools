@@ -137,6 +137,28 @@ public sealed class TrendAnomalyDetectionServiceTests
         result.Mean.Should().Be(50);
     }
 
+    [Fact]
+    public void ComputeTrendAndAnomalies_ShouldHandleSingleZeroSampleWithoutNaN()
+    {
+        // Arrange
+        var points = new List<(DateTime Date, double Value)>
+        {
+            (DateTime.Today, 0.0)
+        };
+
+        // Act
+        // MinimumSampleCount is 5. So for 1 point, it should return "Insufficient Data"
+        var result = _service.ComputeTrendAndAnomalies("ZeroMetric", points, 30, 2.0);
+
+        // Assert
+        result.MetricName.Should().Be("ZeroMetric");
+        result.SampleCount.Should().Be(1);
+        result.TrendStatus.Should().Be("Insufficient Data");
+        result.Mean.Should().Be(0.0); // Hotfix: Mean should be 0.0 for a single 0 sample
+        result.StandardDeviation.Should().Be(0.0); // Hotfix: Should be 0.0, not NaN
+        result.Anomalies.Should().BeEmpty();
+    }
+
     // --- AnalyzeAsync Tests ---
 
     [Fact]

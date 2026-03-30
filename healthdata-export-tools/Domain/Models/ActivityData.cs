@@ -126,9 +126,9 @@ public sealed class ActivityData : HealthDataRecord
             { "Pace", AveragePaceMinPerKm.HasValue ? $"{AveragePaceMinPerKm:F2} min/km" : "N/A" },
             { "Speed", AverageSpeedKmh.HasValue ? $"{AverageSpeedKmh:F2} km/h" : "N/A" },
             { "Calories", CaloriesBurned },
-            { "AvgHR", AverageHeartRate },
-            { "MaxHR", MaximumHeartRate },
-            { "Intensity", IntensityLevel }
+            { "AvgHR", (object?)AverageHeartRate },
+            { "MaxHR", (object?)MaximumHeartRate },
+            { "Intensity", (object?)IntensityLevel }
         };
     }
 

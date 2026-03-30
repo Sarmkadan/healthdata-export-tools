@@ -110,9 +110,19 @@ public sealed class AnalyticsService
         var recent = values.TakeLast(days).ToList();
         if (recent.Count < 2) return new TrendAnalysis { Status = "Insufficient Data" };
 
-        var avgFirst = recent.Take(recent.Count / 2).Average();
-        var avgSecond = recent.Skip(recent.Count / 2).Average();
-        var percentChange = ((avgSecond - avgFirst) / avgFirst) * 100;
+        var avgFirst = recent.Take(recent.Count / 2).ToList();
+        var avgSecond = recent.Skip(recent.Count / 2).ToList();
+
+        // Hotfix: Handle cases where segments might be empty to prevent InvalidOperationException
+        double firstHalfAverage = avgFirst.Any() ? avgFirst.Average() : 0.0;
+        double secondHalfAverage = avgSecond.Any() ? avgSecond.Average() : 0.0;
+
+        double percentChange = 0;
+        // Hotfix: Prevent division by zero if firstHalfAverage is zero
+        if (Math.Abs(firstHalfAverage) > double.Epsilon)
+        {
+            percentChange = ((secondHalfAverage - firstHalfAverage) / firstHalfAverage) * 100;
+        }
 
         var status = percentChange switch
         {

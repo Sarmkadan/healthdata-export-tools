@@ -119,8 +119,8 @@ public sealed class SleepData : HealthDataRecord
             { "REM", $"{RemSleepMinutes} min" },
             { "Awake", $"{AwakeMinutes} min" },
             { "Quality", Quality.ToString() },
-            { "Score", Score },
-            { "AvgHeartRate", AverageHeartRate }
+            { "Score", (object?)Score },
+            { "AvgHeartRate", (object?)AverageHeartRate }
         };
     }
 
