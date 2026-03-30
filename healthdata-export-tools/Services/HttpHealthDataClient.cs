@@ -56,10 +56,10 @@ public sealed class HttpHealthDataClient
 
             _logger.LogInformation("Fetching health data from: {Url}", url);
 
-            var response = await _httpClient.GetAsync(url);
+            var response = await _httpClient.GetAsync(url).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
 
-            var content = await response.Content.ReadAsStringAsync();
+            var content = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             var records = JsonSerializer.Deserialize<List<HealthDataRecord>>(content, _jsonOptions);
 
             _logger.LogInformation("Successfully fetched {Count} records from API", records?.Count ?? 0);
@@ -105,10 +105,10 @@ public sealed class HttpHealthDataClient
 
             _logger.LogInformation("Uploading {Count} health records to: {Url}", records.Count, uploadUrl);
 
-            var response = await _httpClient.PostAsync(uploadUrl, content);
+            var response = await _httpClient.PostAsync(uploadUrl, content).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
 
-            var responseContent = await response.Content.ReadAsStringAsync();
+            var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             _logger.LogInformation("Upload completed successfully. Response: {Response}", responseContent);
 
             return responseContent;
@@ -129,7 +129,7 @@ public sealed class HttpHealthDataClient
         {
             _logger.LogDebug("Checking API health at: {Url}", healthCheckUrl);
 
-            var response = await _httpClient.GetAsync(healthCheckUrl, HttpCompletionOption.ResponseHeadersRead);
+            var response = await _httpClient.GetAsync(healthCheckUrl, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
             return response.IsSuccessStatusCode;
         }
         catch (Exception ex)
@@ -163,7 +163,7 @@ public sealed class HttpHealthDataClient
                 using (var contentStream = await response.Content.ReadAsStreamAsync())
                 using (var fileStream = new FileStream(outputPath, FileMode.Create, FileAccess.Write))
                 {
-                    await contentStream.CopyToAsync(fileStream);
+                    await contentStream.CopyToAsync(fileStream).ConfigureAwait(false);
                 }
 
                 _logger.LogInformation("Export downloaded successfully to: {Path}", outputPath);
@@ -187,10 +187,10 @@ public sealed class HttpHealthDataClient
             var url = $"{apiUrl}/devices/{deviceId}";
             _logger.LogDebug("Fetching device info from: {Url}", url);
 
-            var response = await _httpClient.GetAsync(url);
+            var response = await _httpClient.GetAsync(url).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
 
-            var content = await response.Content.ReadAsStringAsync();
+            var content = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             var deviceInfo = JsonSerializer.Deserialize<Dictionary<string, object>>(content, _jsonOptions);
 
             return deviceInfo;

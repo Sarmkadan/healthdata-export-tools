@@ -27,7 +27,7 @@ class MultiFormatExportExample
             // Parse health data
             Console.WriteLine("📂 Parsing health data...");
             var parser = new HealthDataParserService();
-            var healthData = await parser.ParseHealthDataAsync("./exports/export.zip");
+            var healthData = await parser.ParseHealthDataAsync("./exports/export.zip").ConfigureAwait(false);
             Console.WriteLine($"✓ Parsed {healthData.GetTotalRecordCount()} records\n");
 
             // Define date range for filtering

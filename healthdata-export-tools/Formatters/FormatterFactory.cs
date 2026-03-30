@@ -121,7 +121,7 @@ public sealed class FormatterFactory
         {
             try
             {
-                var formatted = await formatter.FormatCollectionAsync(records);
+                var formatted = await formatter.FormatCollectionAsync(records).ConfigureAwait(false);
                 results[formatter.FormatName] = formatted;
             }
             catch (Exception ex)

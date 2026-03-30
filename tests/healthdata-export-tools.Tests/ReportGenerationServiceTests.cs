@@ -37,7 +37,7 @@ public sealed class ReportGenerationServiceTests
         };
 
         // Act
-        var report = await _sut.GenerateSummaryReportAsync(records);
+        var report = await _sut.GenerateSummaryReportAsync(records).ConfigureAwait(false);
 
         // Assert
         report.Should().NotBeNull();
@@ -56,7 +56,7 @@ public sealed class ReportGenerationServiceTests
         var records = new List<HealthDataRecord>();
 
         // Act
-        var report = await _sut.GenerateSummaryReportAsync(records);
+        var report = await _sut.GenerateSummaryReportAsync(records).ConfigureAwait(false);
 
         // Assert
         report.Should().NotBeNull();
@@ -84,7 +84,7 @@ public sealed class ReportGenerationServiceTests
         };
 
         // Act
-        var report = await _sut.GenerateDailyReportAsync(sleepData, heartRateData, today);
+        var report = await _sut.GenerateDailyReportAsync(sleepData, heartRateData, today).ConfigureAwait(false);
 
         // Assert
         report.Should().NotBeNull();
@@ -116,7 +116,7 @@ public sealed class ReportGenerationServiceTests
         };
 
         // Act
-        var report = await _sut.GenerateDailyReportAsync(sleepData, heartRateData, today);
+        var report = await _sut.GenerateDailyReportAsync(sleepData, heartRateData, today).ConfigureAwait(false);
 
         // Assert
         report.Should().NotBeNull();
@@ -136,7 +136,7 @@ public sealed class ReportGenerationServiceTests
         var heartRateData = new List<HeartRateData>();
 
         // Act
-        var report = await _sut.GenerateDailyReportAsync(sleepData, heartRateData, today);
+        var report = await _sut.GenerateDailyReportAsync(sleepData, heartRateData, today).ConfigureAwait(false);
 
         // Assert
         report.Should().NotBeNull();
@@ -156,7 +156,7 @@ public sealed class ReportGenerationServiceTests
         }
 
         // Act
-        var report = await _sut.GenerateTrendReportAsync(records, 7);
+        var report = await _sut.GenerateTrendReportAsync(records, 7).ConfigureAwait(false);
 
         // Assert
         report.Should().NotBeNull();
@@ -177,7 +177,7 @@ public sealed class ReportGenerationServiceTests
         };
 
         // Act
-        var report = await _sut.GenerateTrendReportAsync(records, 7);
+        var report = await _sut.GenerateTrendReportAsync(records, 7).ConfigureAwait(false);
 
         // Assert
         report.Should().NotBeNull();

@@ -89,7 +89,7 @@ public sealed class HealthDataParserServiceTests
         }";
 
         // Act
-        var collection = await _parserService.ParseJsonAsync(jsonContent);
+        var collection = await _parserService.ParseJsonAsync(jsonContent).ConfigureAwait(false);
 
         // Assert
         collection.Should().NotBeNull();
@@ -149,7 +149,7 @@ public sealed class HealthDataParserServiceTests
         }";
 
         // Act
-        var collection = await _parserService.ParseJsonAsync(jsonContent);
+        var collection = await _parserService.ParseJsonAsync(jsonContent).ConfigureAwait(false);
 
         // Assert
         collection.SleepRecords.Should().HaveCount(1);
@@ -167,7 +167,7 @@ public sealed class HealthDataParserServiceTests
         var invalidJson = "{ \"sleep\": [ { \"recordDate\": \"invalid-date\" } ] }";
 
         // Act
-        Func<Task> act = async () => await _parserService.ParseJsonAsync(invalidJson);
+        Func<Task> act = async () => await _parserService.ParseJsonAsync(invalidJson).ConfigureAwait(false);
 
         // Assert
         await act.Should().ThrowAsync<ParsingException>()
@@ -187,7 +187,7 @@ public sealed class HealthDataParserServiceTests
         }";
 
         // Act
-        var collection = await _parserService.ParseJsonAsync(jsonContent);
+        var collection = await _parserService.ParseJsonAsync(jsonContent).ConfigureAwait(false);
 
         // Assert
         collection.Should().NotBeNull();
