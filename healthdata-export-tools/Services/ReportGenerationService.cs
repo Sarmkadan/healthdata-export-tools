@@ -184,11 +184,15 @@ public sealed class ReportGenerationService
     /// </summary>
     private double CalculateStandardDeviation(List<double> values)
     {
+        // Hotfix: Standard deviation is 0.0 for 0 or 1 samples to prevent InvalidOperationException/NaN.
         if (values.Count <= 1)
-            return 0;
+        {
+            return 0.0;
+        }
 
         var average = values.Average();
         var sumOfSquares = values.Sum(v => Math.Pow(v - average, 2));
+        // Hotfix: Ensure values.Count is not 0 before division to prevent DivideByZeroException.
         return Math.Sqrt(sumOfSquares / values.Count);
     }
 
