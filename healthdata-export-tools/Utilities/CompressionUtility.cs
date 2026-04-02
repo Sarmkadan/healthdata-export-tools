@@ -32,7 +32,7 @@ public static class CompressionUtility
             using (var targetStream = File.Create(outputPath))
             using (var gzipStream = new GZipStream(targetStream, CompressionMode.Compress))
             {
-                await sourceStream.CopyToAsync(gzipStream, BufferSize);
+                await sourceStream.CopyToAsync(gzipStream, BufferSize).ConfigureAwait(false);
             }
 
             return outputPath;
@@ -59,7 +59,7 @@ public static class CompressionUtility
             using (var targetStream = File.Create(outputPath))
             using (var gzipStream = new GZipStream(sourceStream, CompressionMode.Decompress))
             {
-                await gzipStream.CopyToAsync(targetStream, BufferSize);
+                await gzipStream.CopyToAsync(targetStream, BufferSize).ConfigureAwait(false);
             }
 
             return outputPath;
@@ -91,7 +91,7 @@ public static class CompressionUtility
                 }
             }
 
-            return await Task.FromResult(outputPath);
+            return await Task.FromResult(outputPath).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -114,7 +114,7 @@ public static class CompressionUtility
         {
             Directory.CreateDirectory(outputDirectory);
             ZipFile.ExtractToDirectory(zipPath, outputDirectory, overwriteFiles: true);
-            return await Task.FromResult(outputDirectory);
+            return await Task.FromResult(outputDirectory).ConfigureAwait(false);
         }
         catch (Exception ex)
         {

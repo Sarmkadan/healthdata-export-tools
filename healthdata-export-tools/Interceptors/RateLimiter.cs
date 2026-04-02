@@ -91,7 +91,7 @@ public sealed class RateLimiter
             if (TryAcquire(identifier, tokensRequired))
                 return;
 
-            await Task.Delay(100); // Wait before retrying
+            await Task.Delay(100).ConfigureAwait(false); // Wait before retrying
         }
 
         throw new InvalidOperationException($"Rate limit timeout for {identifier}");

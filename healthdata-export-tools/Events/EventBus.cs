@@ -119,7 +119,7 @@ public sealed class EventBus : IEventPublisher
                 }
             }
 
-            await Task.WhenAll(tasks);
+            await Task.WhenAll(tasks).ConfigureAwait(false);
         }
         finally
         {
@@ -139,7 +139,7 @@ public sealed class EventBus : IEventPublisher
 
         foreach (var @event in events)
         {
-            await PublishAsync(@event);
+            await PublishAsync(@event).ConfigureAwait(false);
         }
     }
 

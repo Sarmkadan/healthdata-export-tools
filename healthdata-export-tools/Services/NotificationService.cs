@@ -58,7 +58,7 @@ public sealed class NotificationService
             Timestamp = DateTime.UtcNow
         };
 
-        await SendNotificationAsync(message);
+        await SendNotificationAsync(message).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -89,7 +89,7 @@ public sealed class NotificationService
             Timestamp = DateTime.UtcNow
         };
 
-        await SendNotificationAsync(message);
+        await SendNotificationAsync(message).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -110,7 +110,7 @@ public sealed class NotificationService
             Timestamp = DateTime.UtcNow
         };
 
-        await SendNotificationAsync(message);
+        await SendNotificationAsync(message).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -137,7 +137,7 @@ public sealed class NotificationService
             Timestamp = DateTime.UtcNow
         };
 
-        await SendNotificationAsync(message);
+        await SendNotificationAsync(message).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -156,7 +156,7 @@ public sealed class NotificationService
 
         try
         {
-            await Task.WhenAll(tasks);
+            await Task.WhenAll(tasks).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -171,7 +171,7 @@ public sealed class NotificationService
     {
         try
         {
-            await channel.SendAsync(message);
+            await channel.SendAsync(message).ConfigureAwait(false);
             _logger.LogDebug("Notification sent via {Channel}", channel.GetType().Name);
         }
         catch (Exception ex)

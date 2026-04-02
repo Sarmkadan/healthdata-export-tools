@@ -54,7 +54,7 @@ public sealed class BackgroundTaskScheduler
             {
                 _ = Task.Delay(delay).ContinueWith(async _ =>
                 {
-                    await ExecuteTaskAsync(taskId, action);
+                    await ExecuteTaskAsync(taskId, action).ConfigureAwait(false);
                 });
             }
             else
@@ -115,8 +115,8 @@ public sealed class BackgroundTaskScheduler
                     if (!taskStillExists)
                         break;
 
-                    await ExecuteTaskAsync(taskId, action);
-                    await Task.Delay(interval);
+                    await ExecuteTaskAsync(taskId, action).ConfigureAwait(false);
+                    await Task.Delay(interval).ConfigureAwait(false);
                 }
             });
 
@@ -206,7 +206,7 @@ public sealed class BackgroundTaskScheduler
             }
 
             _logger.LogDebug("Executing task: {TaskId}", taskId);
-            await action();
+            await action().ConfigureAwait(false);
 
             _tasksLock.EnterUpgradeableReadLock();
             try

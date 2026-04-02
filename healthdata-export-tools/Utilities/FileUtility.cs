@@ -21,7 +21,7 @@ public static class FileUtility
             if (!File.Exists(filePath))
                 throw new FileNotFoundException($"File not found: {filePath}");
 
-            return await File.ReadAllTextAsync(filePath, Encoding.UTF8);
+            return await File.ReadAllTextAsync(filePath, Encoding.UTF8).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -50,7 +50,7 @@ public static class FileUtility
                 File.Copy(filePath, backupPath, overwrite: true);
             }
 
-            await File.WriteAllTextAsync(filePath, content, Encoding.UTF8);
+            await File.WriteAllTextAsync(filePath, content, Encoding.UTF8).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -174,7 +174,7 @@ public static class FileUtility
             foreach (var dir in Directory.GetDirectories(sourceDir))
             {
                 var destSubDir = Path.Combine(destDir, Path.GetFileName(dir));
-                await CopyDirectoryAsync(dir, destSubDir);
+                await CopyDirectoryAsync(dir, destSubDir).ConfigureAwait(false);
             }
         }
         catch (Exception ex)
@@ -196,7 +196,7 @@ public static class FileUtility
             using (var stream = File.OpenRead(filePath))
             using (var sha256 = System.Security.Cryptography.SHA256.Create())
             {
-                var hashBytes = await Task.Run(() => sha256.ComputeHash(stream));
+                var hashBytes = await Task.Run(() => sha256.ComputeHash(stream)).ConfigureAwait(false);
                 return Convert.ToHexString(hashBytes);
             }
         }
@@ -245,7 +245,7 @@ public static class FileUtility
             {
                 foreach (var line in lines)
                 {
-                    await writer.WriteLineAsync(line);
+                    await writer.WriteLineAsync(line).ConfigureAwait(false);
                 }
             }
         }

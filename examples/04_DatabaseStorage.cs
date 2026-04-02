@@ -28,13 +28,13 @@ class DatabaseStorageExample
             // Initialize database
             Console.WriteLine("🗄 Initializing SQLite database...");
             var connectionManager = new SqliteConnectionManager(dbPath);
-            await connectionManager.InitializeDatabaseAsync();
+            await connectionManager.InitializeDatabaseAsync().ConfigureAwait(false);
             Console.WriteLine("✓ Database initialized\n");
 
             // Parse health data
             Console.WriteLine("📂 Parsing health data...");
             var parser = new HealthDataParserService();
-            var healthData = await parser.ParseHealthDataAsync("./exports/export.zip");
+            var healthData = await parser.ParseHealthDataAsync("./exports/export.zip").ConfigureAwait(false);
             Console.WriteLine($"✓ Parsed {healthData.GetTotalRecordCount()} records\n");
 
             // Create repository
@@ -42,13 +42,13 @@ class DatabaseStorageExample
 
             // Save data to repository
             Console.WriteLine("💾 Saving data to storage...");
-            await repository.SaveHealthDataAsync(healthData);
+            await repository.SaveHealthDataAsync(healthData).ConfigureAwait(false);
             Console.WriteLine("✓ Data saved successfully\n");
 
             // Retrieve and display statistics
             Console.WriteLine("━━━ Stored Data Statistics ━━━\n");
 
-            var storedData = await repository.GetHealthDataAsync();
+            var storedData = await repository.GetHealthDataAsync().ConfigureAwait(false);
             if (storedData is not null)
             {
                 Console.WriteLine($"  Sleep Records:      {storedData.SleepRecords.Count}");
@@ -66,8 +66,8 @@ class DatabaseStorageExample
 
             Console.WriteLine($"  Query Range: {thirtyDaysAgo:yyyy-MM-dd} to {today:yyyy-MM-dd}\n");
 
-            var sleepRecords = await repository.GetSleepRecordsAsync(thirtyDaysAgo, today);
-            var hrRecords = await repository.GetHeartRateRecordsAsync(thirtyDaysAgo, today);
+            var sleepRecords = await repository.GetSleepRecordsAsync(thirtyDaysAgo, today).ConfigureAwait(false);
+            var hrRecords = await repository.GetHeartRateRecordsAsync(thirtyDaysAgo, today).ConfigureAwait(false);
 
             Console.WriteLine($"  Sleep Records in Range:      {sleepRecords.Count()}");
             Console.WriteLine($"  Heart Rate Records in Range: {hrRecords.Count()}\n");
