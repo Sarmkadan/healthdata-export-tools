@@ -62,7 +62,7 @@ public sealed class CsvFormatter : IDataFormatter
             csv.NextRecord();
         }
 
-        return await Task.FromResult(sb.ToString());
+        return await Task.FromResult(sb.ToString()).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -99,7 +99,7 @@ public sealed class CsvFormatter : IDataFormatter
         }
 
         _logger.LogInformation("Formatted {Count} records to CSV", records.Count);
-        return await Task.FromResult(sb.ToString());
+        return await Task.FromResult(sb.ToString()).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -139,7 +139,7 @@ public sealed class CsvFormatter : IDataFormatter
         }
 
         _logger.LogInformation("Formatted {Count} sleep records to CSV", sleepRecords.Count);
-        return await Task.FromResult(sb.ToString());
+        return await Task.FromResult(sb.ToString()).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -173,7 +173,7 @@ public sealed class CsvFormatter : IDataFormatter
         }
 
         _logger.LogInformation("Formatted {Count} heart rate records to CSV", heartRateRecords.Count);
-        return await Task.FromResult(sb.ToString());
+        return await Task.FromResult(sb.ToString()).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -205,7 +205,7 @@ public sealed class CsvFormatter : IDataFormatter
         }
 
         _logger.LogInformation("Formatted {Count} SpO2 records to CSV", spo2Records.Count);
-        return await Task.FromResult(sb.ToString());
+        return await Task.FromResult(sb.ToString()).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -239,7 +239,7 @@ public sealed class CsvFormatter : IDataFormatter
         }
 
         _logger.LogInformation("Formatted {Count} steps records to CSV", stepsRecords.Count);
-        return await Task.FromResult(sb.ToString());
+        return await Task.FromResult(sb.ToString()).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -253,13 +253,13 @@ public sealed class CsvFormatter : IDataFormatter
         if (records is null)
         {
             errors.Add("Record collection is null");
-            return await Task.FromResult(errors);
+            return await Task.FromResult(errors).ConfigureAwait(false);
         }
 
         if (records.Count == 0)
         {
             errors.Add("Record collection is empty");
-            return await Task.FromResult(errors);
+            return await Task.FromResult(errors).ConfigureAwait(false);
         }
 
         // Validate each record
@@ -272,6 +272,6 @@ public sealed class CsvFormatter : IDataFormatter
         }
 
         _logger.LogInformation("Validation complete: {ErrorCount} errors found", errors.Count);
-        return await Task.FromResult(errors);
+        return await Task.FromResult(errors).ConfigureAwait(false);
     }
 }

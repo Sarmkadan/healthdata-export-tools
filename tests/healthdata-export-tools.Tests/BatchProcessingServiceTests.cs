@@ -31,7 +31,7 @@ public sealed class BatchProcessingServiceTests
         var itemsToProcess = Enumerable.Range(1, 100).ToList();
         var batchProcessor = new Func<List<int>, Task>(async batch =>
         {
-            await Task.Delay(1); // Simulate async work
+            await Task.Delay(1).ConfigureAwait(false); // Simulate async work
             lock (processedItems)
             {
                 processedItems.AddRange(batch);
@@ -39,7 +39,7 @@ public sealed class BatchProcessingServiceTests
         });
 
         // Act
-        var result = await _batchProcessingService.ProcessInBatchesAsync(itemsToProcess, batchProcessor, batchSize: 10);
+        var result = await _batchProcessingService.ProcessInBatchesAsync(itemsToProcess, batchProcessor, batchSize: 10).ConfigureAwait(false);
 
         // Assert
         result.TotalItems.Should().Be(100);
@@ -62,7 +62,7 @@ public sealed class BatchProcessingServiceTests
         var itemsToProcess = Enumerable.Range(1, 10).ToList();
         var batchProcessor = new Func<List<int>, Task>(async batch =>
         {
-            await Task.Delay(1); // Simulate async work
+            await Task.Delay(1).ConfigureAwait(false); // Simulate async work
             if (batch.Contains(5))
             {
                 throw new Exception("Error processing item 5");
@@ -72,7 +72,7 @@ public sealed class BatchProcessingServiceTests
         });
 
         // Act
-        var result = await _batchProcessingService.ProcessInBatchesAsync(itemsToProcess, batchProcessor, batchSize: 2);
+        var result = await _batchProcessingService.ProcessInBatchesAsync(itemsToProcess, batchProcessor, batchSize: 2).ConfigureAwait(false);
 
         // Assert
         result.TotalItems.Should().Be(10);
@@ -97,7 +97,7 @@ public sealed class BatchProcessingServiceTests
         var progressUpdates = new List<BatchProgress>();
         var batchProcessor = new Func<List<int>, Task>(async batch =>
         {
-            await Task.Delay(1);
+            await Task.Delay(1).ConfigureAwait(false);
         });
         var progressCallback = new Action<BatchProgress>(progress =>
         {
@@ -105,7 +105,7 @@ public sealed class BatchProcessingServiceTests
         });
 
         // Act
-        await _batchProcessingService.ProcessInBatchesAsync(itemsToProcess, batchProcessor, batchSize: 2, progressCallback);
+        await _batchProcessingService.ProcessInBatchesAsync(itemsToProcess, batchProcessor, batchSize: 2, progressCallback).ConfigureAwait(false);
 
         // Assert
         progressUpdates.Should().HaveCount(5); // 10 items, batch size 2, so 5 batches
@@ -121,7 +121,7 @@ public sealed class BatchProcessingServiceTests
         var batchProcessor = new Func<List<string>, Task>(batch => Task.CompletedTask);
 
         // Act
-        var result = await _batchProcessingService.ProcessInBatchesAsync(itemsToProcess, batchProcessor);
+        var result = await _batchProcessingService.ProcessInBatchesAsync(itemsToProcess, batchProcessor).ConfigureAwait(false);
 
         // Assert
         result.TotalItems.Should().Be(0);
@@ -138,7 +138,7 @@ public sealed class BatchProcessingServiceTests
         var itemsToProcess = Enumerable.Range(1, 100).ToList();
         var batchProcessor = new Func<List<int>, Task>(async batch =>
         {
-            await Task.Delay(1); // Simulate async work
+            await Task.Delay(1).ConfigureAwait(false); // Simulate async work
             lock (processedItems)
             {
                 processedItems.AddRange(batch);
@@ -146,7 +146,7 @@ public sealed class BatchProcessingServiceTests
         });
 
         // Act
-        var result = await _batchProcessingService.ProcessInParallelBatchesAsync(itemsToProcess, batchProcessor, batchSize: 10, maxParallelism: 4);
+        var result = await _batchProcessingService.ProcessInParallelBatchesAsync(itemsToProcess, batchProcessor, batchSize: 10, maxParallelism: 4).ConfigureAwait(false);
 
         // Assert
         result.TotalItems.Should().Be(100);
@@ -167,7 +167,7 @@ public sealed class BatchProcessingServiceTests
         var itemsToProcess = Enumerable.Range(1, 10).ToList();
         var batchProcessor = new Func<List<int>, Task>(async batch =>
         {
-            await Task.Delay(1); // Simulate async work
+            await Task.Delay(1).ConfigureAwait(false); // Simulate async work
             if (batch.Contains(5) || batch.Contains(6))
             {
                 throw new Exception($"Error processing items in batch containing {batch.First()}");
@@ -179,7 +179,7 @@ public sealed class BatchProcessingServiceTests
         });
 
         // Act
-        var result = await _batchProcessingService.ProcessInParallelBatchesAsync(itemsToProcess, batchProcessor, batchSize: 2, maxParallelism: 2);
+        var result = await _batchProcessingService.ProcessInParallelBatchesAsync(itemsToProcess, batchProcessor, batchSize: 2, maxParallelism: 2).ConfigureAwait(false);
 
         // Assert
         result.TotalItems.Should().Be(10);

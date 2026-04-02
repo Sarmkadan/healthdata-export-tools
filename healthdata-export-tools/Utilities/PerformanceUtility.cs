@@ -21,7 +21,7 @@ public static class PerformanceUtility
         var stopwatch = Stopwatch.StartNew();
         try
         {
-            var result = await operation();
+            var result = await operation().ConfigureAwait(false);
             stopwatch.Stop();
             return (result, stopwatch.Elapsed);
         }

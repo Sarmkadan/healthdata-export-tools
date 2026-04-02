@@ -48,13 +48,13 @@ public sealed class SqliteConnectionManager
         try
         {
             using var connection = GetConnection();
-            await connection.OpenAsync();
+            await connection.OpenAsync().ConfigureAwait(false);
 
             using var command = connection.CreateCommand();
             command.CommandText = GetSchemaScript();
-            await command.ExecuteNonQueryAsync();
+            await command.ExecuteNonQueryAsync().ConfigureAwait(false);
 
-            await connection.CloseAsync();
+            await connection.CloseAsync().ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -236,11 +236,11 @@ public sealed class SqliteConnectionManager
         try
         {
             using var connection = GetConnection();
-            await connection.OpenAsync();
+            await connection.OpenAsync().ConfigureAwait(false);
             using var command = connection.CreateCommand();
             command.CommandText = "SELECT 1;";
-            var result = await command.ExecuteScalarAsync();
-            await connection.CloseAsync();
+            var result = await command.ExecuteScalarAsync().ConfigureAwait(false);
+            await connection.CloseAsync().ConfigureAwait(false);
             return result is not null;
         }
         catch

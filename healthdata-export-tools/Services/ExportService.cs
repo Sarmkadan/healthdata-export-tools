@@ -44,7 +44,7 @@ public sealed class ExportService
                 DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
             });
 
-            await File.WriteAllTextAsync(outputPath, json, Encoding.UTF8);
+            await File.WriteAllTextAsync(outputPath, json, Encoding.UTF8).ConfigureAwait(false);
         }
         catch (IOException ex)
         {
@@ -68,7 +68,7 @@ public sealed class ExportService
             using var csv = new CsvWriter(writer, System.Globalization.CultureInfo.InvariantCulture);
 
             csv.WriteHeader<SleepCsvRecord>();
-            await csv.NextRecordAsync();
+            await csv.NextRecordAsync().ConfigureAwait(false);
 
             foreach (var sleep in sleepRecords)
             {
@@ -86,7 +86,7 @@ public sealed class ExportService
                 };
 
                 csv.WriteRecord(record);
-                await csv.NextRecordAsync();
+                await csv.NextRecordAsync().ConfigureAwait(false);
             }
         }
         catch (IOException ex)
@@ -107,7 +107,7 @@ public sealed class ExportService
             using var csv = new CsvWriter(writer, System.Globalization.CultureInfo.InvariantCulture);
 
             csv.WriteHeader<HeartRateCsvRecord>();
-            await csv.NextRecordAsync();
+            await csv.NextRecordAsync().ConfigureAwait(false);
 
             foreach (var hr in records)
             {
@@ -124,7 +124,7 @@ public sealed class ExportService
                 };
 
                 csv.WriteRecord(record);
-                await csv.NextRecordAsync();
+                await csv.NextRecordAsync().ConfigureAwait(false);
             }
         }
         catch (IOException ex)
@@ -145,7 +145,7 @@ public sealed class ExportService
             using var csv = new CsvWriter(writer, System.Globalization.CultureInfo.InvariantCulture);
 
             csv.WriteHeader<StepsCsvRecord>();
-            await csv.NextRecordAsync();
+            await csv.NextRecordAsync().ConfigureAwait(false);
 
             foreach (var steps in records)
             {
@@ -162,7 +162,7 @@ public sealed class ExportService
                 };
 
                 csv.WriteRecord(record);
-                await csv.NextRecordAsync();
+                await csv.NextRecordAsync().ConfigureAwait(false);
             }
         }
         catch (IOException ex)
@@ -183,7 +183,7 @@ public sealed class ExportService
         {
             case ExportFormat.Json:
                 var jsonPath = Path.Combine(outputDirectory, "health_data.json");
-                await ExportToJsonAsync(collection, jsonPath);
+                await ExportToJsonAsync(collection, jsonPath).ConfigureAwait(false);
                 break;
 
             case ExportFormat.Csv:
@@ -201,8 +201,8 @@ public sealed class ExportService
                 break;
 
             case ExportFormat.All:
-                await ExportCompleteAsync(collection, outputDirectory, ExportFormat.Json);
-                await ExportCompleteAsync(collection, outputDirectory, ExportFormat.Csv);
+                await ExportCompleteAsync(collection, outputDirectory, ExportFormat.Json).ConfigureAwait(false);
+                await ExportCompleteAsync(collection, outputDirectory, ExportFormat.Csv).ConfigureAwait(false);
                 break;
         }
     }
