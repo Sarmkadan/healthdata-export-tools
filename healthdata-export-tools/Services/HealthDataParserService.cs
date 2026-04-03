@@ -70,7 +70,7 @@ public sealed class HealthDataParserService
                 foreach (var spo2Element in spo2Array.EnumerateArray())
                 {
                     var spo2 = ParseSpO2DataFromJson(spo2Element);
-                    if (_validationService.ValidateSpO2Data(spo2).IsValid)
+                    if (spo2 is not null && _validationService.ValidateSpO2Data(spo2).IsValid)
                         collection.SpO2Records.Add(spo2);
                 }
             }
@@ -145,18 +145,27 @@ public sealed class HealthDataParserService
     }
 
     /// <summary>
-    /// Parse SpO2 data from JSON element
+    /// Parse SpO2 data from JSON element.
+    /// Returns null when nightly SpO2 monitoring was disabled and required fields are absent.
     /// </summary>
-    private SpO2Data ParseSpO2DataFromJson(JsonElement element)
+    private SpO2Data? ParseSpO2DataFromJson(JsonElement element)
     {
+        // When SpO2 monitoring is disabled the device omits the measurement fields entirely.
+        // Guard against NullReferenceException by checking for each required property.
+        if (!element.TryGetProperty("minimumPercentage", out var minProp) ||
+            !element.TryGetProperty("maximumPercentage", out var maxProp) ||
+            !element.TryGetProperty("averagePercentage", out var avgProp) ||
+            !element.TryGetProperty("measurementCount",  out var countProp))
+            return null;
+
         var spo2 = new SpO2Data
         {
-            RecordDate         = element.GetProperty("recordDate").GetDateTime(),
-            DeviceId           = element.GetProperty("deviceId").GetString() ?? "",
-            MinimumPercentage  = element.GetProperty("minimumPercentage").GetInt32(),
-            MaximumPercentage  = element.GetProperty("maximumPercentage").GetInt32(),
-            AveragePercentage  = element.GetProperty("averagePercentage").GetInt32(),
-            MeasurementCount   = element.GetProperty("measurementCount").GetInt32()
+            RecordDate        = element.GetProperty("recordDate").GetDateTime(),
+            DeviceId          = element.GetProperty("deviceId").GetString() ?? "",
+            MinimumPercentage = minProp.GetInt32(),
+            MaximumPercentage = maxProp.GetInt32(),
+            AveragePercentage = avgProp.GetInt32(),
+            MeasurementCount  = countProp.GetInt32()
         };
 
         if (element.TryGetProperty("restingPercentage", out var resting))
