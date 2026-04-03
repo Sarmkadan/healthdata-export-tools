@@ -14,7 +14,7 @@ public interface IMiddleware
     /// <summary>
     /// Process the middleware logic asynchronously
     /// </summary>
-    Task ProcessAsync(MiddlewareContext context);
+    Task ProcessAsync(MiddlewareContext context, Func<MiddlewareContext, Task> next);
 }
 
 /// <summary>
