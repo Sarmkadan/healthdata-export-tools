@@ -120,7 +120,12 @@ public sealed class ExportService
                     RestingBpm = hr.RestingBpm,
                     Measurements = hr.MeasurementCount,
                     StressLevel = hr.StressLevel,
-                    CardioZone = hr.CardioZoneMinutes
+                    CardioZone = hr.CardioZoneMinutes,
+                    Zone1Minutes = hr.ZoneMinutes[0],
+                    Zone2Minutes = hr.ZoneMinutes[1],
+                    Zone3Minutes = hr.ZoneMinutes[2],
+                    Zone4Minutes = hr.ZoneMinutes[3],
+                    Zone5Minutes = hr.ZoneMinutes[4]
                 };
 
                 csv.WriteRecord(record);
@@ -233,6 +238,11 @@ public sealed class HeartRateCsvRecord
     public int Measurements { get; set; }
     public int? StressLevel { get; set; }
     public int CardioZone { get; set; }
+    public int Zone1Minutes { get; set; }
+    public int Zone2Minutes { get; set; }
+    public int Zone3Minutes { get; set; }
+    public int Zone4Minutes { get; set; }
+    public int Zone5Minutes { get; set; }
 }
 
 /// <summary>CSV record for steps data</summary>

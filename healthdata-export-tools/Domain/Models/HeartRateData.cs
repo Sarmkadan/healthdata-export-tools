@@ -4,6 +4,8 @@
 // CTO & Software Architect
 // =============================================================================
 
+using HealthDataExportTools.Domain.Enums;
+
 namespace HealthDataExportTools.Domain.Models;
 
 /// <summary>
@@ -62,6 +64,13 @@ public sealed class HeartRateData : HealthDataRecord
     public int FatBurnZoneMinutes { get; set; }
 
     /// <summary>
+    /// Minutes spent in each heart rate zone (index 0 = Zone1 … index 4 = Zone5).
+    /// Populated from device zone data (e.g. Garmin FIT hr_zone_0 – hr_zone_4 fields)
+    /// or calculated via <see cref="ClassifyZone"/>.
+    /// </summary>
+    public int[] ZoneMinutes { get; set; } = new int[5];
+
+    /// <summary>
     /// Validate heart rate data is within reasonable ranges
     /// </summary>
     public override bool IsValid()
@@ -92,7 +101,12 @@ public sealed class HeartRateData : HealthDataRecord
             { "Measurements", MeasurementCount },
             { "StressLevel", (object?)StressLevel },
             { "CardioZone", $"{CardioZoneMinutes} min" },
-            { "FatBurnZone", $"{FatBurnZoneMinutes} min" }
+            { "FatBurnZone", $"{FatBurnZoneMinutes} min" },
+            { "Zone1Min", ZoneMinutes[0] },
+            { "Zone2Min", ZoneMinutes[1] },
+            { "Zone3Min", ZoneMinutes[2] },
+            { "Zone4Min", ZoneMinutes[3] },
+            { "Zone5Min", ZoneMinutes[4] }
         };
     }
 
@@ -127,6 +141,46 @@ public sealed class HeartRateData : HealthDataRecord
         MeasurementCount = Measurements.Count;
         Touch();
     }
+
+    /// <summary>
+    /// Classify a BPM reading into a heart rate zone using the standard five-zone model.
+    /// </summary>
+    /// <param name="bpm">The heart rate reading in beats per minute.</param>
+    /// <param name="maxHeartRate">The user's maximum heart rate (e.g. 220 minus age).</param>
+    /// <returns>The corresponding <see cref="HeartRateZone"/>.</returns>
+    public static HeartRateZone ClassifyZone(int bpm, int maxHeartRate)
+    {
+        if (maxHeartRate <= 0)
+            throw new ArgumentOutOfRangeException(nameof(maxHeartRate), "Max heart rate must be greater than zero.");
+
+        var pct = bpm / (double)maxHeartRate;
+        return pct switch
+        {
+            < 0.60 => HeartRateZone.Zone1,
+            < 0.70 => HeartRateZone.Zone2,
+            < 0.80 => HeartRateZone.Zone3,
+            < 0.90 => HeartRateZone.Zone4,
+            _      => HeartRateZone.Zone5
+        };
+    }
+
+    /// <summary>
+    /// Populate <see cref="ZoneMinutes"/> from Garmin FIT-style zone fields.
+    /// Garmin exports provide time-in-zone in seconds for zones indexed 0–4;
+    /// this method converts them to whole minutes and stores them correctly.
+    /// </summary>
+    /// <param name="zoneSeconds">
+    /// Array of five elements where index 0 corresponds to zone 1 (lowest intensity)
+    /// and index 4 corresponds to zone 5 (highest intensity), each value in seconds.
+    /// </param>
+    public void SetZoneMinutesFromSeconds(int[] zoneSeconds)
+    {
+        if (zoneSeconds is null || zoneSeconds.Length != 5)
+            throw new ArgumentException("Expected exactly 5 zone values (indices 0–4).", nameof(zoneSeconds));
+
+        for (int i = 0; i < 5; i++)
+            ZoneMinutes[i] = zoneSeconds[i] / 60;
+    }
 }
 
 /// <summary>
@@ -145,7 +199,15 @@ public sealed class HeartRateMeasurement
     public int Bpm { get; set; }
 
     /// <summary>
+    /// Heart rate zone for this measurement (1–5).
+    /// Populated by <see cref="HeartRateData.ClassifyZone"/> when max HR is known,
+    /// or mapped from device zone index fields (e.g. Garmin FIT hr_zone_X).
+    /// </summary>
+    public HeartRateZone? Zone { get; set; }
+
+    /// <summary>
     /// Optional accuracy indicator for the measurement
     /// </summary>
     public int? Accuracy { get; set; }
 }
+
