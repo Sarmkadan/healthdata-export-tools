@@ -139,6 +139,63 @@ public sealed class ExportService
     }
 
     /// <summary>
+    /// Export heart rate data to CSV, classifying each daily record's average BPM into a
+    /// heart rate zone based on the supplied maximum heart rate.
+    /// Each row includes a <c>AvgZone</c> column (zone 1–5) in addition to the standard
+    /// BPM columns and per-zone time totals.
+    /// </summary>
+    /// <param name="records">Heart rate records to export.</param>
+    /// <param name="outputPath">Destination CSV file path.</param>
+    /// <param name="maxHeartRate">User's maximum heart rate used for zone classification.</param>
+    public async Task ExportHeartRateWithZonesToCsvAsync(
+        List<HeartRateData> records,
+        string outputPath,
+        int maxHeartRate)
+    {
+        if (maxHeartRate <= 0)
+            throw new ArgumentOutOfRangeException(nameof(maxHeartRate), "Max heart rate must be greater than zero.");
+
+        try
+        {
+            using var fs = File.Create(outputPath);
+            using var writer = new StreamWriter(fs, Encoding.UTF8);
+            using var csv = new CsvWriter(writer, System.Globalization.CultureInfo.InvariantCulture);
+
+            csv.WriteHeader<HeartRateWithZonesCsvRecord>();
+            await csv.NextRecordAsync().ConfigureAwait(false);
+
+            foreach (var hr in records)
+            {
+                var avgZone = HeartRateData.ClassifyZone(hr.AverageBpm, maxHeartRate);
+
+                var record = new HeartRateWithZonesCsvRecord
+                {
+                    Date        = hr.RecordDate.ToString("yyyy-MM-dd"),
+                    MinBpm      = hr.MinimumBpm,
+                    MaxBpm      = hr.MaximumBpm,
+                    AvgBpm      = hr.AverageBpm,
+                    RestingBpm  = hr.RestingBpm,
+                    Measurements = hr.MeasurementCount,
+                    StressLevel = hr.StressLevel,
+                    AvgZone     = (int)avgZone,
+                    Zone1Minutes = hr.ZoneMinutes[0],
+                    Zone2Minutes = hr.ZoneMinutes[1],
+                    Zone3Minutes = hr.ZoneMinutes[2],
+                    Zone4Minutes = hr.ZoneMinutes[3],
+                    Zone5Minutes = hr.ZoneMinutes[4]
+                };
+
+                csv.WriteRecord(record);
+                await csv.NextRecordAsync().ConfigureAwait(false);
+            }
+        }
+        catch (IOException ex)
+        {
+            throw new ExportException("Failed to write heart rate with zones CSV", outputPath, "CSV", ex);
+        }
+    }
+
+    /// <summary>
     /// Export steps data to CSV
     /// </summary>
     public async Task ExportStepsToCsvAsync(List<StepsData> records, string outputPath)
@@ -256,4 +313,23 @@ public sealed class StepsCsvRecord
     public int ActiveMinutes { get; set; }
     public int Walking { get; set; }
     public int Running { get; set; }
+}
+
+/// <summary>CSV record for heart rate data with per-zone classification columns</summary>
+public sealed class HeartRateWithZonesCsvRecord
+{
+    public string? Date { get; set; }
+    public int MinBpm { get; set; }
+    public int MaxBpm { get; set; }
+    public int AvgBpm { get; set; }
+    public int? RestingBpm { get; set; }
+    public int Measurements { get; set; }
+    public int? StressLevel { get; set; }
+    /// <summary>Zone (1–5) that the daily average BPM falls into</summary>
+    public int AvgZone { get; set; }
+    public int Zone1Minutes { get; set; }
+    public int Zone2Minutes { get; set; }
+    public int Zone3Minutes { get; set; }
+    public int Zone4Minutes { get; set; }
+    public int Zone5Minutes { get; set; }
 }
