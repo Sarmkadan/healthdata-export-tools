@@ -282,6 +282,80 @@ Based on week-over-week comparison.
 3. **SQLite**: Query with any database tool
 4. **Custom**: Implement interfaces for custom storage
 
+### Q: Can I build a local health dashboard with Blazor and SQLite?
+
+**A**: Yes. A common pattern is an ingestion worker that parses exports and writes to SQLite,
+and a Blazor WebAssembly (or Blazor Server) frontend that queries the database directly.
+
+**1. Ingestion worker** – parse and persist new exports:
+
+```csharp
+// Worker runs on a schedule or is triggered manually.
+var parser    = new HealthDataParserService(new ValidationService());
+var json      = await File.ReadAllTextAsync("zepp_export.json");
+var collection = await parser.ParseJsonAsync(json);
+
+// Persist via the SQLite connection manager
+var db = new SqliteConnectionManager("./healthdata.db");
+await db.InitializeDatabaseAsync();
+
+var repo = new InMemoryHealthDataRepository();
+await repo.SaveHealthDataAsync(new HealthDataExportDto
+{
+    SleepRecords     = collection.SleepRecords,
+    HeartRateRecords = collection.HeartRateRecords,
+    SpO2Records      = collection.SpO2Records,
+    StepsRecords     = collection.StepsRecords
+});
+```
+
+**2. Blazor dependency injection** – register services in `Program.cs`:
+
+```csharp
+builder.Services.AddHealthDataExportTools(opt =>
+{
+    opt.DatabasePath = "./healthdata.db";
+    opt.CacheEnabled = true;
+});
+
+builder.Services.AddScoped<AnalyticsService>();
+```
+
+**3. Razor component** – display sleep data:
+
+```razor
+@inject AnalyticsService Analytics
+@inject IHealthDataRepository Repo
+
+<h3>Last 7 days – average sleep</h3>
+<p>@avgSleep.ToString("F1") hours</p>
+
+@code {
+    private double avgSleep;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var records  = await Repo.GetSleepDataAsync();
+        avgSleep     = Analytics.CalculateAverageSleepDuration(records.ToList(), days: 7);
+    }
+}
+```
+
+**4. Heart rate zones** – add zone columns to your dashboard:
+
+```csharp
+// Classify BPM readings into zones (user max HR = 185)
+foreach (var record in collection.HeartRateRecords)
+{
+    var zone = HeartRateData.ClassifyZone(record.AverageBpm, maxHeartRate: 185);
+    Console.WriteLine($"{record.RecordDate:yyyy-MM-dd}: avg {record.AverageBpm} bpm → Zone {(int)zone}");
+}
+```
+
+See [examples/04_DatabaseStorage.cs](../examples/04_DatabaseStorage.cs) for a complete SQLite
+persistence example, and [examples/06_DependencyInjection.cs](../examples/06_DependencyInjection.cs)
+for DI wiring patterns.
+
 ### Q: Can I use it in a web application?
 
 **A**: Yes, create an ASP.NET Core controller:
