@@ -33,6 +33,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ValidationService>();
         services.AddSingleton<HealthDataParserService>();
         services.AddSingleton<ExportService>();
+        services.AddSingleton<ChartExportService>();
         services.AddSingleton<AnalyticsService>();
         services.AddSingleton<TrendAnomalyDetectionService>();
 

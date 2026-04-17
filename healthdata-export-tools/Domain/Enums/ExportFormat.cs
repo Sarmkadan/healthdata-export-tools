@@ -20,6 +20,9 @@ public enum ExportFormat
     /// <summary>SQLite database format</summary>
     Sqlite,
 
+    /// <summary>HTML chart/graph export format</summary>
+    Html,
+
     /// <summary>All formats combined</summary>
     All
 }
