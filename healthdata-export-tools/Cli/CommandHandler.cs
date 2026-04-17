@@ -18,6 +18,7 @@ public sealed class CommandHandler
 {
     private readonly HealthDataParserService _parserService;
     private readonly ExportService _exportService;
+    private readonly ChartExportService _chartExportService;
     private readonly AnalyticsService _analyticsService;
     private readonly ValidationService _validationService;
     private readonly ILogger<CommandHandler> _logger;
@@ -25,12 +26,14 @@ public sealed class CommandHandler
     public CommandHandler(
         HealthDataParserService parserService,
         ExportService exportService,
+        ChartExportService chartExportService,
         AnalyticsService analyticsService,
         ValidationService validationService,
         ILogger<CommandHandler> logger)
     {
         _parserService = parserService ?? throw new ArgumentNullException(nameof(parserService));
         _exportService = exportService ?? throw new ArgumentNullException(nameof(exportService));
+        _chartExportService = chartExportService ?? throw new ArgumentNullException(nameof(chartExportService));
         _analyticsService = analyticsService ?? throw new ArgumentNullException(nameof(analyticsService));
         _validationService = validationService ?? throw new ArgumentNullException(nameof(validationService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -134,7 +137,7 @@ public sealed class CommandHandler
     private async Task ExportToFormats(List<HealthDataRecord> records, CliOptions options)
     {
         var formats = options.Format.Equals("all", StringComparison.OrdinalIgnoreCase)
-            ? new[] { "json", "csv", "sqlite" }
+            ? new[] { "json", "csv", "sqlite", "html" }
             : new[] { options.Format.ToLower() };
 
         // Build a typed collection from the flat record list for use by ExportService
@@ -163,6 +166,12 @@ public sealed class CommandHandler
                     case "sqlite":
                         // SQLite export delegated to database layer
                         _logger.LogInformation("SQLite export: records would be stored to {DatabasePath}", options.DatabasePath);
+                        break;
+
+                    case "html":
+                        var htmlPath = Path.Combine(options.OutputPath, "charts.html");
+                        await _chartExportService.ExportToHtmlChartsAsync(collection, htmlPath).ConfigureAwait(false);
+                        _logger.LogInformation("HTML Chart export complete: {HtmlPath}", htmlPath);
                         break;
                 }
             }
