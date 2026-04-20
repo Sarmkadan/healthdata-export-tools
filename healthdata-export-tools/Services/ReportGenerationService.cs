@@ -34,8 +34,8 @@ public sealed class ReportGenerationService
                 TotalRecords = records.Count,
                 DateRange = new DateRange
                 {
-                    StartDate = records.Min(r => r.RecordDate),
-                    EndDate = records.Max(r => r.RecordDate)
+                    StartDate = records.Count > 0 ? records.Min(r => r.RecordDate) : default,
+                    EndDate = records.Count > 0 ? records.Max(r => r.RecordDate) : default
                 }
             };
 
@@ -123,6 +123,81 @@ public sealed class ReportGenerationService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error generating daily report");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Generate weekly summary reports from health records
+    /// </summary>
+    public async Task<List<WeeklySummaryReport>> GenerateWeeklySummaryReportAsync(
+        List<SleepData> sleepData,
+        List<HeartRateData> heartRateData,
+        List<StepsData> stepsData)
+    {
+        try
+        {
+            _logger.LogInformation("Generating weekly reports...");
+            var reports = new List<WeeklySummaryReport>();
+
+            var allDates = sleepData.Select(s => s.RecordDate.Date)
+                .Concat(heartRateData.Select(h => h.RecordDate.Date))
+                .Concat(stepsData.Select(st => st.RecordDate.Date))
+                .Distinct()
+                .OrderBy(d => d)
+                .ToList();
+
+            if (allDates.Count == 0) return await Task.FromResult(reports).ConfigureAwait(false);
+
+            // Group dates into 7-day chunks (weeks) based on ISO 8601 (Monday start)
+            var groupedByWeek = allDates.GroupBy(d =>
+                System.Globalization.ISOWeek.GetYear(d) + "-" + System.Globalization.ISOWeek.GetWeekOfYear(d).ToString("D2")
+            );
+
+            foreach (var weekGroup in groupedByWeek)
+            {
+                var datesInWeek = weekGroup.ToList();
+                var startDate = datesInWeek.Min();
+                var endDate = datesInWeek.Max();
+                
+                var weeklySleep = sleepData.Where(s => s.RecordDate.Date >= startDate && s.RecordDate.Date <= endDate).ToList();
+                var weeklyHeartRate = heartRateData.Where(h => h.RecordDate.Date >= startDate && h.RecordDate.Date <= endDate).ToList();
+                var weeklySteps = stepsData.Where(st => st.RecordDate.Date >= startDate && st.RecordDate.Date <= endDate).ToList();
+
+                var report = new WeeklySummaryReport
+                {
+                    WeekIdentifier = weekGroup.Key,
+                    StartDate = startDate,
+                    EndDate = endDate,
+                    GeneratedAt = DateTime.UtcNow
+                };
+
+                if (weeklySleep.Count > 0)
+                {
+                    report.AverageSleepDurationMinutes = (int)weeklySleep.Average(s => s.DurationMinutes);
+                    report.AverageSleepQuality = (int)weeklySleep.Average(s => (int)s.Quality);
+                }
+
+                if (weeklyHeartRate.Count > 0)
+                {
+                    report.AverageHeartRate = (int)weeklyHeartRate.Average(h => h.AverageBpm);
+                    report.AverageStressLevel = (int)weeklyHeartRate.Where(h => h.StressLevel.HasValue).Average(h => h.StressLevel!.Value);
+                }
+
+                if (weeklySteps.Count > 0)
+                {
+                    report.TotalSteps = weeklySteps.Sum(st => st.TotalSteps);
+                    report.TotalDistanceKm = weeklySteps.Sum(st => st.DistanceKm);
+                }
+
+                reports.Add(report);
+            }
+
+            return await Task.FromResult(reports).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error generating weekly summary report");
             throw;
         }
     }
@@ -318,4 +393,24 @@ public sealed class DateRange
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
     public int DaysCovered => (EndDate - StartDate).Days;
+}
+
+/// <summary>
+/// Weekly summary report
+/// </summary>
+public sealed class WeeklySummaryReport
+{
+    public string WeekIdentifier { get; set; } = string.Empty;
+    public DateTime StartDate { get; set; }
+    public DateTime EndDate { get; set; }
+    public DateTime GeneratedAt { get; set; }
+    
+    public int AverageSleepDurationMinutes { get; set; }
+    public int AverageSleepQuality { get; set; }
+    
+    public int AverageHeartRate { get; set; }
+    public int AverageStressLevel { get; set; }
+    
+    public int TotalSteps { get; set; }
+    public double TotalDistanceKm { get; set; }
 }
