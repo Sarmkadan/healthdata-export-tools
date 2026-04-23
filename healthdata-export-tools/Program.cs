@@ -63,6 +63,8 @@ class Program
                 return;
             }
 
+            var dataComparison = (DataComparisonService?)serviceProvider.GetService(typeof(DataComparisonService));
+
             // Create sample data for demonstration
             Console.WriteLine("📊 Creating sample health data...");
             var sampleData = CreateSampleData();
@@ -88,6 +90,24 @@ class Program
             Console.WriteLine();
             Console.WriteLine($"  • Overall Health Score: {healthScore}/100");
             Console.WriteLine();
+
+            if (dataComparison is not null)
+            {
+                Console.WriteLine("⚖️ Comparing data periods (last 3 days vs previous 4 days)...");
+                var period1 = new HealthDataCollection();
+                var period2 = new HealthDataCollection();
+                
+                var cutoff = DateTime.UtcNow.Date.AddDays(-3);
+                foreach (var s in sampleData.SleepRecords) { if (s.RecordDate >= cutoff) period1.SleepRecords.Add(s); else period2.SleepRecords.Add(s); }
+                foreach (var h in sampleData.HeartRateRecords) { if (h.RecordDate >= cutoff) period1.HeartRateRecords.Add(h); else period2.HeartRateRecords.Add(h); }
+                foreach (var st in sampleData.StepsRecords) { if (st.RecordDate >= cutoff) period1.StepsRecords.Add(st); else period2.StepsRecords.Add(st); }
+
+                var compResult = await dataComparison.ComparePeriodsAsync(period1, period2);
+                Console.WriteLine($"  • Steps change: {compResult.StepsChangePercentage:+0.0;-0.0;0.0}%");
+                Console.WriteLine($"  • Heart rate change: {compResult.HeartRateChangePercentage:+0.0;-0.0;0.0}%");
+                Console.WriteLine($"  • Sleep change: {compResult.SleepDurationChangePercentage:+0.0;-0.0;0.0}%");
+                Console.WriteLine();
+            }
 
             // Export data
             Console.WriteLine("💾 Exporting data...");
