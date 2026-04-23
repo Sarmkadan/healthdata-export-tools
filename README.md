@@ -28,6 +28,8 @@ A comprehensive, production-grade .NET 10 library for parsing, analyzing, and ex
 - **Multi-Format Support**: Parse data from Zepp, Amazfit, and Garmin health export formats
 - **Flexible Export**: Export processed data to CSV, JSON, or SQLite databases with full control
 - **Chart/Graph Export**: Generate interactive HTML charts to visualize health data trends
+- **Weekly Summary Reports**: Automatically aggregate and report weekly health trends and statistics
+- **Data Comparison Tool**: Compare different periods of health data to determine exact percentage changes
 - **Analytics Engine**: Calculate health metrics, trends, insights, and generate comprehensive reports
 - **Data Validation**: Comprehensive validation rules for health data integrity and consistency
 - **Async Operations**: Full async/await support for performance and scalability in large datasets
