@@ -784,6 +784,109 @@ bool isConnectedAfterDelete = await connectionManager.VerifyConnectionAsync();
 isConnectedAfterDelete.Should().BeFalse();
 ```
 
+## TrendAnomalyDetectionServiceTests
+
+The `TrendAnomalyDetectionServiceTests` class contains comprehensive unit tests for the `TrendAnomalyDetectionService` class. It tests trend analysis and anomaly detection functionality for various health metrics including heart rate, SpO2, steps, and sleep duration. The tests verify trend detection (improving, declining, stable), anomaly detection, statistical calculations, and error handling scenarios.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Services;
+using HealthDataExportTools.Domain.Models;
+using FluentAssertions;
+using Microsoft.Extensions.Logging;
+using NSubstitute;
+
+// Create mock logger
+var mockLogger = Substitute.For<ILogger<TrendAnomalyDetectionService>>();
+
+// Create the service instance
+var trendService = new TrendAnomalyDetectionService(mockLogger);
+
+// Test trend analysis with heart rate data showing a stable trend
+var heartRatePoints = new List<(DateTime Date, double Value)>
+{
+    (DateTime.Today.AddDays(-9), 70),
+    (DateTime.Today.AddDays(-8), 71),
+    (DateTime.Today.AddDays(-7), 70),
+    (DateTime.Today.AddDays(-6), 72),
+    (DateTime.Today.AddDays(-5), 71),
+    (DateTime.Today.AddDays(-4), 70),
+    (DateTime.Today.AddDays(-3), 71),
+    (DateTime.Today.AddDays(-2), 72),
+    (DateTime.Today.AddDays(-1), 71),
+    (DateTime.Today, 70)
+};
+
+var heartRateResult = trendService.ComputeTrendAndAnomalies(
+    "HeartRate", 
+    heartRatePoints, 
+    minimumSampleCount: 30,
+    anomalyThreshold: 2.0
+);
+
+heartRateResult.MetricName.Should().Be("HeartRate");
+heartRateResult.TrendStatus.Should().Be("Stable");
+heartRateResult.SampleCount.Should().Be(10);
+heartRateResult.Anomalies.Should().BeEmpty();
+
+// Test anomaly detection with SpO2 data containing an outlier
+var spo2Points = new List<(DateTime Date, double Value)>
+{
+    (DateTime.Today.AddDays(-9), 95),
+    (DateTime.Today.AddDays(-8), 96),
+    (DateTime.Today.AddDays(-7), 97),
+    (DateTime.Today.AddDays(-6), 95),
+    (DateTime.Today.AddDays(-5), 96),
+    (DateTime.Today.AddDays(-4), 150), // Anomaly - very low SpO2
+    (DateTime.Today.AddDays(-3), 95),
+    (DateTime.Today.AddDays(-2), 96),
+    (DateTime.Today.AddDays(-1), 97),
+    (DateTime.Today, 95)
+};
+
+var spo2Result = trendService.ComputeTrendAndAnomalies(
+    "SpO2", 
+    spo2Points, 
+    minimumSampleCount: 30,
+    anomalyThreshold: 2.0
+);
+
+spo2Result.TrendStatus.Should().Be("Stable");
+spo2Result.Anomalies.Should().ContainSingle();
+spo2Result.Anomalies.First().Value.Should().Be(150);
+
+// Test analyzing a complete health data collection
+var healthCollection = new HealthDataCollection();
+for (int i = 0; i < 10; i++)
+{
+    healthCollection.HeartRateRecords.Add(new HeartRateData 
+    {
+        RecordDate = DateTime.Today.AddDays(i),
+        AverageBpm = 70 + i
+    });
+    healthCollection.SpO2Records.Add(new SpO2Data 
+    {
+        RecordDate = DateTime.Today.AddDays(i),
+        AveragePercentage = 95 + i
+    });
+    healthCollection.StepsRecords.Add(new StepsData 
+    {
+        RecordDate = DateTime.Today.AddDays(i),
+        TotalSteps = 5000 + i * 100
+    });
+    healthCollection.SleepRecords.Add(new SleepData 
+    {
+        RecordDate = DateTime.Today.AddDays(i),
+        DurationMinutes = 400 + i * 10
+    });
+}
+
+var analysisResult = await trendService.AnalyzeAsync(healthCollection);
+analysisResult.Metrics.Should().HaveCount(4);
+analysisResult.TotalAnomalies.Should().Be(0);
+```
+
 ## ValidationServiceTests
 
 The `ValidationServiceTests` class contains comprehensive unit tests for the `ValidationService` class, covering validation scenarios for various health data types including sleep, heart rate, SpO2, steps, activity, and general health metrics. It tests both valid and invalid data scenarios to ensure robust validation logic.
