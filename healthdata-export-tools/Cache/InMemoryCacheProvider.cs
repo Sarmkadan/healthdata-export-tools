@@ -93,7 +93,7 @@ public class InMemoryCacheProvider : ICacheProvider
         _lock.EnterWriteLock();
         try
         {
-            var expiresAt = expiration != null ? DateTime.UtcNow.Add(expiration.Value) : null;
+            DateTime? expiresAt = expiration != null ? DateTime.UtcNow.Add(expiration.Value) : null;
             _cache[key] = (value, expiresAt, 0, null);
 
             _logger.LogDebug("Cache set for key: {Key}, expires: {Expires}",

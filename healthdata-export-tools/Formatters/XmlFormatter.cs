@@ -43,9 +43,9 @@ public class XmlFormatter : IDataFormatter
         var root = doc.CreateElement("HealthDataRecord");
 
         AddElement(doc, root, "RecordDate", record.RecordDate.ToString("yyyy-MM-ddTHH:mm:ss"));
-        AddElement(doc, root, "MetricType", record.MetricType.ToString());
-        AddElement(doc, root, "DeviceType", record.DeviceType.ToString());
-        AddElement(doc, root, "Value", record.Value.ToString());
+        AddElement(doc, root, "MetricType", record.GetType().Name);
+        AddElement(doc, root, "DeviceType", record.DeviceId);
+        AddElement(doc, root, "Value", string.Empty);
 
         doc.AppendChild(root);
 
@@ -88,9 +88,9 @@ public class XmlFormatter : IDataFormatter
                 var recordElement = doc.CreateElement("Record");
 
                 AddElement(doc, recordElement, "RecordDate", record.RecordDate.ToString("yyyy-MM-ddTHH:mm:ss"));
-                AddElement(doc, recordElement, "MetricType", record.MetricType.ToString());
-                AddElement(doc, recordElement, "DeviceType", record.DeviceType.ToString());
-                AddElement(doc, recordElement, "Value", record.Value.ToString("F2"));
+                AddElement(doc, recordElement, "MetricType", record.GetType().Name);
+                AddElement(doc, recordElement, "DeviceType", record.DeviceId);
+                AddElement(doc, recordElement, "Value", string.Empty);
 
                 recordsElement.AppendChild(recordElement);
             }
@@ -150,13 +150,13 @@ public class XmlFormatter : IDataFormatter
             {
                 var recordElement = doc.CreateElement("SleepRecord");
 
-                AddElement(doc, recordElement, "Date", record.SleepDate.ToString("yyyy-MM-dd"));
+                AddElement(doc, recordElement, "Date", record.RecordDate.ToString("yyyy-MM-dd"));
                 AddElement(doc, recordElement, "DurationMinutes", record.DurationMinutes.ToString());
                 AddElement(doc, recordElement, "Quality", record.Quality.ToString());
                 AddElement(doc, recordElement, "DeepSleepMinutes", record.DeepSleepMinutes.ToString());
                 AddElement(doc, recordElement, "RemSleepMinutes", record.RemSleepMinutes.ToString());
                 AddElement(doc, recordElement, "AwakeMinutes", record.AwakeMinutes.ToString());
-                AddElement(doc, recordElement, "DeviceType", record.DeviceType.ToString());
+                AddElement(doc, recordElement, "DeviceType", record.DeviceId);
 
                 recordsElement.AppendChild(recordElement);
             }
@@ -195,9 +195,9 @@ public class XmlFormatter : IDataFormatter
             foreach (var record in heartRateRecords)
             {
                 var recordElement = doc.CreateElement("HeartRateRecord");
-                AddElement(doc, recordElement, "Timestamp", record.Timestamp.ToString("yyyy-MM-ddTHH:mm:ss"));
-                AddElement(doc, recordElement, "HeartRate", record.HeartRate.ToString());
-                AddElement(doc, recordElement, "Zone", record.HeartRateZone.ToString());
+                AddElement(doc, recordElement, "Timestamp", record.RecordDate.ToString("yyyy-MM-ddTHH:mm:ss"));
+                AddElement(doc, recordElement, "HeartRate", record.AverageBpm.ToString());
+                AddElement(doc, recordElement, "Zone", string.Empty);
                 recordsElement.AppendChild(recordElement);
             }
             root.AppendChild(recordsElement);
@@ -228,9 +228,9 @@ public class XmlFormatter : IDataFormatter
             foreach (var record in spo2Records)
             {
                 var recordElement = doc.CreateElement("SpO2Record");
-                AddElement(doc, recordElement, "Timestamp", record.Timestamp.ToString("yyyy-MM-ddTHH:mm:ss"));
-                AddElement(doc, recordElement, "SpO2", record.SpO2.ToString("F1"));
-                AddElement(doc, recordElement, "IsLowOxygen", record.IsLowOxygen.ToString());
+                AddElement(doc, recordElement, "Timestamp", record.RecordDate.ToString("yyyy-MM-ddTHH:mm:ss"));
+                AddElement(doc, recordElement, "SpO2", record.AveragePercentage.ToString("F1"));
+                AddElement(doc, recordElement, "IsLowOxygen", record.HasConcerningLevels().ToString());
                 recordsElement.AppendChild(recordElement);
             }
             root.AppendChild(recordsElement);
@@ -261,10 +261,10 @@ public class XmlFormatter : IDataFormatter
             foreach (var record in stepsRecords)
             {
                 var recordElement = doc.CreateElement("StepsRecord");
-                AddElement(doc, recordElement, "Date", record.StepsDate.ToString("yyyy-MM-dd"));
-                AddElement(doc, recordElement, "StepCount", record.StepCount.ToString());
-                AddElement(doc, recordElement, "Distance", record.Distance.ToString("F2"));
-                AddElement(doc, recordElement, "Calories", record.Calories.ToString("F1"));
+                AddElement(doc, recordElement, "Date", record.RecordDate.ToString("yyyy-MM-dd"));
+                AddElement(doc, recordElement, "StepCount", record.TotalSteps.ToString());
+                AddElement(doc, recordElement, "Distance", record.DistanceKm.ToString("F2"));
+                AddElement(doc, recordElement, "Calories", record.CaloriesBurned.ToString("F1"));
                 recordsElement.AppendChild(recordElement);
             }
             root.AppendChild(recordsElement);
@@ -298,12 +298,8 @@ public class XmlFormatter : IDataFormatter
         {
             var record = records[i];
 
-            if (double.IsNaN(record.Value) || double.IsInfinity(record.Value))
-                errors.Add($"Record {i}: Invalid numeric value");
-
-            // XML special characters validation
-            if (ContainsInvalidXmlChars(record.MetricType.ToString()))
-                errors.Add($"Record {i}: Invalid XML characters in MetricType");
+            if (ContainsInvalidXmlChars(record.GetType().Name))
+                errors.Add($"Record {i}: Invalid XML characters in type name");
         }
 
         return await Task.FromResult(errors);

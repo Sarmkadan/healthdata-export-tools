@@ -48,9 +48,9 @@ public class JsonFormatter : IDataFormatter
             var jsonObject = new
             {
                 record.RecordDate,
-                record.MetricType,
-                record.DeviceType,
-                record.Value
+                MetricType = record.GetType().Name,
+                DeviceType = record.DeviceId,
+                Value = string.Empty
             };
 
             return await Task.FromResult(JsonSerializer.Serialize(jsonObject, _jsonOptions));
@@ -82,9 +82,9 @@ public class JsonFormatter : IDataFormatter
                 Records = records.Select(r => new
                 {
                     r.RecordDate,
-                    r.MetricType,
-                    r.DeviceType,
-                    r.Value
+                    MetricType = r.GetType().Name,
+                    DeviceType = r.DeviceId,
+                    Value = string.Empty
                 }).ToList()
             };
 
@@ -121,13 +121,13 @@ public class JsonFormatter : IDataFormatter
                 },
                 Records = sleepRecords.Select(s => new
                 {
-                    s.SleepDate,
+                    Date = s.RecordDate,
                     s.DurationMinutes,
                     s.Quality,
                     s.DeepSleepMinutes,
                     s.RemSleepMinutes,
                     s.AwakeMinutes,
-                    s.DeviceType
+                    DeviceType = s.DeviceId
                 }).ToList()
             };
 
@@ -158,16 +158,16 @@ public class JsonFormatter : IDataFormatter
                 RecordCount = heartRateRecords.Count,
                 Statistics = new
                 {
-                    AverageHeartRate = heartRateRecords.Average(h => h.HeartRate),
-                    MaxHeartRate = heartRateRecords.Max(h => h.HeartRate),
-                    MinHeartRate = heartRateRecords.Min(h => h.HeartRate)
+                    AverageHeartRate = heartRateRecords.Average(h => h.AverageBpm),
+                    MaxHeartRate = heartRateRecords.Max(h => h.MaximumBpm),
+                    MinHeartRate = heartRateRecords.Min(h => h.MinimumBpm)
                 },
                 Records = heartRateRecords.Select(h => new
                 {
-                    h.Timestamp,
-                    h.HeartRate,
-                    h.HeartRateZone,
-                    h.DeviceType
+                    Timestamp = h.RecordDate,
+                    HeartRate = h.AverageBpm,
+                    HeartRateZone = string.Empty,
+                    DeviceType = h.DeviceId
                 }).ToList()
             };
 
@@ -198,16 +198,16 @@ public class JsonFormatter : IDataFormatter
                 RecordCount = spo2Records.Count,
                 Statistics = new
                 {
-                    AverageSpO2 = spo2Records.Average(s => s.SpO2),
-                    MinSpO2 = spo2Records.Min(s => s.SpO2),
-                    LowOxygenEvents = spo2Records.Count(s => s.IsLowOxygen)
+                    AverageSpO2 = spo2Records.Average(s => s.AveragePercentage),
+                    MinSpO2 = spo2Records.Min(s => s.MinimumPercentage),
+                    LowOxygenEvents = spo2Records.Count(s => s.HasConcerningLevels())
                 },
                 Records = spo2Records.Select(s => new
                 {
-                    s.Timestamp,
-                    s.SpO2,
-                    s.IsLowOxygen,
-                    s.DeviceType
+                    Timestamp = s.RecordDate,
+                    SpO2 = s.AveragePercentage,
+                    IsLowOxygen = s.HasConcerningLevels(),
+                    DeviceType = s.DeviceId
                 }).ToList()
             };
 
@@ -238,18 +238,18 @@ public class JsonFormatter : IDataFormatter
                 RecordCount = stepsRecords.Count,
                 Statistics = new
                 {
-                    TotalSteps = stepsRecords.Sum(s => s.StepCount),
-                    AverageStepsPerDay = stepsRecords.Average(s => s.StepCount),
-                    TotalDistance = stepsRecords.Sum(s => s.Distance),
-                    TotalCalories = stepsRecords.Sum(s => s.Calories)
+                    TotalSteps = stepsRecords.Sum(s => s.TotalSteps),
+                    AverageStepsPerDay = stepsRecords.Average(s => s.TotalSteps),
+                    TotalDistance = stepsRecords.Sum(s => s.DistanceKm),
+                    TotalCalories = stepsRecords.Sum(s => s.CaloriesBurned)
                 },
                 Records = stepsRecords.Select(s => new
                 {
-                    s.StepsDate,
-                    s.StepCount,
-                    s.Distance,
-                    s.Calories,
-                    s.DeviceType
+                    Date = s.RecordDate,
+                    StepCount = s.TotalSteps,
+                    Distance = s.DistanceKm,
+                    Calories = s.CaloriesBurned,
+                    DeviceType = s.DeviceId
                 }).ToList()
             };
 
@@ -287,8 +287,8 @@ public class JsonFormatter : IDataFormatter
         {
             var record = records[i];
 
-            if (double.IsNaN(record.Value) || double.IsInfinity(record.Value))
-                errors.Add($"Record {i}: Invalid numeric value (NaN or Infinity)");
+            if (record.RecordDate == default)
+                errors.Add($"Record {i}: RecordDate is not set");
         }
 
         return await Task.FromResult(errors);

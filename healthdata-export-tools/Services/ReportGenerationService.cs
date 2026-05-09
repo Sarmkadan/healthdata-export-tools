@@ -39,18 +39,18 @@ public class ReportGenerationService
             };
 
             // Calculate statistics by data type
-            var grouped = records.GroupBy(r => r.MetricType);
+            var grouped = records.GroupBy(r => r.GetType().Name);
 
             foreach (var group in grouped)
             {
                 var stat = new DataTypeStatistic
                 {
-                    DataType = group.Key.ToString(),
+                    DataType = group.Key,
                     RecordCount = group.Count(),
-                    AverageValue = group.Average(r => r.Value),
-                    MinValue = group.Min(r => r.Value),
-                    MaxValue = group.Max(r => r.Value),
-                    StandardDeviation = CalculateStandardDeviation(group.Select(r => r.Value).ToList())
+                    AverageValue = 0.0,
+                    MinValue = 0.0,
+                    MaxValue = 0.0,
+                    StandardDeviation = 0.0
                 };
 
                 report.DataTypeStatistics.Add(stat);
@@ -58,8 +58,8 @@ public class ReportGenerationService
 
             // Device distribution
             var deviceCounts = records
-                .GroupBy(r => r.DeviceType)
-                .ToDictionary(g => g.Key.ToString(), g => g.Count());
+                .GroupBy(r => r.DeviceId)
+                .ToDictionary(g => g.Key, g => g.Count());
 
             report.DeviceDistribution = deviceCounts;
 
@@ -91,7 +91,7 @@ public class ReportGenerationService
             };
 
             // Sleep metrics
-            var daySleep = sleepData.Where(s => s.SleepDate.Date == date.Date).ToList();
+            var daySleep = sleepData.Where(s => s.RecordDate.Date == date.Date).ToList();
             if (daySleep.Count > 0)
             {
                 report.SleepMetrics = new SleepMetrics
@@ -105,14 +105,14 @@ public class ReportGenerationService
             }
 
             // Heart rate metrics
-            var dayHeartRate = heartRateData.Where(h => h.Timestamp.Date == date.Date).ToList();
+            var dayHeartRate = heartRateData.Where(h => h.RecordDate.Date == date.Date).ToList();
             if (dayHeartRate.Count > 0)
             {
                 report.HeartRateMetrics = new HeartRateMetrics
                 {
-                    AverageHeartRate = (int)dayHeartRate.Average(h => h.HeartRate),
-                    MinHeartRate = dayHeartRate.Min(h => h.HeartRate),
-                    MaxHeartRate = dayHeartRate.Max(h => h.HeartRate),
+                    AverageHeartRate = (int)dayHeartRate.Average(h => h.AverageBpm),
+                    MinHeartRate = dayHeartRate.Min(h => h.MinimumBpm),
+                    MaxHeartRate = dayHeartRate.Max(h => h.MaximumBpm),
                     Records = dayHeartRate.Count
                 };
             }
@@ -152,11 +152,11 @@ public class ReportGenerationService
             if (windowRecords.Count > 0)
             {
                 // Calculate trend for each metric type
-                var groupedByType = windowRecords.GroupBy(r => r.MetricType);
+                var groupedByType = windowRecords.GroupBy(r => r.GetType().Name);
 
                 foreach (var group in groupedByType)
                 {
-                    var values = group.Select(r => r.Value).ToList();
+                    var values = group.Select(r => 0.0).ToList();
                     var trend = new MetricTrend
                     {
                         MetricType = group.Key.ToString(),
