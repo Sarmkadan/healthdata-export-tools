@@ -110,5 +110,5 @@ jobs:
       run: dotnet test --configuration Release --collect:"XPlat Code Coverage"
 
     - name: Upload coverage
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v6
       if: always()
