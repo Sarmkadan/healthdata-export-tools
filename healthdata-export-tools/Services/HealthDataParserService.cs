@@ -36,6 +36,8 @@ public sealed class HealthDataParserService
     /// <summary>
     /// Parse health data from a JSON string
     /// </summary>
+    /// <param name="jsonContent">The raw JSON string containing health data.</param>
+    /// <returns>A <see cref="HealthDataCollection"/> containing the parsed records.</returns>
     public Task<HealthDataCollection> ParseJsonAsync(string jsonContent)
     {
         try
