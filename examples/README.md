@@ -4,9 +4,53 @@ Complete working examples demonstrating different features and use cases of the 
 
 ## Examples Overview
 
-### 1. Basic Export (01_BasicExport.cs)
+### 1. Basic Usage (BasicUsage.cs)
 
-**Purpose**: Simplest way to parse and export health data.
+**Purpose**: Minimal setup and first call - the simplest possible integration.
+
+**Topics Covered**:
+- Minimal code setup
+- Basic parsing and export
+- Error handling
+- Getting started quickly
+
+**Key Classes**:
+- `HealthDataParserService`
+- `ExportService`
+
+### 2. Advanced Usage (AdvancedUsage.cs)
+
+**Purpose**: Configuration, custom options, and error handling for production use.
+
+**Topics Covered**:
+- Advanced configuration options
+- Custom settings and validation
+- Robust error handling
+- Caching and analysis
+- Comprehensive service setup
+
+**Key Classes**:
+- `HealthDataExportOptions`
+- `AnalyticsService`
+- `ValidationService`
+- `CacheService`
+
+### 3. Integration Example (IntegrationExample.cs)
+
+**Purpose**: ASP.NET Dependency Injection integration - production-grade setup.
+
+**Topics Covered**:
+- Microsoft.Extensions.DependencyInjection integration
+- Service registration
+- Resolving services from DI container
+- Production architecture patterns
+
+**Key Classes**:
+- `ServiceCollection`
+- `IServiceProvider`
+- Service registration extensions
+
+### 4. Basic Export (01_BasicExport.cs)
 
 **Topics Covered**:
 - Creating export options

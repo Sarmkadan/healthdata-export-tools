@@ -212,6 +212,20 @@ await exporter.ExportCompleteAsync(data, "./output/", ExportFormat.Json);
 
 ## Usage Examples
 
+For comprehensive, production-ready examples, see the **complete runnable examples** in the [`/examples`](examples/) directory. Each example is a self-contained application demonstrating specific features:
+
+- **BasicUsage.cs** - Minimal setup and first call
+- **AdvancedUsage.cs** - Configuration, custom options, and error handling  
+- **IntegrationExample.cs** - ASP.NET Dependency Injection integration
+
+
+These examples show real-world usage patterns, best practices, and complete implementations you can adapt for your projects.
+
+### Quick Start Examples
+
+For immediate integration, here are common usage patterns:
+
+
 ### Example 1: Export Sleep Data to CSV
 
 ```csharp
