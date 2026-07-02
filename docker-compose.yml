@@ -59,13 +59,3 @@ services:
     labels:
       service: healthdata-exporter
       version: "1.0.0"
-
-# Volumes for persistent data
-volumes:
-  postgres_data:
-    driver: local
-
-# Networks for service communication
-networks:
-  healthdata-network:
-    driver: bridge
