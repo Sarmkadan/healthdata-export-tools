@@ -29,7 +29,7 @@ WORKDIR /app
 COPY --from=builder /app/publish .
 
 # Create directories for input/output with proper permissions
-RUN mkdir -p /data/exports /data/output && \
+RUN mkdir -p /data/exports /data/output /data/test-input /data/test-output && \
     chown -R 1001:1001 /data && \
     chmod -R 755 /data
 
@@ -44,7 +44,7 @@ ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false \
 
 # Health check - verify the application can run and complete successfully
 HEALTHCHECK --interval=30s --timeout=30s --start-period=15s --retries=3 \
-    CMD dotnet /app/healthdata-export-tools.dll /tmp/test-input /tmp/test-output /tmp/test.db 2>&1 | grep -q "✅ Export completed successfully" || exit 1
+    CMD dotnet /app/healthdata-export-tools.dll /data/test-input /data/test-output /data/test.db 2>&1 | grep -q "✅ Export completed successfully" || exit 1
 
 # Application configuration via environment variables
 ENV INPUT_PATH=/data/exports \

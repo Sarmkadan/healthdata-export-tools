@@ -43,7 +43,7 @@ services:
 
     # Health check
     healthcheck:
-      test: ["CMD-SHELL", "dotnet /app/healthdata-export-tools.dll /tmp/test-input /tmp/test-output /tmp/test.db 2>&1 | grep -q '✅ Export completed successfully'"]
+      test: ["CMD-SHELL", "dotnet /app/healthdata-export-tools.dll /data/test-input /data/test-output /data/test.db 2>&1 | grep -q '✅ Export completed successfully'"]
       interval: 30s
       timeout: 30s
       retries: 3
