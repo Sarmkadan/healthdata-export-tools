@@ -1,7 +1,7 @@
 # =============================================================================
 # Author: Vladyslav Zaiets | https://sarmkadan.com
 # CTO & Software Architect
-# =============================================================================
+# =====================================================================
 
 version: '3.8'
 
@@ -21,16 +21,16 @@ services:
       - DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
       - DOTNET_gcServer=1
       - DOTNET_gcConcurrent=1
+      - ASPNETCORE_ENVIRONMENT=Production
+
       # Application configuration
       - INPUT_PATH=/data/exports
       - OUTPUT_PATH=/data/output
       - DATABASE_PATH=/data/healthdata.db
-    ports:
-      # Expose for potential API endpoints
-      - "5000:5000"
-    networks:
-      - healthdata-network
+      - EXPORT_FORMAT=All
+      - VERBOSE_LOGGING=false
     restart: unless-stopped
+
     # Resource limits
     deploy:
       resources:
@@ -40,21 +40,32 @@ services:
         reservations:
           cpus: '0.5'
           memory: 512M
+
     # Health check
     healthcheck:
-      test: ["CMD", "test", "-f", "/data/healthdata.db"]
+      test: ["CMD-SHELL", "dotnet /app/healthdata-export-tools.dll /tmp/test-input /tmp/test-output /tmp/test.db 2>&1 | grep -q '✅ Export completed successfully'"]
       interval: 30s
-      timeout: 10s
+      timeout: 30s
       retries: 3
-      start_period: 10s
-    # Logging
+      start_period: 15s
+
+    # Logging configuration
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "3"
-        labels: "service=healthdata-exporter"
 
+    labels:
+      service: healthdata-exporter
+      version: "1.0.0"
+
+# Volumes for persistent data
+volumes:
+  postgres_data:
+    driver: local
+
+# Networks for service communication
 networks:
   healthdata-network:
     driver: bridge
