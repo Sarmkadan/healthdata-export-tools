@@ -70,3 +70,7 @@ Thumbs.db
 .idea/
 *.suo
 *.sln.docstates
+bin/
+obj/
+BenchmarkDotNet.Artifacts/
+.aider*
