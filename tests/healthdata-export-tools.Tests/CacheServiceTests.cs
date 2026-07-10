@@ -16,9 +16,9 @@ namespace HealthDataExportTools.Tests;
 
 public sealed class CacheServiceTests
 {
-    private readonly ICacheProvider _mockCacheProvider;
-    private readonly ILogger<CacheService> _mockLogger;
-    private readonly CacheService _cacheService;
+    internal readonly ICacheProvider _mockCacheProvider;
+    internal readonly ILogger<CacheService> _mockLogger;
+    internal readonly CacheService _cacheService;
 
     public CacheServiceTests()
     {
