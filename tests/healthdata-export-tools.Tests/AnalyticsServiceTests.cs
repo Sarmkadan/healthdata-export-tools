@@ -21,18 +21,21 @@ public sealed class AnalyticsServiceTests
 {
     private readonly AnalyticsService _analyticsService;
 
+    /// <summary>
+    /// Initializes a new instance of <see cref="AnalyticsServiceTests"/> and creates an <see cref="AnalyticsService"/> instance.
+    /// </summary>
     public AnalyticsServiceTests()
     {
         _analyticsService = new AnalyticsService();
     }
 
     /// <summary>
-/// Creates a list of <see cref="SleepData"/> objects for testing purposes.
-/// </summary>
-/// <param name="count">The number of sleep data records to create.</param>
-/// <param name="startDate">Optional start date for the data. If null, uses current date minus count days.</param>
-/// <returns>A list of <see cref="SleepData"/> objects with sequential sleep metrics.</returns>
-private List<SleepData> CreateSleepData(int count, DateTime? startDate = null)
+    /// Creates a list of <see cref="SleepData"/> objects for testing purposes.
+    /// </summary>
+    /// <param name="count">The number of sleep data records to create.</param>
+    /// <param name="startDate">Optional start date for the data. If null, uses current date minus count days.</param>
+    /// <returns>A list of <see cref="SleepData"/> objects with sequential sleep metrics.</returns>
+    private List<SleepData> CreateSleepData(int count, DateTime? startDate = null)
     {
         var list = new List<SleepData>();
         var start = startDate ?? DateTime.UtcNow.AddDays(-count);
@@ -51,12 +54,12 @@ private List<SleepData> CreateSleepData(int count, DateTime? startDate = null)
     }
 
     /// <summary>
-/// Creates a list of <see cref="HeartRateData"/> objects for testing purposes.
-/// </summary>
-/// <param name="count">The number of heart rate data records to create.</param>
-/// <param name="startDate">Optional start date for the data. If null, uses current date minus count days.</param>
-/// <returns>A list of <see cref="HeartRateData"/> objects with sequential heart rate metrics.</returns>
-private List<HeartRateData> CreateHeartRateData(int count, DateTime? startDate = null)
+    /// Creates a list of <see cref="HeartRateData"/> objects for testing purposes.
+    /// </summary>
+    /// <param name="count">The number of heart rate data records to create.</param>
+    /// <param name="startDate">Optional start date for the data. If null, uses current date minus count days.</param>
+    /// <returns>A list of <see cref="HeartRateData"/> objects with sequential heart rate metrics.</returns>
+    private List<HeartRateData> CreateHeartRateData(int count, DateTime? startDate = null)
     {
         var list = new List<HeartRateData>();
         var start = startDate ?? DateTime.UtcNow.AddDays(-count);
@@ -72,12 +75,12 @@ private List<HeartRateData> CreateHeartRateData(int count, DateTime? startDate =
     }
 
     /// <summary>
-/// Creates a list of <see cref="SpO2Data"/> objects for testing purposes.
-/// </summary>
-/// <param name="count">The number of SpO2 data records to create.</param>
-/// <param name="startDate">Optional start date for the data. If null, uses current date minus count days.</param>
-/// <returns>A list of <see cref="SpO2Data"/> objects with sequential SpO2 metrics.</returns>
-private List<SpO2Data> CreateSpO2Data(int count, DateTime? startDate = null)
+    /// Creates a list of <see cref="SpO2Data"/> objects for testing purposes.
+    /// </summary>
+    /// <param name="count">The number of SpO2 data records to create.</param>
+    /// <param name="startDate">Optional start date for the data. If null, uses current date minus count days.</param>
+    /// <returns>A list of <see cref="SpO2Data"/> objects with sequential SpO2 metrics.</returns>
+    private List<SpO2Data> CreateSpO2Data(int count, DateTime? startDate = null)
     {
         var list = new List<SpO2Data>();
         var start = startDate ?? DateTime.UtcNow.AddDays(-count);
@@ -95,12 +98,12 @@ private List<SpO2Data> CreateSpO2Data(int count, DateTime? startDate = null)
     }
 
     /// <summary>
-/// Creates a list of <see cref="StepsData"/> objects for testing purposes.
-/// </summary>
-/// <param name="count">The number of steps data records to create.</param>
-/// <param name="startDate">Optional start date for the data. If null, uses current date minus count days.</param>
-/// <returns>A list of <see cref="StepsData"/> objects with sequential steps metrics.</returns>
-private List<StepsData> CreateStepsData(int count, DateTime? startDate = null)
+    /// Creates a list of <see cref="StepsData"/> objects for testing purposes.
+    /// </summary>
+    /// <param name="count">The number of steps data records to create.</param>
+    /// <param name="startDate">Optional start date for the data. If null, uses current date minus count days.</param>
+    /// <returns>A list of <see cref="StepsData"/> objects with sequential steps metrics.</returns>
+    private List<StepsData> CreateStepsData(int count, DateTime? startDate = null)
     {
         var list = new List<StepsData>();
         var start = startDate ?? DateTime.UtcNow.AddDays(-count);
@@ -116,12 +119,12 @@ private List<StepsData> CreateStepsData(int count, DateTime? startDate = null)
     }
 
     /// <summary>
-/// Creates a list of <see cref="ActivityData"/> objects for testing purposes.
-/// </summary>
-/// <param name="count">The number of activity data records to create.</param>
-/// <param name="startDate">Optional start date for the data. If null, uses current date minus count days.</param>
-/// <returns>A list of <see cref="ActivityData"/> objects with sequential activity metrics.</returns>
-private List<ActivityData> CreateActivityData(int count, DateTime? startDate = null)
+    /// Creates a list of <see cref="ActivityData"/> objects for testing purposes.
+    /// </summary>
+    /// <param name="count">The number of activity data records to create.</param>
+    /// <param name="startDate">Optional start date for the data. If null, uses current date minus count days.</param>
+    /// <returns>A list of <see cref="ActivityData"/> objects with sequential activity metrics.</returns>
+    private List<ActivityData> CreateActivityData(int count, DateTime? startDate = null)
     {
         var list = new List<ActivityData>();
         var start = startDate ?? DateTime.UtcNow.AddDays(-count);
@@ -137,10 +140,9 @@ private List<ActivityData> CreateActivityData(int count, DateTime? startDate = n
         return list;
     }
 
-
-/// <summary>
-/// Tests that <see cref="AnalyticsService.CalculateAverageSleepDuration"/> returns 0 when given an empty list of sleep records.
-/// </summary>
+    /// <summary>
+    /// Verifies that <see cref="AnalyticsService.CalculateAverageSleepDuration"/> returns 0 when given an empty list of sleep records.
+    /// </summary>
     [Fact]
     public void CalculateAverageSleepDuration_ShouldReturnZeroForEmptyList()
     {
@@ -154,9 +156,9 @@ private List<ActivityData> CreateActivityData(int count, DateTime? startDate = n
         result.Should().Be(0);
     }
 
-/// <summary>
-/// Tests that <see cref="AnalyticsService.CalculateAverageSleepDuration"/> calculates the average sleep duration correctly for recent records within the specified time window.
-/// </summary>
+    /// <summary>
+    /// Verifies that <see cref="AnalyticsService.CalculateAverageSleepDuration"/> calculates the average sleep duration correctly for recent records within the specified time window.
+    /// </summary>
     [Fact]
     public void CalculateAverageSleepDuration_ShouldCalculateCorrectlyForRecentRecords()
     {
@@ -171,10 +173,10 @@ private List<ActivityData> CreateActivityData(int count, DateTime? startDate = n
         result.Should().BeApproximately(expectedAverage, 0.001);
     }
 
+    /// <summary>
+    /// Verifies that <see cref="AnalyticsService.CalculateAverageHeartRate"/> calculates the average heart rate correctly from heart rate records.
+    /// </summary>
     [Fact]
-/// <summary>
-/// Tests that <see cref="AnalyticsService.CalculateAverageHeartRate"/> calculates the average heart rate correctly from heart rate records.
-/// </summary>
     public void CalculateAverageHeartRate_ShouldCalculateCorrectly()
     {
         // Arrange
@@ -188,11 +190,11 @@ private List<ActivityData> CreateActivityData(int count, DateTime? startDate = n
         result.Should().Be(expectedAverage);
     }
 
+    /// <summary>
+    /// Verifies that <see cref="AnalyticsService.CalculateTotalSteps"/> calculates the total steps correctly for recent records within the specified time window.
+    /// </summary>
     [Fact]
     public void CalculateTotalSteps_ShouldCalculateCorrectlyForRecentRecords()
-/// <summary>
-/// Tests that <see cref="AnalyticsService.CalculateTotalSteps"/> calculates the total steps correctly for recent records within the specified time window.
-/// </summary>
     {
         // Arrange
         var stepsRecords = CreateStepsData(10);
@@ -205,12 +207,12 @@ private List<ActivityData> CreateActivityData(int count, DateTime? startDate = n
         result.Should().Be(expectedTotal);
     }
 
+    /// <summary>
+    /// Verifies that <see cref="AnalyticsService.AnalyzeTrend"/> returns "Improving" status when values show an increasing trend over the specified period.
+    /// </summary>
     [Fact]
     public void AnalyzeTrend_ShouldReturnImprovingForIncreasingValues()
     {
-/// <summary>
-/// Tests that <see cref="AnalyticsService.AnalyzeTrend"/> returns "Improving" status when values show an increasing trend over the specified period.
-/// </summary>
         // Arrange
         var values = new List<int> { 10, 12, 15, 18, 22, 25, 30, 35, 40, 45 };
 
@@ -222,13 +224,13 @@ private List<ActivityData> CreateActivityData(int count, DateTime? startDate = n
         result.PercentChange.Should().BeGreaterThan(10);
     }
 
+    /// <summary>
+    /// Verifies that <see cref="AnalyticsService.AnalyzeTrend"/> returns "Declining" status when values show a decreasing trend over the specified period.
+    /// </summary>
     [Fact]
     public void AnalyzeTrend_ShouldReturnDecliningForDecreasingValues()
     {
         // Arrange
-/// <summary>
-/// Tests that <see cref="AnalyticsService.AnalyzeTrend"/> returns "Declining" status when values show a decreasing trend over the specified period.
-/// </summary>
         var values = new List<int> { 45, 40, 35, 30, 25, 22, 18, 15, 12, 10 };
 
         // Act
@@ -239,14 +241,14 @@ private List<ActivityData> CreateActivityData(int count, DateTime? startDate = n
         result.PercentChange.Should().BeLessThan(-10);
     }
 
+    /// <summary>
+    /// Verifies that <see cref="AnalyticsService.AnalyzeTrend"/> returns "Stable" status when values show minimal changes within the specified period.
+    /// </summary>
     [Fact]
     public void AnalyzeTrend_ShouldReturnStableForMinorChanges()
     {
         // Arrange
         var values = new List<int> { 20, 21, 20, 22, 19, 21, 20 };
-/// <summary>
-/// Tests that <see cref="AnalyticsService.AnalyzeTrend"/> returns "Stable" status when values show minimal changes within the specified period.
-/// </summary>
 
         // Act
         var result = _analyticsService.AnalyzeTrend(values, 7);
@@ -256,15 +258,15 @@ private List<ActivityData> CreateActivityData(int count, DateTime? startDate = n
         result.PercentChange.Should().BeInRange(-10, 10);
     }
 
+    /// <summary>
+    /// Verifies that <see cref="AnalyticsService.CalculateHealthScore"/> returns 50 as the base score when given an empty health data collection.
+    /// </summary>
     [Fact]
     public void CalculateHealthScore_ShouldReturn50ForEmptyCollection()
     {
         // Arrange
         var emptyCollection = new HealthDataCollection();
 
-/// <summary>
-/// Tests that <see cref="AnalyticsService.CalculateHealthScore"/> returns 50 as the base score when given an empty health data collection.
-/// </summary>
         // Act
         var score = _analyticsService.CalculateHealthScore(emptyCollection);
 
@@ -272,6 +274,9 @@ private List<ActivityData> CreateActivityData(int count, DateTime? startDate = n
         score.Should().Be(50);
     }
 
+    /// <summary>
+    /// Verifies that <see cref="AnalyticsService.CalculateHealthScore"/> increases the health score based on good quality data across all health metrics.
+    /// </summary>
     [Fact]
     public void CalculateHealthScore_ShouldIncreaseScoreBasedOnGoodData()
     {
@@ -280,9 +285,6 @@ private List<ActivityData> CreateActivityData(int count, DateTime? startDate = n
         {
             SleepRecords = CreateSleepData(1, DateTime.UtcNow.AddDays(-1)).ToList(),
             HeartRateRecords = CreateHeartRateData(1, DateTime.UtcNow.AddDays(-1)).ToList(),
-/// <summary>
-/// Tests that <see cref="AnalyticsService.CalculateHealthScore"/> increases the health score based on good quality data across all health metrics.
-/// </summary>
             SpO2Records = CreateSpO2Data(1, DateTime.UtcNow.AddDays(-1)).ToList(),
             StepsRecords = CreateStepsData(1, DateTime.UtcNow.AddDays(-1)).ToList()
         };
@@ -298,10 +300,10 @@ private List<ActivityData> CreateActivityData(int count, DateTime? startDate = n
         score.Should().BeGreaterThan(50);
         score.Should().Be(110); // 50 (base) + 10 (sleep) + 15 (hr) + 15 (spo2) + 15 (steps) = 105, capped at 100
     }
-/// <summary>
-/// Tests that <see cref="AnalyticsService.CalculateAverageDeepSleepPercentage"/> returns 0 when given an empty list of sleep records.
-/// </summary>
-    
+
+    /// <summary>
+    /// Verifies that <see cref="AnalyticsService.CalculateAverageDeepSleepPercentage"/> returns 0 when given an empty list of sleep records.
+    /// </summary>
     [Fact]
     public void CalculateAverageDeepSleepPercentage_ShouldReturnZeroForEmptyList()
     {
@@ -314,11 +316,11 @@ private List<ActivityData> CreateActivityData(int count, DateTime? startDate = n
         // Assert
         result.Should().Be(0);
     }
-    
+
+    /// <summary>
+    /// Verifies that <see cref="AnalyticsService.CalculateAverageDeepSleepPercentage"/> calculates the average deep sleep percentage correctly from sleep records.
+    /// </summary>
     [Fact]
-/// <summary>
-/// Tests that <see cref="AnalyticsService.CalculateAverageDeepSleepPercentage"/> calculates the average deep sleep percentage correctly from sleep records.
-/// </summary>
     public void CalculateAverageDeepSleepPercentage_ShouldCalculateCorrectly()
     {
         // Arrange
@@ -334,10 +336,10 @@ private List<ActivityData> CreateActivityData(int count, DateTime? startDate = n
         // Assert
         result.Should().BeApproximately(20.0, 0.001);
     }
-/// <summary>
-/// Tests that <see cref="AnalyticsService.CalculateAverageRemPercentage"/> returns 0 when given an empty list of sleep records.
-/// </summary>
 
+    /// <summary>
+    /// Verifies that <see cref="AnalyticsService.CalculateAverageRemPercentage"/> returns 0 when given an empty list of sleep records.
+    /// </summary>
     [Fact]
     public void CalculateAverageRemPercentage_ShouldReturnZeroForEmptyList()
     {
@@ -351,10 +353,10 @@ private List<ActivityData> CreateActivityData(int count, DateTime? startDate = n
         result.Should().Be(0);
     }
 
+    /// <summary>
+    /// Verifies that <see cref="AnalyticsService.CalculateAverageRemPercentage"/> calculates the average REM sleep percentage correctly from sleep records.
+    /// </summary>
     [Fact]
-/// <summary>
-/// Tests that <see cref="AnalyticsService.CalculateAverageRemPercentage"/> calculates the average REM sleep percentage correctly from sleep records.
-/// </summary>
     public void CalculateAverageRemPercentage_ShouldCalculateCorrectly()
     {
         // Arrange
@@ -370,10 +372,10 @@ private List<ActivityData> CreateActivityData(int count, DateTime? startDate = n
         // Assert
         result.Should().BeApproximately(15.0, 0.001);
     }
-/// <summary>
-/// Tests that <see cref="AnalyticsService.AnalyzeSleepQuality"/> returns "No data available" when given an empty list of sleep records.
-/// </summary>
-    
+
+    /// <summary>
+    /// Verifies that <see cref="AnalyticsService.AnalyzeSleepQuality"/> returns a report indicating no data when given an empty list of sleep records.
+    /// </summary>
     [Fact]
     public void AnalyzeSleepQuality_ShouldReturnNoDataForEmptyList()
     {
@@ -388,9 +390,9 @@ private List<ActivityData> CreateActivityData(int count, DateTime? startDate = n
         report.TotalNights.Should().Be(0);
     }
 
-/// <summary>
-/// Tests that <see cref="AnalyticsService.AnalyzeSleepQuality"/> returns a correct sleep quality report with statistics and description based on sleep data.
-/// </summary>
+    /// <summary>
+    /// Verifies that <see cref="AnalyticsService.AnalyzeSleepQuality"/> returns a correct sleep quality report with statistics and description based on sleep data.
+    /// </summary>
     [Fact]
     public void AnalyzeSleepQuality_ShouldReturnCorrectReport()
     {
@@ -406,15 +408,15 @@ private List<ActivityData> CreateActivityData(int count, DateTime? startDate = n
         var report = _analyticsService.AnalyzeSleepQuality(sleepRecords, 30);
 
         // Assert
-/// <summary>
-/// Tests that <see cref="AnalyticsService.AnalyzeSpO2Health"/> returns "No data" status when given an empty list of SpO2 records.
-/// </summary>
         report.TotalNights.Should().Be(3);
         report.ExcellentNights.Should().Be(2);
         report.ExcellenceRate.Should().BeApproximately((2.0 / 3.0) * 100, 0.001);
         report.Description.Should().Be("Excellent sleep quality");
     }
 
+    /// <summary>
+    /// Verifies that <see cref="AnalyticsService.AnalyzeSpO2Health"/> returns a report with status "No data" and zero low events when given an empty list of SpO2 records.
+    /// </summary>
     [Fact]
     public void AnalyzeSpO2Health_ShouldReturnNoDataForEmptyList()
     {
@@ -424,14 +426,14 @@ private List<ActivityData> CreateActivityData(int count, DateTime? startDate = n
         // Act
         var report = _analyticsService.AnalyzeSpO2Health(spo2Records);
 
-/// <summary>
-/// Tests that <see cref="AnalyticsService.AnalyzeSpO2Health"/> returns a correct SpO2 health report with average, minimum values, and alert status based on SpO2 data.
-/// </summary>
         // Assert
         report.Status.Should().Be("No data");
         report.TotalLowEvents.Should().Be(0);
     }
 
+    /// <summary>
+    /// Verifies that <see cref="AnalyticsService.AnalyzeSpO2Health"/> returns a health report with correct average, minimum, low event counts, and status based on provided SpO2 data.
+    /// </summary>
     [Fact]
     public void AnalyzeSpO2Health_ShouldReturnCorrectReport()
     {
@@ -442,9 +444,6 @@ private List<ActivityData> CreateActivityData(int count, DateTime? startDate = n
             new SpO2Data { RecordDate = DateTime.UtcNow.AddDays(-2), AveragePercentage = 92, MinimumPercentage = 88, LowSpO2Events = 2 },
             new SpO2Data { RecordDate = DateTime.UtcNow.AddDays(-3), AveragePercentage = 96, MinimumPercentage = 93, LowSpO2Events = 1 }
         };
-/// <summary>
-/// Tests that <see cref="AnalyticsService.AnalyzeActivityIntensity"/> returns empty distribution when given an empty list of activity records.
-/// </summary>
 
         // Act
         var report = _analyticsService.AnalyzeSpO2Health(spo2Records, 30);
@@ -457,12 +456,12 @@ private List<ActivityData> CreateActivityData(int count, DateTime? startDate = n
         report.Status.Should().Be("Alert - Concerning"); // Based on minimum 88
     }
 
+    /// <summary>
+    /// Verifies that <see cref="AnalyticsService.AnalyzeActivityIntensity"/> returns an empty distribution when given no activity records.
+    /// </summary>
     [Fact]
     public void AnalyzeActivityIntensity_ShouldReturnEmptyForNoActivities()
     {
-/// <summary>
-/// Tests that <see cref="AnalyticsService.AnalyzeActivityIntensity"/> categorizes activities correctly by intensity level (Low, Medium, High) and calculates total calories burned.
-/// </summary>
         // Arrange
         var activityRecords = new List<ActivityData>();
 
@@ -476,6 +475,9 @@ private List<ActivityData> CreateActivityData(int count, DateTime? startDate = n
         distribution.HighIntensity.Should().Be(0);
     }
 
+    /// <summary>
+    /// Verifies that <see cref="AnalyticsService.AnalyzeActivityIntensity"/> correctly categorizes activities by intensity level (Low, Medium, High) and calculates total calories burned.
+    /// </summary>
     [Fact]
     public void AnalyzeActivityIntensity_ShouldCategorizeActivitiesCorrectly()
     {
