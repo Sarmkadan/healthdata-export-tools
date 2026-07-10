@@ -15,8 +15,14 @@ using Xunit;
 
 namespace HealthDataExportTools.Tests;
 
+/// <summary>
+/// Contains unit tests for domain models.
+/// </summary>
 public sealed class DomainModelTests
 {
+    /// <summary>
+    /// Verifies that SleepData calculates quality as Poor when duration is under 6 hours.
+    /// </summary>
     [Fact]
     public void SleepData_CalculateQuality_DurationUnder6Hours_ReturnsPoor()
     {
@@ -37,6 +43,9 @@ public sealed class DomainModelTests
         quality.Should().Be(SleepQuality.Poor);
     }
 
+    /// <summary>
+    /// Verifies that SleepData returns correct deep sleep percentage.
+    /// </summary>
     [Fact]
     public void SleepData_GetDeepSleepPercentage_ReturnsCorrectRatio()
     {
@@ -54,6 +63,9 @@ public sealed class DomainModelTests
         percentage.Should().BeApproximately(20.0, 0.01);
     }
 
+    /// <summary>
+    /// Verifies that SleepData returns 0 when duration is 0.
+    /// </summary>
     [Fact]
     public void SleepData_GetDeepSleepPercentage_ZeroDuration_ReturnsZero()
     {
@@ -67,6 +79,9 @@ public sealed class DomainModelTests
         percentage.Should().Be(0);
     }
 
+    /// <summary>
+    /// Verifies that StepsData updates goal achievement correctly when steps exceed goal.
+    /// </summary>
     [Fact]
     public void StepsData_UpdateGoalAchievement_StepsExceedGoal_SetsGoalAchievedTrueAndCorrectPercentage()
     {
@@ -81,6 +96,9 @@ public sealed class DomainModelTests
         steps.GoalAchievementPercentage.Should().Be(120);
     }
 
+    /// <summary>
+    /// Verifies that StepsData sets achievement to 0 when daily goal is 0.
+    /// </summary>
     [Fact]
     public void StepsData_UpdateGoalAchievement_ZeroDailyGoal_SetsAchievementToZero()
     {
@@ -95,6 +113,9 @@ public sealed class DomainModelTests
         steps.GoalAchievementPercentage.Should().Be(0);
     }
 
+    /// <summary>
+    /// Verifies that StepsData throws an exception when setting hourly steps for an invalid hour.
+    /// </summary>
     [Fact]
     public void StepsData_SetHourlySteps_HourAbove23_ThrowsArgumentOutOfRangeException()
     {
@@ -108,6 +129,9 @@ public sealed class DomainModelTests
         act.Should().Throw<ArgumentOutOfRangeException>();
     }
 
+    /// <summary>
+    /// Verifies that HeartRateData adds a measurement correctly.
+    /// </summary>
     [Fact]
     public void HeartRateData_AddMeasurement_UpdatesMeasurementCount()
     {
@@ -123,6 +147,9 @@ public sealed class DomainModelTests
         hr.Measurements.Should().ContainSingle();
     }
 
+    /// <summary>
+    /// Verifies that HeartRateData calculates heart rate reserve correctly.
+    /// </summary>
     [Fact]
     public void HeartRateData_CalculateHeartRateReserve_WithRestingBpm_ReturnsMaxMinusResting()
     {
@@ -136,6 +163,9 @@ public sealed class DomainModelTests
         reserve.Should().Be(130);
     }
 
+    /// <summary>
+    /// Verifies that SpO2Data increments low SpO2 events when a reading below 95 is added.
+    /// </summary>
     [Fact]
     public void SpO2Data_AddMeasurement_ReadingBelow95_IncrementsLowSpO2Events()
     {
@@ -151,6 +181,9 @@ public sealed class DomainModelTests
         spo2.MeasurementCount.Should().Be(1);
     }
 
+    /// <summary>
+    /// Verifies that SpO2Data returns true when minimum percentage is below 90.
+    /// </summary>
     [Fact]
     public void SpO2Data_HasConcerningLevels_MinimumBelow90_ReturnsTrue()
     {
@@ -164,6 +197,9 @@ public sealed class DomainModelTests
         concerning.Should().BeTrue();
     }
 
+    /// <summary>
+    /// Verifies that HealthDataParserService detects device type correctly.
+    /// </summary>
     [Fact]
     public void HealthDataParserService_DetectDeviceType_GarminIdentifier_ReturnsGarmin()
     {
@@ -178,6 +214,9 @@ public sealed class DomainModelTests
         deviceType.Should().Be(DeviceType.Garmin);
     }
 
+    /// <summary>
+    /// Verifies that InMemoryCacheProvider sets and gets a value correctly.
+    /// </summary>
     [Fact]
     public async Task InMemoryCacheProvider_SetAndGet_WithMockedLogger_ReturnsStoredValue()
     {
@@ -194,6 +233,9 @@ public sealed class DomainModelTests
         result.Should().Be(expectedValue);
     }
 
+    /// <summary>
+    /// Verifies that InMemoryCacheProvider returns null when getting a non-existent key.
+    /// </summary>
     [Fact]
     public async Task InMemoryCacheProvider_GetNonExistentKey_ReturnsNull()
     {
@@ -208,6 +250,9 @@ public sealed class DomainModelTests
         result.Should().BeNull();
     }
 
+    /// <summary>
+    /// Verifies that InMemoryCacheProvider removes a key correctly.
+    /// </summary>
     [Fact]
     public async Task InMemoryCacheProvider_RemoveKey_SubsequentGetReturnsNull()
     {
