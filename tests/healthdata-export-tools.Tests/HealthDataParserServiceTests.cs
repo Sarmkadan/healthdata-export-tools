@@ -15,11 +15,20 @@ using ValidationResult = HealthDataExportTools.DTOs.ValidationResultDto;
 
 namespace HealthDataExportTools.Tests;
 
+/// <summary>
+/// Contains unit tests for the <see cref="HealthDataParserService"/> class.
+/// Tests various parsing scenarios including JSON parsing, device type detection,
+/// and collection merging functionality.
+/// </summary>
 public sealed class HealthDataParserServiceTests
 {
     private readonly HealthDataParserService _parserService;
     private readonly IValidationService _mockValidationService;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HealthDataParserServiceTests"/> class.
+    /// Sets up mock validation service and creates the parser service instance for testing.
+    /// </summary>
     public HealthDataParserServiceTests()
     {
         _mockValidationService = Substitute.For<IValidationService>();
@@ -32,6 +41,12 @@ public sealed class HealthDataParserServiceTests
         _parserService = new HealthDataParserService(_mockValidationService);
     }
 
+    /// <summary>
+    /// Tests that the parser correctly extracts and converts all health data types from JSON.
+    /// Verifies that sleep, heart rate, SpO2, and steps data are properly parsed and
+    /// converted into their respective domain models.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     [Fact]
     public async Task ParseJsonAsync_ShouldParseAllHealthDataTypesSuccessfully()
     {
@@ -117,6 +132,12 @@ public sealed class HealthDataParserServiceTests
         steps.GoalAchievementPercentage.Should().Be(100);
     }
 
+    /// <summary>
+    /// Tests that the parser handles missing optional fields gracefully.
+    /// Verifies that when optional fields like Score and RestingBpm are not provided,
+    /// they are set to appropriate default values rather than causing parsing failures.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     [Fact]
     public async Task ParseJsonAsync_ShouldHandleMissingOptionalFields()
     {
@@ -160,6 +181,11 @@ public sealed class HealthDataParserServiceTests
         collection.HeartRateRecords.First().RestingBpm.Should().BeNull();
     }
 
+    /// <summary>
+    /// Tests that the parser throws a <see cref="ParsingException"/> when provided with invalid JSON.
+    /// Verifies that malformed JSON content results in appropriate exception handling.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     [Fact]
     public async Task ParseJsonAsync_ShouldThrowParsingExceptionForInvalidJson()
     {
@@ -174,6 +200,11 @@ public sealed class HealthDataParserServiceTests
             .WithMessage("Failed to parse JSON content*");
     }
 
+    /// <summary>
+    /// Tests that the parser returns empty collections when provided with empty arrays.
+    /// Verifies that empty arrays in JSON result in empty collections rather than null collections.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     [Fact]
     public async Task ParseJsonAsync_ShouldReturnEmptyCollectionsForEmptyArrays()
     {
@@ -197,6 +228,10 @@ public sealed class HealthDataParserServiceTests
         collection.StepsRecords.Should().BeEmpty();
     }
 
+    /// <summary>
+    /// Tests that the device type detection correctly identifies known device types.
+    /// Verifies that specific device name patterns map to the correct <see cref="DeviceType"/> enum values.
+    /// </summary>
     [Fact]
     public void DetectDeviceType_ShouldReturnCorrectDeviceTypeForKnownKeywords()
     {
@@ -209,6 +244,10 @@ public sealed class HealthDataParserServiceTests
         service.DetectDeviceType("Garmin_fenix_6").Should().Be(DeviceType.Garmin);
     }
 
+    /// <summary>
+    /// Tests that the device type detection returns Unknown for unrecognized device names.
+    /// Verifies that device names without known patterns default to <see cref="DeviceType.Unknown"/>.
+    /// </summary>
     [Fact]
     public void DetectDeviceType_ShouldReturnUnknownForUnknownKeywords()
     {
@@ -220,6 +259,10 @@ public sealed class HealthDataParserServiceTests
         service.DetectDeviceType("fitbit").Should().Be(DeviceType.Unknown);
     }
 
+    /// <summary>
+    /// Tests that the device type detection is case-insensitive.
+    /// Verifies that device type detection works regardless of the casing in device names.
+    /// </summary>
     [Fact]
     public void DetectDeviceType_ShouldBeCaseInsensitive()
     {
@@ -231,6 +274,11 @@ public sealed class HealthDataParserServiceTests
         service.DetectDeviceType("amazFIt").Should().Be(DeviceType.Amazfit);
     }
 
+    /// <summary>
+    /// Tests that the collection merging combines all records from multiple collections.
+    /// Verifies that merging multiple <see cref="HealthDataCollection"/> instances correctly combines
+    /// sleep, heart rate, SpO2, and steps records into a single collection.
+    /// </summary>
     [Fact]
     public void MergeCollections_ShouldCombineAllRecordsFromMultipleCollections()
     {
@@ -263,6 +311,11 @@ public sealed class HealthDataParserServiceTests
         mergedCollection.ActivityRecords.Should().BeEmpty(); // No activity records added
     }
 
+    /// <summary>
+    /// Tests that the collection merging handles empty collections gracefully.
+    /// Verifies that merging with empty collections does not cause errors and maintains
+    /// the existing records in the merged result.
+    /// </summary>
     [Fact]
     public void MergeCollections_ShouldHandleEmptyCollectionsGracefully()
     {
