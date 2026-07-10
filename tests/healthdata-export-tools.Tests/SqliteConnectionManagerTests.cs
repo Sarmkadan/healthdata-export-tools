@@ -10,10 +10,14 @@ using HealthDataExportTools.Exceptions;
 using Microsoft.Data.Sqlite;
 using Xunit;
 
-namespace HealthDataExportTools.Tests;
-
+/// <summary>
+/// Tests for SqliteConnectionManager class.
+/// </summary>
 public sealed class SqliteConnectionManagerTests
 {
+    /// <summary>
+    /// Tests that GetConnection method returns an open connection.
+    /// </summary>
     [Fact]
     public async Task GetConnection_ShouldReturnOpenConnection()
     {
@@ -29,6 +33,9 @@ public sealed class SqliteConnectionManagerTests
         await connection.CloseAsync().ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Tests that InitializeDatabaseAsync method creates tables in the database.
+    /// </summary>
     [Fact]
     public async Task InitializeDatabaseAsync_ShouldCreateTables()
     {
@@ -63,6 +70,9 @@ public sealed class SqliteConnectionManagerTests
         await connection.CloseAsync().ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Tests that VerifyConnectionAsync method returns true for an open connection.
+    /// </summary>
     [Fact]
     public async Task VerifyConnectionAsync_ShouldReturnTrueForOpenConnection()
     {
@@ -77,6 +87,9 @@ public sealed class SqliteConnectionManagerTests
         isConnected.Should().BeTrue();
     }
 
+    /// <summary>
+    /// Tests that VerifyConnectionAsync method returns false for an invalid connection.
+    /// </summary>
     [Fact]
     public async Task VerifyConnectionAsync_ShouldReturnFalseForInvalidConnection()
     {
@@ -90,6 +103,9 @@ public sealed class SqliteConnectionManagerTests
         isConnected.Should().BeFalse();
     }
 
+    /// <summary>
+    /// Tests that DatabaseExists method returns false for a non-existent database file.
+    /// </summary>
     [Fact]
     public void DatabaseExists_ShouldReturnFalseForNonExistentFile()
     {
@@ -104,6 +120,9 @@ public sealed class SqliteConnectionManagerTests
         exists.Should().BeFalse();
     }
 
+    /// <summary>
+    /// Tests that DatabaseExists method returns true for a created database file.
+    /// </summary>
     [Fact]
     public async Task DatabaseExists_ShouldReturnTrueForCreatedFile()
     {
@@ -122,6 +141,9 @@ public sealed class SqliteConnectionManagerTests
         connectionManager.DeleteDatabase();
     }
 
+    /// <summary>
+    /// Tests that DeleteDatabase method removes the database file.
+    /// </summary>
     [Fact]
     public async Task DeleteDatabase_ShouldRemoveDatabaseFile()
     {
@@ -140,6 +162,9 @@ public sealed class SqliteConnectionManagerTests
         File.Exists(tempDbPath).Should().BeFalse();
     }
 
+    /// <summary>
+    /// Tests that GetDatabaseSize method returns the correct size of the database.
+    /// </summary>
     [Fact]
     public async Task GetDatabaseSize_ShouldReturnCorrectSize()
     {
@@ -158,6 +183,9 @@ public sealed class SqliteConnectionManagerTests
         connectionManager.DeleteDatabase();
     }
 
+    /// <summary>
+    /// Tests that GetDatabaseSize method returns zero for a non-existent database.
+    /// </summary>
     [Fact]
     public void GetDatabaseSize_ShouldReturnZeroForNonExistentDatabase()
     {
