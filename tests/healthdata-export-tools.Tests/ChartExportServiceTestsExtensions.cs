@@ -17,14 +17,19 @@ public static class ChartExportServiceTestsExtensions
     /// <summary>
     /// Asserts that the generated HTML file contains valid chart data for heart rate records.
     /// </summary>
-    /// <param name="test">The test instance</param>
-    /// <param name="outputPath">Path to the generated HTML file</param>
-    /// <param name="expectedHeartRateValues">Expected heart rate values to verify</param>
+    /// <param name="test">The test instance.</param>
+    /// <param name="outputPath">Path to the generated HTML file.</param>
+    /// <param name="expectedHeartRateValues">Expected heart rate values to verify.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="outputPath"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="outputPath"/> is empty or whitespace.</exception>
     public static async Task ShouldContainHeartRateChartDataAsync(
         this ChartExportServiceTests test,
         string outputPath,
         params int[] expectedHeartRateValues)
     {
+        ArgumentNullException.ThrowIfNull(outputPath);
+        ArgumentException.ThrowIfNullOrWhiteSpace(outputPath);
+
         // Act
         var content = await File.ReadAllTextAsync(outputPath).ConfigureAwait(false);
 
@@ -41,14 +46,19 @@ public static class ChartExportServiceTestsExtensions
     /// <summary>
     /// Asserts that the generated HTML file contains valid chart data for steps records.
     /// </summary>
-    /// <param name="test">The test instance</param>
-    /// <param name="outputPath">Path to the generated HTML file</param>
-    /// <param name="expectedStepValues">Expected step values to verify</param>
+    /// <param name="test">The test instance.</param>
+    /// <param name="outputPath">Path to the generated HTML file.</param>
+    /// <param name="expectedStepValues">Expected step values to verify.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="outputPath"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="outputPath"/> is empty or whitespace.</exception>
     public static async Task ShouldContainStepsChartDataAsync(
         this ChartExportServiceTests test,
         string outputPath,
         params int[] expectedStepValues)
     {
+        ArgumentNullException.ThrowIfNull(outputPath);
+        ArgumentException.ThrowIfNullOrWhiteSpace(outputPath);
+
         // Act
         var content = await File.ReadAllTextAsync(outputPath).ConfigureAwait(false);
 
@@ -65,14 +75,19 @@ public static class ChartExportServiceTestsExtensions
     /// <summary>
     /// Asserts that the generated HTML file contains valid chart data for sleep records.
     /// </summary>
-    /// <param name="test">The test instance</param>
-    /// <param name="outputPath">Path to the generated HTML file</param>
-    /// <param name="expectedSleepDurations">Expected sleep durations in hours</param>
+    /// <param name="test">The test instance.</param>
+    /// <param name="outputPath">Path to the generated HTML file.</param>
+    /// <param name="expectedSleepDurations">Expected sleep durations in hours.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="outputPath"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="outputPath"/> is empty or whitespace.</exception>
     public static async Task ShouldContainSleepChartDataAsync(
         this ChartExportServiceTests test,
         string outputPath,
         params int[] expectedSleepDurations)
     {
+        ArgumentNullException.ThrowIfNull(outputPath);
+        ArgumentException.ThrowIfNullOrWhiteSpace(outputPath);
+
         // Act
         var content = await File.ReadAllTextAsync(outputPath).ConfigureAwait(false);
 
@@ -89,11 +104,13 @@ public static class ChartExportServiceTestsExtensions
     /// <summary>
     /// Asserts that the generated HTML file contains valid chart data for SpO2 records.
     /// </summary>
-    /// <param name="test">The test instance</param>
-    /// <param name="outputPath">Path to the generated HTML file</param>
-    /// <param name="expectedAverageSpO2">Expected average SpO2 values</param>
-    /// <param name="expectedMinSpO2">Expected minimum SpO2 values</param>
-    /// <param name="expectedMaxSpO2">Expected maximum SpO2 values</param>
+    /// <param name="test">The test instance.</param>
+    /// <param name="outputPath">Path to the generated HTML file.</param>
+    /// <param name="expectedAverageSpO2">Expected average SpO2 values.</param>
+    /// <param name="expectedMinSpO2">Expected minimum SpO2 values.</param>
+    /// <param name="expectedMaxSpO2">Expected maximum SpO2 values.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="outputPath"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="outputPath"/> is empty or whitespace.</exception>
     public static async Task ShouldContainSpO2ChartDataAsync(
         this ChartExportServiceTests test,
         string outputPath,
@@ -101,6 +118,9 @@ public static class ChartExportServiceTestsExtensions
         int[] expectedMinSpO2,
         int[] expectedMaxSpO2)
     {
+        ArgumentNullException.ThrowIfNull(outputPath);
+        ArgumentException.ThrowIfNullOrWhiteSpace(outputPath);
+
         // Act
         var content = await File.ReadAllTextAsync(outputPath).ConfigureAwait(false);
 
@@ -128,14 +148,19 @@ public static class ChartExportServiceTestsExtensions
     /// <summary>
     /// Asserts that the generated HTML file contains valid chart data for activity records.
     /// </summary>
-    /// <param name="test">The test instance</param>
-    /// <param name="outputPath">Path to the generated HTML file</param>
-    /// <param name="expectedCalories">Expected calories burned values</param>
+    /// <param name="test">The test instance.</param>
+    /// <param name="outputPath">Path to the generated HTML file.</param>
+    /// <param name="expectedCalories">Expected calories burned values.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="outputPath"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="outputPath"/> is empty or whitespace.</exception>
     public static async Task ShouldContainActivityChartDataAsync(
         this ChartExportServiceTests test,
         string outputPath,
         params int[] expectedCalories)
     {
+        ArgumentNullException.ThrowIfNull(outputPath);
+        ArgumentException.ThrowIfNullOrWhiteSpace(outputPath);
+
         // Act
         var content = await File.ReadAllTextAsync(outputPath).ConfigureAwait(false);
 
@@ -152,14 +177,22 @@ public static class ChartExportServiceTestsExtensions
     /// <summary>
     /// Asserts that the generated HTML file contains the specified title.
     /// </summary>
-    /// <param name="test">The test instance</param>
-    /// <param name="outputPath">Path to the generated HTML file</param>
-    /// <param name="expectedTitle">Expected title text</param>
+    /// <param name="test">The test instance.</param>
+    /// <param name="outputPath">Path to the generated HTML file.</param>
+    /// <param name="expectedTitle">Expected title text.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="outputPath"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="outputPath"/> is empty or whitespace.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="expectedTitle"/> is <see langword="null"/>.</exception>
     public static async Task ShouldContainTitleAsync(
         this ChartExportServiceTests test,
         string outputPath,
         string expectedTitle)
     {
+        ArgumentNullException.ThrowIfNull(outputPath);
+        ArgumentException.ThrowIfNullOrWhiteSpace(outputPath);
+        ArgumentNullException.ThrowIfNull(expectedTitle);
+        ArgumentException.ThrowIfNullOrWhiteSpace(expectedTitle);
+
         // Act
         var content = await File.ReadAllTextAsync(outputPath).ConfigureAwait(false);
 
@@ -170,14 +203,21 @@ public static class ChartExportServiceTestsExtensions
     /// <summary>
     /// Asserts that the generated HTML file contains a summary table with the specified headers.
     /// </summary>
-    /// <param name="test">The test instance</param>
-    /// <param name="outputPath">Path to the generated HTML file</param>
-    /// <param name="expectedHeaders">Expected table header texts</param>
+    /// <param name="test">The test instance.</param>
+    /// <param name="outputPath">Path to the generated HTML file.</param>
+    /// <param name="expectedHeaders">Expected table header texts.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="outputPath"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="outputPath"/> is empty or whitespace.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="expectedHeaders"/> is <see langword="null"/>.</exception>
     public static async Task ShouldContainSummaryTableWithHeadersAsync(
         this ChartExportServiceTests test,
         string outputPath,
         params string[] expectedHeaders)
     {
+        ArgumentNullException.ThrowIfNull(outputPath);
+        ArgumentException.ThrowIfNullOrWhiteSpace(outputPath);
+        ArgumentNullException.ThrowIfNull(expectedHeaders);
+
         // Act
         var content = await File.ReadAllTextAsync(outputPath).ConfigureAwait(false);
 
@@ -194,13 +234,13 @@ public static class ChartExportServiceTestsExtensions
     /// <summary>
     /// Creates a health data collection with multiple records for comprehensive testing.
     /// </summary>
-    /// <param name="test">The test instance</param>
-    /// <param name="heartRateRecords">Heart rate records to add</param>
-    /// <param name="stepsRecords">Steps records to add</param>
-    /// <param name="sleepRecords">Sleep records to add</param>
-    /// <param name="spO2Records">SpO2 records to add</param>
-    /// <param name="activityRecords">Activity records to add</param>
-    /// <returns>Configured HealthDataCollection</returns>
+    /// <param name="test">The test instance.</param>
+    /// <param name="heartRateRecords">Heart rate records to add.</param>
+    /// <param name="stepsRecords">Steps records to add.</param>
+    /// <param name="sleepRecords">Sleep records to add.</param>
+    /// <param name="spO2Records">SpO2 records to add.</param>
+    /// <param name="activityRecords">Activity records to add.</param>
+    /// <returns>Configured HealthDataCollection.</returns>
     public static HealthDataCollection WithRecords(
         this ChartExportServiceTests test,
         List<HeartRateData>? heartRateRecords = null,
@@ -211,7 +251,7 @@ public static class ChartExportServiceTestsExtensions
     {
         var collection = new HealthDataCollection();
 
-        if (heartRateRecords != null)
+        if (heartRateRecords is not null)
         {
             foreach (var record in heartRateRecords)
             {
@@ -219,7 +259,7 @@ public static class ChartExportServiceTestsExtensions
             }
         }
 
-        if (stepsRecords != null)
+        if (stepsRecords is not null)
         {
             foreach (var record in stepsRecords)
             {
@@ -227,7 +267,7 @@ public static class ChartExportServiceTestsExtensions
             }
         }
 
-        if (sleepRecords != null)
+        if (sleepRecords is not null)
         {
             foreach (var record in sleepRecords)
             {
@@ -235,7 +275,7 @@ public static class ChartExportServiceTestsExtensions
             }
         }
 
-        if (spO2Records != null)
+        if (spO2Records is not null)
         {
             foreach (var record in spO2Records)
             {
@@ -243,7 +283,7 @@ public static class ChartExportServiceTestsExtensions
             }
         }
 
-        if (activityRecords != null)
+        if (activityRecords is not null)
         {
             foreach (var record in activityRecords)
             {
@@ -257,8 +297,8 @@ public static class ChartExportServiceTestsExtensions
     /// <summary>
     /// Creates a health data collection with records spanning multiple days.
     /// </summary>
-    /// <param name="test">The test instance</param>
-    /// <returns>Configured HealthDataCollection with multi-day data</returns>
+    /// <param name="test">The test instance.</param>
+    /// <returns>Configured HealthDataCollection with multi-day data.</returns>
     public static HealthDataCollection WithMultiDayData(
         this ChartExportServiceTests test)
     {
@@ -285,8 +325,8 @@ public static class ChartExportServiceTestsExtensions
     /// <summary>
     /// Creates a health data collection with extreme values for boundary testing.
     /// </summary>
-    /// <param name="test">The test instance</param>
-    /// <returns>Configured HealthDataCollection with extreme values</returns>
+    /// <param name="test">The test instance.</param>
+    /// <returns>Configured HealthDataCollection with extreme values.</returns>
     public static HealthDataCollection WithExtremeValues(
         this ChartExportServiceTests test)
     {
