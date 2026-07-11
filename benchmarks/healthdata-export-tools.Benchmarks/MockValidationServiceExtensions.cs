@@ -73,11 +73,11 @@ namespace HealthDataExportTools.Benchmarks
 		/// Validates all provided health data records and returns a dictionary of validation results.
 		/// </summary>
 		/// <param name="service">The validation service instance.</param>
-		/// <param name="sleepData">The sleep data to validate.</param>
-		/// <param name="heartRateData">The heart rate data to validate.</param>
-		/// <param name="spO2Data">The SpO2 data to validate.</param>
-		/// <param name="stepsData">The steps data to validate.</param>
-		/// <param name="activityData">The activity data to validate.</param>
+		/// <param name="sleepData">The collection of sleep data to validate.</param>
+		/// <param name="heartRateData">The collection of heart rate data to validate.</param>
+		/// <param name="spO2Data">The collection of SpO2 data to validate.</param>
+		/// <param name="stepsData">The collection of steps data to validate.</param>
+		/// <param name="activityData">The collection of activity data to validate.</param>
 		/// <returns>A dictionary mapping data type names to their validation results.</returns>
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="service"/> is <see langword="null"/>.</exception>
 		public static Dictionary<string, ValidationResult> ValidateAll(
