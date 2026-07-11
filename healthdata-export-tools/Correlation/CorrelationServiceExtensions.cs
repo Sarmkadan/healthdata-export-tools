@@ -20,31 +20,36 @@ public static class CorrelationServiceExtensions
     /// Registers <see cref="ICorrelationEngine"/> as a singleton backed by
     /// <see cref="CorrelationEngine"/>.
     /// </summary>
-    /// <param name="services">The service collection to configure.</param>
+    /// <param name="services">The <see cref="IServiceCollection"/> to configure.</param>
     /// <param name="configure">
     /// Optional delegate to customise <see cref="CorrelationEngineOptions"/>.
     /// When supplied, the configured instance is registered as a singleton so that
     /// application code can inject it directly if needed.
     /// </param>
     /// <returns>The same <paramref name="services"/> instance for chaining.</returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="services"/> is <see langword="null"/>.
+    /// </exception>
     /// <exception cref="InvalidOperationException">
     /// Thrown when the supplied options fail validation.
     /// </exception>
     /// <example>
     /// <code>
     /// services.AddHealthDataExportServices()
-    ///         .AddCorrelationEngine(opts =>
-    ///         {
-    ///             opts.AnalysisWindowDays    = 60;
-    ///             opts.SignificanceThreshold = 0.4;
-    ///             opts.InsightMode           = InsightGenerationMode.Comprehensive;
-    ///         });
+    ///     .AddCorrelationEngine(opts =>
+    ///     {
+    ///         opts.AnalysisWindowDays = 60;
+    ///         opts.SignificanceThreshold = 0.4;
+    ///         opts.InsightMode = InsightGenerationMode.Comprehensive;
+    ///     });
     /// </code>
     /// </example>
     public static IServiceCollection AddCorrelationEngine(
         this IServiceCollection services,
         Action<CorrelationEngineOptions>? configure = null)
     {
+        ArgumentNullException.ThrowIfNull(services);
+
         if (configure is not null)
         {
             var options = new CorrelationEngineOptions();
@@ -66,11 +71,14 @@ public static class CorrelationServiceExtensions
     /// Registers <see cref="ICorrelationEngine"/> using a pre-built
     /// <paramref name="options"/> instance.
     /// </summary>
-    /// <param name="services">The service collection to configure.</param>
+    /// <param name="services">The <see cref="IServiceCollection"/> to configure.</param>
     /// <param name="options">
     /// A fully-initialised <see cref="CorrelationEngineOptions"/> instance.
     /// </param>
     /// <returns>The same <paramref name="services"/> instance for chaining.</returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="services"/> is <see langword="null"/>.
+    /// </exception>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="options"/> is <see langword="null"/>.
     /// </exception>
@@ -81,6 +89,7 @@ public static class CorrelationServiceExtensions
         this IServiceCollection services,
         CorrelationEngineOptions options)
     {
+        ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(options);
 
         var errors = options.Validate().ToList();
@@ -99,6 +108,9 @@ public static class CorrelationServiceExtensions
     /// </summary>
     /// <param name="provider">A configured service provider.</param>
     /// <returns>The registered <see cref="ICorrelationEngine"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="provider"/> is <see langword="null"/>.
+    /// </exception>
     public static ICorrelationEngine GetCorrelationEngine(this IServiceProvider provider) =>
         provider.GetRequiredService<ICorrelationEngine>();
 }
