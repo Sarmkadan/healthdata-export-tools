@@ -14,10 +14,10 @@ namespace HealthDataExportTools.DTOs
         /// </summary>
         /// <param name="result">The export result.</param>
         /// <returns>A <see cref="TimeSpan"/> representing the duration.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if result is null.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="result"/> is null.</exception>
         public static TimeSpan GetDuration(this ExportResultDto result)
         {
-            if (result == null) throw new ArgumentNullException(nameof(result));
+            ArgumentNullException.ThrowIfNull(result);
             return result.EndTime - result.StartTime;
         }
 
@@ -27,13 +27,13 @@ namespace HealthDataExportTools.DTOs
         /// </summary>
         /// <param name="result">The export result.</param>
         /// <returns>True if successful; otherwise, false.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if result is null.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="result"/> is null.</exception>
         public static bool IsSuccessful(this ExportResultDto result)
         {
-            if (result == null) throw new ArgumentNullException(nameof(result));
+            ArgumentNullException.ThrowIfNull(result);
 
             bool isCompleted = string.Equals(result.Status, "Completed", StringComparison.OrdinalIgnoreCase);
-            bool hasNoErrors = result.Errors == null || result.Errors.Count == 0;
+            bool hasNoErrors = result.Errors?.Count == 0;
 
             return isCompleted && hasNoErrors;
         }
@@ -43,13 +43,13 @@ namespace HealthDataExportTools.DTOs
         /// </summary>
         /// <param name="result">The export result.</param>
         /// <returns>True if there are warnings or errors; otherwise, false.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if result is null.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="result"/> is null.</exception>
         public static bool HasIssues(this ExportResultDto result)
         {
-            if (result == null) throw new ArgumentNullException(nameof(result));
+            ArgumentNullException.ThrowIfNull(result);
 
-            bool hasWarnings = result.Warnings != null && result.Warnings.Any();
-            bool hasErrors = result.Errors != null && result.Errors.Any();
+            bool hasWarnings = result.Warnings?.Any() == true;
+            bool hasErrors = result.Errors?.Any() == true;
 
             return hasWarnings || hasErrors;
         }
@@ -59,10 +59,10 @@ namespace HealthDataExportTools.DTOs
         /// </summary>
         /// <param name="result">The export result.</param>
         /// <returns>The total count of processed records.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if result is null.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="result"/> is null.</exception>
         public static int GetTotalProcessedRecords(this ExportResultDto result)
         {
-            if (result == null) throw new ArgumentNullException(nameof(result));
+            ArgumentNullException.ThrowIfNull(result);
             return result.RecordsExported + result.RecordsFiltered;
         }
     }
