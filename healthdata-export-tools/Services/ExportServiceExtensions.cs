@@ -18,24 +18,34 @@ namespace HealthDataExportTools.Services;
 public static class ExportServiceExtensions
 {
     /// <summary>
-    /// Export sleep data summary statistics to CSV with calculated metrics
-    /// </summary>
-    /// <param name="exportService">The ExportService instance</param>
-    /// <param name="sleepRecords">Sleep records to export</param>
-    /// <param name="outputPath">Destination CSV file path</param>
-    /// <returns>Task representing the async operation</returns>
+/// <summary>
+/// Exports sleep data summary statistics to CSV with calculated metrics including duration, quality scores,\n/// and efficiency percentages for each sleep record.
+/// </summary>
+/// <param name="exportService">The ExportService instance.</param>
+/// <param name="sleepRecords">Sleep records to export. Cannot be null or empty.</param>
+/// <param name="outputPath">Destination CSV file path. Cannot be null or whitespace.</param>
+/// <returns>Task representing the async operation.</returns>
+/// <exception cref="ArgumentNullException">Thrown when <paramref name="sleepRecords"/> or <paramref name="outputPath"/> is null.</exception>
+/// <exception cref="ArgumentException">Thrown when <paramref name="sleepRecords"/> is empty or <paramref name="outputPath"/> is whitespace.</exception>
+/// <exception cref="ExportException">Thrown when file operations fail.</exception>
     public static async Task ExportSleepSummaryToCsvAsync(
         this ExportService exportService,
-        List<SleepData> sleepRecords,
+        IReadOnlyList<SleepData> sleepRecords,
         string outputPath)
     {
-        if (sleepRecords == null || sleepRecords.Count == 0)
-            throw new ArgumentException("Sleep records cannot be null or empty", nameof(sleepRecords));
+        ArgumentNullException.ThrowIfNull(sleepRecords);
+    ArgumentNullException.ThrowIfNull(outputPath);
+
+    if (sleepRecords.Count == 0)
+        throw new ArgumentException("Sleep records cannot be empty", nameof(sleepRecords));
+
+    if (string.IsNullOrWhiteSpace(outputPath))
+        throw new ArgumentException("Output path cannot be null or whitespace", nameof(outputPath));
 
         try
         {
-            using var fs = File.Create(outputPath);
-            using var writer = new StreamWriter(fs, Encoding.UTF8);
+            await using var fs = File.Create(outputPath);
+            await using var writer = new StreamWriter(fs, Encoding.UTF8);
             using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
 
             csv.WriteHeader<SleepSummaryCsvRecord>();
@@ -47,7 +57,7 @@ public static class ExportServiceExtensions
             var totalLightSleep = sleepRecords.Sum(s => s.LightSleepMinutes);
             var totalRem = sleepRecords.Sum(s => s.RemSleepMinutes);
             var totalAwake = sleepRecords.Sum(s => s.AwakeMinutes);
-            var avgScore = (int)sleepRecords.Average(s => s.Score ?? 0);
+            var avgScore = (int)Math.Round(sleepRecords.Average(s => s.Score ?? 0));
 
             // Write summary record
             var summaryRecord = new SleepSummaryCsvRecord
@@ -58,7 +68,7 @@ public static class ExportServiceExtensions
                 TotalLightSleepMinutes = totalLightSleep,
                 TotalRemMinutes = totalRem,
                 TotalAwakeMinutes = totalAwake,
-                AvgQuality = sleepRecords.Average(s => s.Quality == SleepQuality.Good ? 1 : 0) * 100,
+                AvgQuality = Math.Round(sleepRecords.Average(s => s.Quality == SleepQuality.Good ? 1 : 0) * 100, 2),
                 AvgScore = avgScore,
                 BestSleepDate = sleepRecords
                     .OrderByDescending(s => s.Score)
@@ -95,7 +105,7 @@ public static class ExportServiceExtensions
                     Score = sleep.Score,
                     AvgHeartRate = sleep.AverageHeartRate,
                     SleepEfficiency = sleep.DurationMinutes > 0
-                        ? (double)(sleep.DurationMinutes - sleep.AwakeMinutes) / sleep.DurationMinutes * 100
+                        ? Math.Round((double)(sleep.DurationMinutes - sleep.AwakeMinutes) / sleep.DurationMinutes * 100, 2)
                         : 0
                 };
 
@@ -107,42 +117,61 @@ public static class ExportServiceExtensions
         {
             throw new ExportException("Failed to write sleep summary CSV", outputPath, "CSV", ex);
         }
+        catch (UnauthorizedAccessException ex)
+        {
+            throw new ExportException("Access denied when writing sleep summary CSV", outputPath, "CSV", ex);
+        }
+        catch (ArgumentException ex)
+        {
+            throw new ExportException("Invalid output path for sleep summary CSV", outputPath, "CSV", ex);
+        }
     }
 
     /// <summary>
-    /// Export heart rate analytics to CSV with zone distribution and statistics
-    /// </summary>
-    /// <param name="exportService">The ExportService instance</param>
-    /// <param name="records">Heart rate records to export</param>
-    /// <param name="outputPath">Destination CSV file path</param>
-    /// <param name="maxHeartRate">User's maximum heart rate for zone classification</param>
-    /// <returns>Task representing the async operation</returns>
+/// <summary>
+/// Exports heart rate analytics to CSV with zone distribution, stress levels, and heart rate variability metrics.
+/// </summary>
+/// <param name="exportService">The ExportService instance.</param>
+/// <param name="records">Heart rate records to export. Cannot be null or empty.</param>
+/// <param name="outputPath">Destination CSV file path. Cannot be null or whitespace.</param>
+/// <param name="maxHeartRate">Users maximum heart rate for zone classification. Must be greater than zero.</param>
+/// <returns>Task representing the async operation.</returns>
+/// <exception cref="ArgumentNullException">Thrown when <paramref name="records"/> or <paramref name="outputPath"/> is null.</exception>
+/// <exception cref="ArgumentException">Thrown when <paramref name="records"/> is empty or <paramref name="outputPath"/> is whitespace.</exception>
+/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="maxHeartRate"/> is less than or equal to zero.</exception>
+/// <exception cref="ExportException">Thrown when file operations fail.</exception>
     public static async Task ExportHeartRateAnalyticsToCsvAsync(
         this ExportService exportService,
-        List<HeartRateData> records,
+        IReadOnlyList<HeartRateData> records,
         string outputPath,
         int maxHeartRate)
     {
-        if (records == null || records.Count == 0)
-            throw new ArgumentException("Heart rate records cannot be null or empty", nameof(records));
+        ArgumentNullException.ThrowIfNull(records);
+    ArgumentNullException.ThrowIfNull(outputPath);
+
+    if (records.Count == 0)
+        throw new ArgumentException("Heart rate records cannot be empty", nameof(records));
+
+    if (string.IsNullOrWhiteSpace(outputPath))
+        throw new ArgumentException("Output path cannot be null or whitespace", nameof(outputPath));
 
         if (maxHeartRate <= 0)
             throw new ArgumentOutOfRangeException(nameof(maxHeartRate), "Max heart rate must be greater than zero.");
 
         try
         {
-            using var fs = File.Create(outputPath);
-            using var writer = new StreamWriter(fs, Encoding.UTF8);
+            await using var fs = File.Create(outputPath);
+            await using var writer = new StreamWriter(fs, Encoding.UTF8);
             using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
 
             csv.WriteHeader<HeartRateAnalyticsCsvRecord>();
             await csv.NextRecordAsync().ConfigureAwait(false);
 
             // Calculate overall statistics
-            var avgBpm = (int)records.Average(r => r.AverageBpm);
+            var avgBpm = (int)Math.Round(records.Average(r => r.AverageBpm));
             var minBpm = records.Min(r => r.MinimumBpm);
             var maxBpm = records.Max(r => r.MaximumBpm);
-            var restingBpm = (int)records.Average(r => r.RestingBpm ?? 0);
+            var restingBpm = records.Average(r => r.RestingBpm ?? 0) is double restingAvg ? (int)Math.Round(restingAvg) : 0;
 
             // Write summary record
             var summaryRecord = new HeartRateAnalyticsCsvRecord
@@ -201,6 +230,14 @@ public static class ExportServiceExtensions
         {
             throw new ExportException("Failed to write heart rate analytics CSV", outputPath, "CSV", ex);
         }
+        catch (UnauthorizedAccessException ex)
+        {
+            throw new ExportException("Access denied when writing heart rate analytics CSV", outputPath, "CSV", ex);
+        }
+        catch (ArgumentException ex)
+        {
+            throw new ExportException("Invalid output path for heart rate analytics CSV", outputPath, "CSV", ex);
+        }
     }
 
     /// <summary>
@@ -215,10 +252,15 @@ public static class ExportServiceExtensions
         HealthDataCollection collection,
         string outputPath)
     {
+    ArgumentNullException.ThrowIfNull(collection);
+    ArgumentNullException.ThrowIfNull(outputPath);
+
+    if (string.IsNullOrWhiteSpace(outputPath))
+        throw new ArgumentException("Output path cannot be null or whitespace", nameof(outputPath));
         try
         {
-            using var fs = File.Create(outputPath);
-            using var writer = new StreamWriter(fs, Encoding.UTF8);
+            await using var fs = File.Create(outputPath);
+            await using var writer = new StreamWriter(fs, Encoding.UTF8);
             using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
 
             csv.WriteHeader<HealthDashboardCsvRecord>();
@@ -291,6 +333,14 @@ public static class ExportServiceExtensions
         {
             throw new ExportException("Failed to write health dashboard CSV", outputPath, "CSV", ex);
         }
+        catch (UnauthorizedAccessException ex)
+        {
+            throw new ExportException("Access denied when writing health dashboard CSV", outputPath, "CSV", ex);
+        }
+        catch (ArgumentException ex)
+        {
+            throw new ExportException("Invalid output path for health dashboard CSV", outputPath, "CSV", ex);
+        }
     }
 
     /// <summary>
@@ -305,10 +355,15 @@ public static class ExportServiceExtensions
         HealthDataCollection collection,
         string outputPath)
     {
+    ArgumentNullException.ThrowIfNull(collection);
+    ArgumentNullException.ThrowIfNull(outputPath);
+
+    if (string.IsNullOrWhiteSpace(outputPath))
+        throw new ArgumentException("Output path cannot be null or whitespace", nameof(outputPath));
         try
         {
-            using var fs = File.Create(outputPath);
-            using var writer = new StreamWriter(fs, Encoding.UTF8);
+            await using var fs = File.Create(outputPath);
+            await using var writer = new StreamWriter(fs, Encoding.UTF8);
             using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
 
             csv.WriteHeader<DataQualityReportCsvRecord>();
@@ -381,6 +436,14 @@ public static class ExportServiceExtensions
         catch (IOException ex)
         {
             throw new ExportException("Failed to write data quality report CSV", outputPath, "CSV", ex);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            throw new ExportException("Access denied when writing data quality report CSV", outputPath, "CSV", ex);
+        }
+        catch (ArgumentException ex)
+        {
+            throw new ExportException("Invalid output path for data quality report CSV", outputPath, "CSV", ex);
         }
     }
 
