@@ -14,337 +14,412 @@ using HealthDataExportTools.Domain.Enums;
 
 namespace HealthDataExportTools.Tests;
 
+/// <summary>
+/// Unit tests for the <see cref="ReportGenerationService"/> class.
+/// Tests various report generation scenarios including summary, daily, weekly, and trend reports.
+/// </summary>
 public sealed class ReportGenerationServiceTests
 {
-    private readonly ILogger<ReportGenerationService> _mockLogger;
-    private readonly ReportGenerationService _sut;
+	/// <summary>
+	/// Mock logger for testing purposes.
+	/// </summary>
+	private readonly ILogger<ReportGenerationService> _mockLogger;
 
-    public ReportGenerationServiceTests()
-    {
-        _mockLogger = Substitute.For<ILogger<ReportGenerationService>>();
-        _sut = new ReportGenerationService(_mockLogger);
-    }
+	/// <summary>
+	/// System under test - the ReportGenerationService instance being tested.
+	/// </summary>
+	private readonly ReportGenerationService _sut;
 
-    [Fact]
-    public async Task GenerateSummaryReportAsync_WithValidRecords_ReturnsCorrectReport()
-    {
-        // Arrange
-        var records = new List<HealthDataRecord>
-        {
-            new SleepData { RecordDate = DateTime.UtcNow.AddDays(-2), DurationMinutes = 480, Quality = SleepQuality.Good, DeviceId = "DeviceA" },
-            new HeartRateData { RecordDate = DateTime.UtcNow.AddDays(-1), AverageBpm = 70, DeviceId = "DeviceA" },
-            new StepsData { RecordDate = DateTime.UtcNow, TotalSteps = 10000, DeviceId = "DeviceB" }
-        };
+	public ReportGenerationServiceTests()
+	{
+		_mockLogger = Substitute.For<ILogger<ReportGenerationService>>();
+		_sut = new ReportGenerationService(_mockLogger);
+	}
 
-        // Act
-        var report = await _sut.GenerateSummaryReportAsync(records).ConfigureAwait(false);
+	/// <summary>
+	/// Tests that GenerateSummaryReportAsync correctly processes valid health data records
+	/// and returns a report with accurate statistics and device distribution.
+	/// </summary>
+	/// <returns>A task that represents the asynchronous operation.</returns>
+	[Fact]
+	public async Task GenerateSummaryReportAsync_WithValidRecords_ReturnsCorrectReport()
+	{
+		// Arrange
+		var records = new List<HealthDataRecord>
+		{
+			new SleepData { RecordDate = DateTime.UtcNow.AddDays(-2), DurationMinutes = 480, Quality = SleepQuality.Good, DeviceId = "DeviceA" },
+			new HeartRateData { RecordDate = DateTime.UtcNow.AddDays(-1), AverageBpm = 70, DeviceId = "DeviceA" },
+			new StepsData { RecordDate = DateTime.UtcNow, TotalSteps = 10000, DeviceId = "DeviceB" }
+		};
 
-        // Assert
-        report.Should().NotBeNull();
-        report.TotalRecords.Should().Be(3);
-        report.DeviceDistribution.Should().ContainKey("DeviceA").And.ContainKey("DeviceB");
-        report.DeviceDistribution["DeviceA"].Should().Be(2);
-        report.DeviceDistribution["DeviceB"].Should().Be(1);
-        report.DataTypeStatistics.Should().HaveCount(3);
-        report.DataTypeStatistics.Should().Contain(s => s.DataType == nameof(SleepData) && s.RecordCount == 1);
-    }
+		// Act
+		var report = await _sut.GenerateSummaryReportAsync(records).ConfigureAwait(false);
 
-    [Fact]
-    public async Task GenerateSummaryReportAsync_WithNoRecords_ReturnsEmptyReport()
-    {
-        // Arrange
-        var records = new List<HealthDataRecord>();
+		// Assert
+		report.Should().NotBeNull();
+		report.TotalRecords.Should().Be(3);
+		report.DeviceDistribution.Should().ContainKey("DeviceA").And.ContainKey("DeviceB");
+		report.DeviceDistribution["DeviceA"].Should().Be(2);
+		report.DeviceDistribution["DeviceB"].Should().Be(1);
+		report.DataTypeStatistics.Should().HaveCount(3);
+		report.DataTypeStatistics.Should().Contain(s => s.DataType == nameof(SleepData) && s.RecordCount == 1);
+	}
 
-        // Act
-        var report = await _sut.GenerateSummaryReportAsync(records).ConfigureAwait(false);
+	/// <summary>
+	/// Tests that GenerateSummaryReportAsync handles empty record lists correctly
+	/// and returns a report with default values.
+	/// </summary>
+	/// <returns>A task that represents the asynchronous operation.</returns>
+	[Fact]
+	public async Task GenerateSummaryReportAsync_WithNoRecords_ReturnsEmptyReport()
+	{
+		// Arrange
+		var records = new List<HealthDataRecord>();
 
-        // Assert
-        report.Should().NotBeNull();
-        report.TotalRecords.Should().Be(0);
-        report.DeviceDistribution.Should().BeEmpty();
-        report.DataTypeStatistics.Should().BeEmpty();
-        report.DateRange.StartDate.Should().Be(default(DateTime)); // Default DateTime for empty list
-        report.DateRange.EndDate.Should().Be(default(DateTime));   // Default DateTime for empty list
-    }
+		// Act
+		var report = await _sut.GenerateSummaryReportAsync(records).ConfigureAwait(false);
 
-    [Fact]
-    public async Task GenerateDailyReportAsync_WithValidData_ReturnsCorrectReport()
-    {
-        // Arrange
-        var today = DateTime.UtcNow.Date;
-        var sleepData = new List<SleepData>
-        {
-            new SleepData { RecordDate = today.AddHours(1), DurationMinutes = 400, Quality = SleepQuality.Good, DeepSleepMinutes = 100, RemSleepMinutes = 80 },
-            new SleepData { RecordDate = today.AddHours(2), DurationMinutes = 500, Quality = SleepQuality.Excellent, DeepSleepMinutes = 120, RemSleepMinutes = 90 }
-        };
-        var heartRateData = new List<HeartRateData>
-        {
-            new HeartRateData { RecordDate = today.AddHours(3), AverageBpm = 65, MinimumBpm = 50, MaximumBpm = 80 },
-            new HeartRateData { RecordDate = today.AddHours(4), AverageBpm = 75, MinimumBpm = 60, MaximumBpm = 90 }
-        };
+		// Assert
+		report.Should().NotBeNull();
+		report.TotalRecords.Should().Be(0);
+		report.DeviceDistribution.Should().BeEmpty();
+		report.DataTypeStatistics.Should().BeEmpty();
+		report.DateRange.StartDate.Should().Be(default(DateTime)); // Default DateTime for empty list
+		report.DateRange.EndDate.Should().Be(default(DateTime)); // Default DateTime for empty list
+	}
 
-        // Act
-        var report = await _sut.GenerateDailyReportAsync(sleepData, heartRateData, today).ConfigureAwait(false);
+	/// <summary>
+	/// Tests that GenerateDailyReportAsync correctly processes sleep and heart rate data
+	/// and returns a report with accurate sleep metrics and heart rate statistics.
+	/// </summary>
+	/// <returns>A task that represents the asynchronous operation.</returns>
+	[Fact]
+	public async Task GenerateDailyReportAsync_WithValidData_ReturnsCorrectReport()
+	{
+		// Arrange
+		var today = DateTime.UtcNow.Date;
+		var sleepData = new List<SleepData>
+		{
+			new SleepData { RecordDate = today.AddHours(1), DurationMinutes = 400, Quality = SleepQuality.Good, DeepSleepMinutes = 100, RemSleepMinutes = 80 },
+			new SleepData { RecordDate = today.AddHours(2), DurationMinutes = 500, Quality = SleepQuality.Excellent, DeepSleepMinutes = 120, RemSleepMinutes = 90 }
+		};
+		var heartRateData = new List<HeartRateData>
+		{
+			new HeartRateData { RecordDate = today.AddHours(3), AverageBpm = 65, MinimumBpm = 50, MaximumBpm = 80 },
+			new HeartRateData { RecordDate = today.AddHours(4), AverageBpm = 75, MinimumBpm = 60, MaximumBpm = 90 }
+		};
 
-        // Assert
-        report.Should().NotBeNull();
-        report.Date.Should().Be(today);
+		// Act
+		var report = await _sut.GenerateDailyReportAsync(sleepData, heartRateData, today).ConfigureAwait(false);
 
-        report.SleepMetrics.Should().NotBeNull();
-        report.SleepMetrics!.Records.Should().Be(2);
-        report.SleepMetrics.TotalDurationMinutes.Should().Be(900);
-        report.SleepMetrics.AverageQuality.Should().Be(((int)SleepQuality.Good + (int)SleepQuality.Excellent) / 2);
-        report.SleepMetrics.DeepSleepMinutes.Should().Be(220);
-        report.SleepMetrics.RemSleepMinutes.Should().Be(170);
+		// Assert
+		report.Should().NotBeNull();
+		report.Date.Should().Be(today);
 
-        report.HeartRateMetrics.Should().NotBeNull();
-        report.HeartRateMetrics!.Records.Should().Be(2);
-        report.HeartRateMetrics.AverageHeartRate.Should().Be(70);
-        report.HeartRateMetrics.MinHeartRate.Should().Be(50);
-        report.HeartRateMetrics.MaxHeartRate.Should().Be(90);
-    }
+		report.SleepMetrics.Should().NotBeNull();
+		report.SleepMetrics!.Records.Should().Be(2);
+		report.SleepMetrics.TotalDurationMinutes.Should().Be(900);
+		report.SleepMetrics.AverageQuality.Should().Be(((int)SleepQuality.Good + (int)SleepQuality.Excellent) / 2);
+		report.SleepMetrics.DeepSleepMinutes.Should().Be(220);
+		report.SleepMetrics.RemSleepMinutes.Should().Be(170);
 
-    [Fact]
-    public async Task GenerateDailyReportAsync_WithNoSleepData_ReturnsReportWithoutSleepMetrics()
-    {
-        // Arrange
-        var today = DateTime.UtcNow.Date;
-        var sleepData = new List<SleepData>();
-        var heartRateData = new List<HeartRateData>
-        {
-            new HeartRateData { RecordDate = today.AddHours(3), AverageBpm = 65, MinimumBpm = 50, MaximumBpm = 80 }
-        };
+		report.HeartRateMetrics.Should().NotBeNull();
+		report.HeartRateMetrics!.Records.Should().Be(2);
+		report.HeartRateMetrics.AverageHeartRate.Should().Be(70);
+		report.HeartRateMetrics.MinHeartRate.Should().Be(50);
+		report.HeartRateMetrics.MaxHeartRate.Should().Be(90);
+	}
 
-        // Act
-        var report = await _sut.GenerateDailyReportAsync(sleepData, heartRateData, today).ConfigureAwait(false);
+	/// <summary>
+	/// Tests that GenerateDailyReportAsync handles empty sleep data correctly
+	/// and returns a report without sleep metrics.
+	/// </summary>
+	/// <returns>A task that represents the asynchronous operation.</returns>
+	[Fact]
+	public async Task GenerateDailyReportAsync_WithNoSleepData_ReturnsReportWithoutSleepMetrics()
+	{
+		// Arrange
+		var today = DateTime.UtcNow.Date;
+		var sleepData = new List<SleepData>();
+		var heartRateData = new List<HeartRateData>
+		{
+			new HeartRateData { RecordDate = today.AddHours(3), AverageBpm = 65, MinimumBpm = 50, MaximumBpm = 80 }
+		};
 
-        // Assert
-        report.Should().NotBeNull();
-        report.SleepMetrics.Should().BeNull();
-        report.HeartRateMetrics.Should().NotBeNull();
-    }
+		// Act
+		var report = await _sut.GenerateDailyReportAsync(sleepData, heartRateData, today).ConfigureAwait(false);
 
-    [Fact]
-    public async Task GenerateDailyReportAsync_WithNoHeartRateData_ReturnsReportWithoutHeartRateMetrics()
-    {
-        // Arrange
-        var today = DateTime.UtcNow.Date;
-        var sleepData = new List<SleepData>
-        {
-            new SleepData { RecordDate = today.AddHours(1), DurationMinutes = 400, Quality = SleepQuality.Good }
-        };
-        var heartRateData = new List<HeartRateData>();
+		// Assert
+		report.Should().NotBeNull();
+		report.SleepMetrics.Should().BeNull();
+		report.HeartRateMetrics.Should().NotBeNull();
+	}
 
-        // Act
-        var report = await _sut.GenerateDailyReportAsync(sleepData, heartRateData, today).ConfigureAwait(false);
+	/// <summary>
+	/// Tests that GenerateDailyReportAsync handles empty heart rate data correctly
+	/// and returns a report without heart rate metrics.
+	/// </summary>
+	/// <returns>A task that represents the asynchronous operation.</returns>
+	[Fact]
+	public async Task GenerateDailyReportAsync_WithNoHeartRateData_ReturnsReportWithoutHeartRateMetrics()
+	{
+		// Arrange
+		var today = DateTime.UtcNow.Date;
+		var sleepData = new List<SleepData>
+		{
+			new SleepData { RecordDate = today.AddHours(1), DurationMinutes = 400, Quality = SleepQuality.Good }
+		};
+		var heartRateData = new List<HeartRateData>();
 
-        // Assert
-        report.Should().NotBeNull();
-        report.SleepMetrics.Should().NotBeNull();
-        report.HeartRateMetrics.Should().BeNull();
-    }
+		// Act
+		var report = await _sut.GenerateDailyReportAsync(sleepData, heartRateData, today).ConfigureAwait(false);
 
-    [Fact]
-    public async Task GenerateTrendReportAsync_WithSufficientData_CalculatesTrend()
-    {
-        // Arrange
-        var records = new List<HealthDataRecord>();
-        var today = DateTime.UtcNow.Date;
-        for (int i = 0; i < 10; i++)
-        {
-            records.Add(new StepsData { RecordDate = today.AddDays(-i), TotalSteps = 5000 + (i * 100), DeviceId = "DeviceX" });
-        }
+		// Assert
+		report.Should().NotBeNull();
+		report.SleepMetrics.Should().NotBeNull();
+		report.HeartRateMetrics.Should().BeNull();
+	}
 
-        // Act
-        var report = await _sut.GenerateTrendReportAsync(records, 7).ConfigureAwait(false);
+	/// <summary>
+	/// Tests that GenerateTrendReportAsync correctly calculates trends when sufficient data is provided.
+	/// </summary>
+	/// <returns>A task that represents the asynchronous operation.</returns>
+	[Fact]
+	public async Task GenerateTrendReportAsync_WithSufficientData_CalculatesTrend()
+	{
+		// Arrange
+		var records = new List<HealthDataRecord>();
+		var today = DateTime.UtcNow.Date;
+		for (int i = 0; i < 10; i++)
+		{
+			records.Add(new StepsData { RecordDate = today.AddDays(-i), TotalSteps = 5000 + (i * 100), DeviceId = "DeviceX" });
+		}
 
-        // Assert
-        report.Should().NotBeNull();
-        report.WindowDays.Should().Be(7);
-        report.MetricTrends.Should().NotBeEmpty();
-        report.MetricTrends.Should().ContainSingle(t => t.MetricType == nameof(StepsData));
-        // More specific assertions on trend direction/variation would require exposing internal calculation methods or more complex test setup.
-        // For now, checking for presence and basic properties is sufficient.
-    }
+		// Act
+		var report = await _sut.GenerateTrendReportAsync(records, 7).ConfigureAwait(false);
 
-    [Fact]
-    public async Task GenerateTrendReportAsync_WithInsufficientData_ReturnsEmptyMetricTrends()
-    {
-        // Arrange
-        var records = new List<HealthDataRecord>
-        {
-            new StepsData { RecordDate = DateTime.UtcNow.AddDays(-10), TotalSteps = 5000, DeviceId = "DeviceX" }
-        };
+		// Assert
+		report.Should().NotBeNull();
+		report.WindowDays.Should().Be(7);
+		report.MetricTrends.Should().NotBeEmpty();
+		report.MetricTrends.Should().ContainSingle(t => t.MetricType == nameof(StepsData));
+		// More specific assertions on trend direction/variation would require exposing internal calculation methods or more complex test setup.
+		// For now, checking for presence and basic properties is sufficient.
+	}
 
-        // Act
-        var report = await _sut.GenerateTrendReportAsync(records, 7).ConfigureAwait(false);
+	/// <summary>
+	/// Tests that GenerateTrendReportAsync handles insufficient data correctly
+	/// and returns a report with empty metric trends.
+	/// </summary>
+	/// <returns>A task that represents the asynchronous operation.</returns>
+	[Fact]
+	public async Task GenerateTrendReportAsync_WithInsufficientData_ReturnsEmptyMetricTrends()
+	{
+		// Arrange
+		var records = new List<HealthDataRecord>
+		{
+			new StepsData { RecordDate = DateTime.UtcNow.AddDays(-10), TotalSteps = 5000, DeviceId = "DeviceX" }
+		};
 
-        // Assert
-        report.Should().NotBeNull();
-        report.MetricTrends.Should().BeEmpty();
-    }
+		// Act
+		var report = await _sut.GenerateTrendReportAsync(records, 7).ConfigureAwait(false);
 
-    [Fact]
-    public async Task GenerateWeeklySummaryReportAsync_WithValidData_ReturnsWeeklyReports()
-    {
-        // Arrange
-        var today = DateTime.UtcNow.Date;
-        var sleepData = new List<SleepData>
-        {
-            new SleepData { RecordDate = today, DurationMinutes = 480, Quality = SleepQuality.Good },
-            new SleepData { RecordDate = today.AddDays(-1), DurationMinutes = 500, Quality = SleepQuality.Excellent },
-            new SleepData { RecordDate = today.AddDays(-7), DurationMinutes = 420, Quality = SleepQuality.Average } // Previous week
-        };
-        var heartRateData = new List<HeartRateData>
-        {
-            new HeartRateData { RecordDate = today, AverageBpm = 65, StressLevel = 4 },
-            new HeartRateData { RecordDate = today.AddDays(-7), AverageBpm = 70, StressLevel = 5 } // Previous week
-        };
-        var stepsData = new List<StepsData>
-        {
-            new StepsData { RecordDate = today, TotalSteps = 10000, DistanceKm = 7.0 },
-            new StepsData { RecordDate = today.AddDays(-7), TotalSteps = 8000, DistanceKm = 5.5 } // Previous week
-        };
+		// Assert
+		report.Should().NotBeNull();
+		report.MetricTrends.Should().BeEmpty();
+	}
 
-        // Act
-        var reports = await _sut.GenerateWeeklySummaryReportAsync(sleepData, heartRateData, stepsData).ConfigureAwait(false);
+	/// <summary>
+	/// Tests that GenerateWeeklySummaryReportAsync correctly processes weekly data
+	/// and returns a collection of weekly reports with accurate aggregated metrics.
+	/// </summary>
+	/// <returns>A task that represents the asynchronous operation.</returns>
+	[Fact]
+	public async Task GenerateWeeklySummaryReportAsync_WithValidData_ReturnsWeeklyReports()
+	{
+		// Arrange
+		var today = DateTime.UtcNow.Date;
+		var sleepData = new List<SleepData>
+		{
+			new SleepData { RecordDate = today, DurationMinutes = 480, Quality = SleepQuality.Good },
+			new SleepData { RecordDate = today.AddDays(-1), DurationMinutes = 500, Quality = SleepQuality.Excellent },
+			new SleepData { RecordDate = today.AddDays(-7), DurationMinutes = 420, Quality = SleepQuality.Average } // Previous week
+		};
+		var heartRateData = new List<HeartRateData>
+		{
+			new HeartRateData { RecordDate = today, AverageBpm = 65, StressLevel = 4 },
+			new HeartRateData { RecordDate = today.AddDays(-7), AverageBpm = 70, StressLevel = 5 } // Previous week
+		};
+		var stepsData = new List<StepsData>
+		{
+			new StepsData { RecordDate = today, TotalSteps = 10000, DistanceKm = 7.0 },
+			new StepsData { RecordDate = today.AddDays(-7), TotalSteps = 8000, DistanceKm = 5.5 } // Previous week
+		};
 
-        // Assert
-        reports.Should().NotBeNull();
-        reports.Count.Should().BeGreaterThan(0);
-        
-        var latestWeekReport = reports.Last();
-        latestWeekReport.AverageSleepDurationMinutes.Should().Be(490); // (480 + 500) / 2
-        latestWeekReport.AverageHeartRate.Should().Be(65);
-        latestWeekReport.TotalSteps.Should().Be(10000);
-        latestWeekReport.TotalDistanceKm.Should().Be(7.0);
-    }
+		// Act
+		var reports = await _sut.GenerateWeeklySummaryReportAsync(sleepData, heartRateData, stepsData).ConfigureAwait(false);
 
-    [Fact]
-    public async Task GenerateWeeklySummaryReportAsync_WithEmptyData_ReturnsEmptyList()
-    {
-        // Act
-        var reports = await _sut.GenerateWeeklySummaryReportAsync(new List<SleepData>(), new List<HeartRateData>(), new List<StepsData>()).ConfigureAwait(false);
+		// Assert
+		reports.Should().NotBeNull();
+		reports.Count.Should().BeGreaterThan(0);
 
-        // Assert
-        reports.Should().NotBeNull();
-        reports.Should().BeEmpty();
-    }
+		var latestWeekReport = reports.Last();
+		latestWeekReport.AverageSleepDurationMinutes.Should().Be(490); // (480 + 500) / 2
+		latestWeekReport.AverageHeartRate.Should().Be(65);
+		latestWeekReport.TotalSteps.Should().Be(10000);
+		latestWeekReport.TotalDistanceKm.Should().Be(7.0);
+	}
 
-    [Fact]
-    public async Task GenerateWeeklySummaryReportAsync_WithSpO2AndActivity_PopulatesNewFields()
-    {
-        // Arrange
-        var today = DateTime.UtcNow.Date;
-        var spo2Data = new List<SpO2Data>
-        {
-            new SpO2Data { RecordDate = today, AveragePercentage = 97, MinimumPercentage = 94, MaximumPercentage = 99, LowSpO2Events = 1 },
-            new SpO2Data { RecordDate = today.AddDays(-1), AveragePercentage = 96, MinimumPercentage = 93, MaximumPercentage = 99, LowSpO2Events = 2 }
-        };
-        var activityData = new List<ActivityData>
-        {
-            new ActivityData
-            {
-                RecordDate = today, DurationMinutes = 45, CaloriesBurned = 350, DistanceKm = 5.0,
-                StartTime = today.AddHours(7), EndTime = today.AddHours(7).AddMinutes(45)
-            },
-            new ActivityData
-            {
-                RecordDate = today.AddDays(-1), DurationMinutes = 30, CaloriesBurned = 200, DistanceKm = 3.0,
-                StartTime = today.AddDays(-1).AddHours(7), EndTime = today.AddDays(-1).AddHours(7).AddMinutes(30)
-            }
-        };
+	/// <summary>
+	/// Tests that GenerateWeeklySummaryReportAsync handles empty data correctly
+	/// and returns an empty collection.
+	/// </summary>
+	/// <returns>A task that represents the asynchronous operation.</returns>
+	[Fact]
+	public async Task GenerateWeeklySummaryReportAsync_WithEmptyData_ReturnsEmptyList()
+	{
+		// Act
+		var reports = await _sut.GenerateWeeklySummaryReportAsync(new List<SleepData>(), new List<HeartRateData>(), new List<StepsData>()).ConfigureAwait(false);
 
-        // Act
-        var reports = await _sut.GenerateWeeklySummaryReportAsync(
-            new List<SleepData>(), new List<HeartRateData>(), new List<StepsData>(),
-            spo2Data, activityData).ConfigureAwait(false);
+		// Assert
+		reports.Should().NotBeNull();
+		reports.Should().BeEmpty();
+	}
 
-        // Assert
-        reports.Should().NotBeEmpty();
-        var report = reports.First();
-        report.AverageSpO2.Should().Be(96); // (97 + 96) / 2 = 96.5 → 96
-        report.MinimumSpO2.Should().Be(93);
-        report.TotalLowSpO2Events.Should().Be(3);
-        report.TotalActivitySessions.Should().Be(2);
-        report.TotalActivityMinutes.Should().Be(75);
-        report.TotalActivityDistanceKm.Should().Be(8.0);
-        report.TotalCaloriesBurned.Should().Be(550); // 350 + 200
-    }
+	/// <summary>
+	/// Tests that GenerateWeeklySummaryReportAsync correctly processes SpO2 and Activity data
+	/// and populates the corresponding fields in the weekly report.
+	/// </summary>
+	/// <returns>A task that represents the asynchronous operation.</returns>
+	[Fact]
+	public async Task GenerateWeeklySummaryReportAsync_WithSpO2AndActivity_PopulatesNewFields()
+	{
+		// Arrange
+		var today = DateTime.UtcNow.Date;
+		var spo2Data = new List<SpO2Data>
+		{
+			new SpO2Data { RecordDate = today, AveragePercentage = 97, MinimumPercentage = 94, MaximumPercentage = 99, LowSpO2Events = 1 },
+			new SpO2Data { RecordDate = today.AddDays(-1), AveragePercentage = 96, MinimumPercentage = 93, MaximumPercentage = 99, LowSpO2Events = 2 }
+		};
+		var activityData = new List<ActivityData>
+		{
+			new ActivityData
+			{
+				RecordDate = today, DurationMinutes = 45, CaloriesBurned = 350, DistanceKm = 5.0,
+				StartTime = today.AddHours(7), EndTime = today.AddHours(7).AddMinutes(45)
+			},
+			new ActivityData
+			{
+				RecordDate = today.AddDays(-1), DurationMinutes = 30, CaloriesBurned = 200, DistanceKm = 3.0,
+				StartTime = today.AddDays(-1).AddHours(7), EndTime = today.AddDays(-1).AddHours(7).AddMinutes(30)
+			}
+		};
 
-    [Fact]
-    public async Task GenerateWeeklySummaryReportAsync_MultipleWeeks_AttachesWeekOverWeekChanges()
-    {
-        // Arrange — two weeks of step data
-        var baseDate = new DateTime(2024, 1, 15); // a Monday
-        var prevWeekSteps = new StepsData { RecordDate = baseDate.AddDays(-7), TotalSteps = 8000, DistanceKm = 5.6 };
-        var thisWeekSteps = new StepsData { RecordDate = baseDate, TotalSteps = 10000, DistanceKm = 7.0 };
+		// Act
+		var reports = await _sut.GenerateWeeklySummaryReportAsync(
+			new List<SleepData>(), new List<HeartRateData>(), new List<StepsData>(),
+			spo2Data, activityData).ConfigureAwait(false);
 
-        // Act
-        var reports = await _sut.GenerateWeeklySummaryReportAsync(
-            new List<SleepData>(),
-            new List<HeartRateData>(),
-            new List<StepsData> { prevWeekSteps, thisWeekSteps },
-            new List<SpO2Data>(),
-            new List<ActivityData>()).ConfigureAwait(false);
+		// Assert
+		reports.Should().NotBeEmpty();
+		var report = reports.First();
+		report.AverageSpO2.Should().Be(96); // (97 + 96) / 2 = 96.5 → 96
+		report.MinimumSpO2.Should().Be(93);
+		report.TotalLowSpO2Events.Should().Be(3);
+		report.TotalActivitySessions.Should().Be(2);
+		report.TotalActivityMinutes.Should().Be(75);
+		report.TotalActivityDistanceKm.Should().Be(8.0);
+		report.TotalCaloriesBurned.Should().Be(550); // 350 + 200
+	}
 
-        // Assert
-        reports.Should().HaveCount(2);
-        reports[0].Changes.Should().BeNull("the first week has no prior week to compare");
-        reports[1].Changes.Should().NotBeNull();
-        reports[1].Changes!.StepsChangePercent.Should().BeApproximately(25.0, 0.01); // (10000-8000)/8000*100 = 25
-    }
+	/// <summary>
+	/// Tests that GenerateWeeklySummaryReportAsync correctly attaches week-over-week changes
+	/// when multiple weeks of data are provided.
+	/// </summary>
+	/// <returns>A task that represents the asynchronous operation.</returns>
+	[Fact]
+	public async Task GenerateWeeklySummaryReportAsync_MultipleWeeks_AttachesWeekOverWeekChanges()
+	{
+		// Arrange — two weeks of step data
+		var baseDate = new DateTime(2024, 1, 15); // a Monday
+		var prevWeekSteps = new StepsData { RecordDate = baseDate.AddDays(-7), TotalSteps = 8000, DistanceKm = 5.6 };
+		var thisWeekSteps = new StepsData { RecordDate = baseDate, TotalSteps = 10000, DistanceKm = 7.0 };
 
-    [Fact]
-    public async Task GenerateWeeklySummaryReportAsync_CalculatesHealthScore()
-    {
-        // Arrange — ideal metrics for a week
-        var today = DateTime.UtcNow.Date;
-        var sleep = new SleepData { RecordDate = today.AddDays(-1), DurationMinutes = 480 }; // 8 hrs
-        var hr    = new HeartRateData { RecordDate = today.AddDays(-1), AverageBpm = 65, MinimumBpm = 50, MaximumBpm = 130 };
-        var steps = new StepsData { RecordDate = today.AddDays(-1), TotalSteps = 11000, DistanceKm = 8.0 };
-        var spo2  = new SpO2Data { RecordDate = today.AddDays(-1), AveragePercentage = 98, MinimumPercentage = 96, MaximumPercentage = 100 };
+		// Act
+		var reports = await _sut.GenerateWeeklySummaryReportAsync(
+			new List<SleepData>(),
+			new List<HeartRateData>(),
+			new List<StepsData> { prevWeekSteps, thisWeekSteps },
+			new List<SpO2Data>(),
+			new List<ActivityData>()).ConfigureAwait(false);
 
-        // Act
-        var reports = await _sut.GenerateWeeklySummaryReportAsync(
-            new List<SleepData> { sleep },
-            new List<HeartRateData> { hr },
-            new List<StepsData> { steps },
-            new List<SpO2Data> { spo2 },
-            new List<ActivityData>()).ConfigureAwait(false);
+		// Assert
+		reports.Should().HaveCount(2);
+		reports[0].Changes.Should().BeNull("the first week has no prior week to compare");
+		reports[1].Changes.Should().NotBeNull();
+		reports[1].Changes!.StepsChangePercent.Should().BeApproximately(25.0, 0.01); // (10000-8000)/8000*100 = 25
+	}
 
-        // Assert
-        reports.Should().NotBeEmpty();
-        reports[0].WeeklyHealthScore.Should().BeGreaterThan(50, "good metrics should push score above baseline");
-        reports[0].WeeklyHealthScore.Should().BeLessOrEqualTo(100);
-    }
+	/// <summary>
+	/// Tests that GenerateWeeklySummaryReportAsync correctly calculates a weekly health score
+	/// based on ideal health metrics.
+	/// </summary>
+	/// <returns>A task that represents the asynchronous operation.</returns>
+	[Fact]
+	public async Task GenerateWeeklySummaryReportAsync_CalculatesHealthScore()
+	{
+		// Arrange — ideal metrics for a week
+		var today = DateTime.UtcNow.Date;
+		var sleep = new SleepData { RecordDate = today.AddDays(-1), DurationMinutes = 480 }; // 8 hrs
+		var hr = new HeartRateData { RecordDate = today.AddDays(-1), AverageBpm = 65, MinimumBpm = 50, MaximumBpm = 130 };
+		var steps = new StepsData { RecordDate = today.AddDays(-1), TotalSteps = 11000, DistanceKm = 8.0 };
+		var spo2 = new SpO2Data { RecordDate = today.AddDays(-1), AveragePercentage = 98, MinimumPercentage = 96, MaximumPercentage = 100 };
 
-    [Fact]
-    public async Task ExportWeeklySummaryToJsonAsync_WritesValidJsonFile()
-    {
-        // Arrange
-        var today = DateTime.UtcNow.Date;
-        var reports = await _sut.GenerateWeeklySummaryReportAsync(
-            new List<SleepData> { new SleepData { RecordDate = today.AddDays(-1), DurationMinutes = 460, Quality = SleepQuality.Good } },
-            new List<HeartRateData> { new HeartRateData { RecordDate = today.AddDays(-1), AverageBpm = 68, MinimumBpm = 52, MaximumBpm = 110 } },
-            new List<StepsData> { new StepsData { RecordDate = today.AddDays(-1), TotalSteps = 9500 } }).ConfigureAwait(false);
+		// Act
+		var reports = await _sut.GenerateWeeklySummaryReportAsync(
+			new List<SleepData> { sleep },
+			new List<HeartRateData> { hr },
+			new List<StepsData> { steps },
+			new List<SpO2Data> { spo2 },
+			new List<ActivityData>()).ConfigureAwait(false);
 
-        var tmpFile = Path.Combine(Path.GetTempPath(), $"weekly_{Guid.NewGuid()}.json");
-        try
-        {
-            // Act
-            await _sut.ExportWeeklySummaryToJsonAsync(reports, tmpFile).ConfigureAwait(false);
+		// Assert
+		reports.Should().NotBeEmpty();
+		reports[0].WeeklyHealthScore.Should().BeGreaterThan(50, "good metrics should push score above baseline");
+		reports[0].WeeklyHealthScore.Should().BeLessOrEqualTo(100);
+	}
 
-            // Assert
-            File.Exists(tmpFile).Should().BeTrue();
-            var json = await File.ReadAllTextAsync(tmpFile).ConfigureAwait(false);
-            json.Should().Contain("WeeklyReports");
-            json.Should().Contain("WeekCount");
-            json.Should().Contain("WeekIdentifier");
-        }
-        finally
-        {
-            if (File.Exists(tmpFile)) File.Delete(tmpFile);
-        }
-    }
+	/// <summary>
+	/// Tests that ExportWeeklySummaryToJsonAsync correctly exports weekly summary reports
+	/// to a valid JSON file.
+	/// </summary>
+	/// <returns>A task that represents the asynchronous operation.</returns>
+	[Fact]
+	public async Task ExportWeeklySummaryToJsonAsync_WritesValidJsonFile()
+	{
+		// Arrange
+		var today = DateTime.UtcNow.Date;
+		var reports = await _sut.GenerateWeeklySummaryReportAsync(
+			new List<SleepData> { new SleepData { RecordDate = today.AddDays(-1), DurationMinutes = 460, Quality = SleepQuality.Good } },
+			new List<HeartRateData> { new HeartRateData { RecordDate = today.AddDays(-1), AverageBpm = 68, MinimumBpm = 52, MaximumBpm = 110 } },
+			new List<StepsData> { new StepsData { RecordDate = today.AddDays(-1), TotalSteps = 9500 } }).ConfigureAwait(false);
+
+		var tmpFile = Path.Combine(Path.GetTempPath(), $"weekly_{Guid.NewGuid()}.json");
+		try
+		{
+			// Act
+			await _sut.ExportWeeklySummaryToJsonAsync(reports, tmpFile).ConfigureAwait(false);
+
+			// Assert
+			File.Exists(tmpFile).Should().BeTrue();
+			var json = await File.ReadAllTextAsync(tmpFile).ConfigureAwait(false);
+			json.Should().Contain("WeeklyReports");
+			json.Should().Contain("WeekCount");
+			json.Should().Contain("WeekIdentifier");
+		}
+		finally
+		{
+			if (File.Exists(tmpFile)) File.Delete(tmpFile);
+		}
+	}
 }
