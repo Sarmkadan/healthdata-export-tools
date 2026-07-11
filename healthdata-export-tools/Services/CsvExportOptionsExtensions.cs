@@ -11,6 +11,7 @@ public static class CsvExportOptionsExtensions
     /// Enables all data types for export (sleep, heart rate, SpO2, steps, activity).
     /// </summary>
     /// <param name="options">The export options to configure.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="options"/> is <see langword="null"/>.</exception>
     /// <returns>The configured <see cref="CsvExportOptions"/> for method chaining.</returns>
     public static CsvExportOptions EnableAllDataTypes(this CsvExportOptions options)
     {
@@ -29,6 +30,7 @@ public static class CsvExportOptionsExtensions
     /// Disables all data types for export.
     /// </summary>
     /// <param name="options">The export options to configure.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="options"/> is <see langword="null"/>.</exception>
     /// <returns>The configured <see cref="CsvExportOptions"/> for method chaining.</returns>
     public static CsvExportOptions DisableAllDataTypes(this CsvExportOptions options)
     {
@@ -48,6 +50,7 @@ public static class CsvExportOptionsExtensions
     /// </summary>
     /// <param name="options">The export options to configure.</param>
     /// <param name="format">The date format string (e.g., "yyyy-MM-dd", "MM/dd/yyyy").</param>
+    /// <exception cref="ArgumentNullException"><paramref name="options"/> or <paramref name="format"/> is <see langword="null"/>.</exception>
     /// <returns>The configured <see cref="CsvExportOptions"/> for method chaining.</returns>
     public static CsvExportOptions WithDateFormat(this CsvExportOptions options, string format)
     {
@@ -67,6 +70,7 @@ public static class CsvExportOptionsExtensions
     /// <param name="includeSpO2">Whether to include SpO2 columns.</param>
     /// <param name="includeSteps">Whether to include steps columns.</param>
     /// <param name="includeActivity">Whether to include activity columns.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="options"/> is <see langword="null"/>.</exception>
     /// <returns>The configured <see cref="CsvExportOptions"/> for method chaining.</returns>
     public static CsvExportOptions WithColumns(
         this CsvExportOptions options,
