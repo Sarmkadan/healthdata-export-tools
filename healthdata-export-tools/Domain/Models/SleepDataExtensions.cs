@@ -10,17 +10,21 @@ using HealthDataExportTools.Domain.Enums;
 namespace HealthDataExportTools.Domain.Models;
 
 /// <summary>
-/// Extension methods for SleepData providing additional functionality and convenience methods
+/// Extension methods for <see cref="SleepData"/> providing additional functionality and convenience methods
+/// for calculating sleep metrics, quality assessments, and formatting.
 /// </summary>
 public static class SleepDataExtensions
 {
     /// <summary>
-    /// Calculate light sleep percentage from total sleep duration
+    /// Calculates the percentage of light sleep from total sleep duration.
     /// </summary>
-    /// <param name="sleepData">The sleep data instance</param>
-    /// <returns>Percentage of light sleep (0-100)</returns>
+    /// <param name="sleepData">The sleep data instance. Cannot be <see langword="null"/>.</param>
+    /// <returns>Percentage of light sleep (0-100).</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="sleepData"/> is <see langword="null"/>.</exception>
     public static double GetLightSleepPercentage(this SleepData sleepData)
     {
+        ArgumentNullException.ThrowIfNull(sleepData);
+
         if (sleepData.DurationMinutes <= 0)
             return 0;
 
@@ -29,12 +33,15 @@ public static class SleepDataExtensions
 
 
     /// <summary>
-    /// Calculate awake percentage from total sleep duration
+    /// Calculates the percentage of awake time from total sleep duration.
     /// </summary>
-    /// <param name="sleepData">The sleep data instance</param>
-    /// <returns>Percentage of awake time (0-100)</returns>
+    /// <param name="sleepData">The sleep data instance. Cannot be <see langword="null"/>.</param>
+    /// <returns>Percentage of awake time (0-100).</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="sleepData"/> is <see langword="null"/>.</exception>
     public static double GetAwakePercentage(this SleepData sleepData)
     {
+        ArgumentNullException.ThrowIfNull(sleepData);
+
         if (sleepData.DurationMinutes <= 0)
             return 0;
 
@@ -42,44 +49,54 @@ public static class SleepDataExtensions
     }
 
     /// <summary>
-    /// Calculate sleep efficiency score (ratio of actual sleep time to total time in bed)
+    /// Calculates sleep efficiency score (ratio of actual sleep time to total time in bed).
     /// </summary>
-    /// <param name="sleepData">The sleep data instance</param>
-    /// <returns>Sleep efficiency as percentage (0-100), null if duration is invalid</returns>
+    /// <param name="sleepData">The sleep data instance. Cannot be <see langword="null"/>.</param>
+    /// <returns>Sleep efficiency as percentage (0-100), <see langword="null"/> if duration is invalid.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="sleepData"/> is <see langword="null"/>.</exception>
     public static double? GetSleepEfficiency(this SleepData sleepData)
     {
+        ArgumentNullException.ThrowIfNull(sleepData);
+
         if (sleepData.DurationMinutes <= 0 || sleepData.AwakeMinutes < 0)
             return null;
+
 
         var sleepTime = sleepData.DurationMinutes - sleepData.AwakeMinutes;
         return (double)sleepTime / sleepData.DurationMinutes * 100;
     }
 
     /// <summary>
-    /// Determine if this sleep session was restorative based on quality and duration
+    /// Determines if this sleep session was restorative based on quality and duration.
     /// </summary>
-    /// <param name="sleepData">The sleep data instance</param>
-    /// <returns>True if sleep was restorative (Excellent/Good quality and sufficient duration)</returns>
+    /// <param name="sleepData">The sleep data instance. Cannot be <see langword="null"/>.</param>
+    /// <returns>True if sleep was restorative (Excellent/Good quality and sufficient duration).</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="sleepData"/> is <see langword="null"/>.</exception>
     public static bool IsRestorativeSleep(this SleepData sleepData)
     {
-        if (sleepData.Quality == SleepQuality.Excellent && sleepData.DurationMinutes >= 420)
-            return true;
+        ArgumentNullException.ThrowIfNull(sleepData);
 
-        if (sleepData.Quality == SleepQuality.Good && sleepData.DurationMinutes >= 480)
-            return true;
-
-        return false;
+        return sleepData.Quality switch
+        {
+            SleepQuality.Excellent => sleepData.DurationMinutes >= 420,
+            SleepQuality.Good => sleepData.DurationMinutes >= 480,
+            _ => false
+        };
     }
 
     /// <summary>
-    /// Get sleep debt in minutes (difference between actual sleep and recommended 8 hours)
+    /// Gets sleep debt in minutes (difference between actual sleep and recommended 8 hours).
     /// </summary>
-    /// <param name="sleepData">The sleep data instance</param>
-    /// <returns>Sleep debt in minutes (negative if overslept), null if duration is invalid</returns>
+    /// <param name="sleepData">The sleep data instance. Cannot be <see langword="null"/>.</param>
+    /// <returns>Sleep debt in minutes (negative if overslept), <see langword="null"/> if duration is invalid.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="sleepData"/> is <see langword="null"/>.</exception>
     public static int? GetSleepDebt(this SleepData sleepData)
     {
+        ArgumentNullException.ThrowIfNull(sleepData);
+
         if (sleepData.DurationMinutes <= 0)
             return null;
+
 
         const int recommendedHours = 8;
         const int recommendedMinutes = recommendedHours * 60;
@@ -88,47 +105,59 @@ public static class SleepDataExtensions
     }
 
     /// <summary>
-    /// Calculate the ratio of deep sleep to REM sleep
+    /// Calculates the ratio of deep sleep to REM sleep.
     /// </summary>
-    /// <param name="sleepData">The sleep data instance</param>
-    /// <returns>Ratio of deep sleep to REM sleep, null if REM sleep is 0</returns>
+    /// <param name="sleepData">The sleep data instance. Cannot be <see langword="null"/>.</param>
+    /// <returns>Ratio of deep sleep to REM sleep, <see langword="null"/> if REM sleep is 0.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="sleepData"/> is <see langword="null"/>.</exception>
     public static double? GetDeepToRemRatio(this SleepData sleepData)
     {
+        ArgumentNullException.ThrowIfNull(sleepData);
+
         if (sleepData.RemSleepMinutes <= 0)
             return null;
+
 
         return (double)sleepData.DeepSleepMinutes / sleepData.RemSleepMinutes;
     }
 
     /// <summary>
-    /// Get formatted sleep duration as "HH:MM" string
+    /// Gets formatted sleep duration as "HH:MM" string.
     /// </summary>
-    /// <param name="sleepData">The sleep data instance</param>
-    /// <returns>Formatted time string (e.g., "07:30" for 7 hours 30 minutes)</returns>
+    /// <param name="sleepData">The sleep data instance. Cannot be <see langword="null"/>.</param>
+    /// <returns>Formatted time string (e.g., "07:30" for 7 hours 30 minutes).</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="sleepData"/> is <see langword="null"/>.</exception>
     public static string GetFormattedDuration(this SleepData sleepData)
     {
+        ArgumentNullException.ThrowIfNull(sleepData);
+
         var hours = sleepData.DurationMinutes / 60;
         var minutes = sleepData.DurationMinutes % 60;
         return $"{hours:D2}:{minutes:D2}";
     }
 
     /// <summary>
-    /// Check if sleep duration meets minimum recommended duration for adults (7 hours)
+    /// Checks if sleep duration meets minimum recommended duration for adults (7 hours).
     /// </summary>
-    /// <param name="sleepData">The sleep data instance</param>
-    /// <returns>True if sleep duration is at least 7 hours</returns>
+    /// <param name="sleepData">The sleep data instance. Cannot be <see langword="null"/>.</param>
+    /// <returns>True if sleep duration is at least 7 hours.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="sleepData"/> is <see langword="null"/>.</exception>
     public static bool MeetsMinimumDuration(this SleepData sleepData)
     {
+        ArgumentNullException.ThrowIfNull(sleepData);
         return sleepData.DurationMinutes >= 420; // 7 hours = 420 minutes
     }
 
     /// <summary>
-    /// Calculate weighted sleep score combining duration, quality, and consistency metrics
+    /// Calculates a weighted sleep score combining duration, quality, and consistency metrics.
     /// </summary>
-    /// <param name="sleepData">The sleep data instance</param>
-    /// <returns>Weighted sleep score (0-100), null if duration is invalid</returns>
+    /// <param name="sleepData">The sleep data instance. Cannot be <see langword="null"/>.</param>
+    /// <returns>Weighted sleep score (0-100), <see langword="null"/> if duration is invalid.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="sleepData"/> is <see langword="null"/>.</exception>
     public static double? CalculateWeightedSleepScore(this SleepData sleepData)
     {
+        ArgumentNullException.ThrowIfNull(sleepData);
+
         if (sleepData.DurationMinutes <= 0)
             return null;
 
