@@ -3,7 +3,7 @@
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
-// =============================================================================
+// =====================================================================
 
 using System.Collections.Concurrent;
 
@@ -19,14 +19,14 @@ public static class WebhookServiceExtensions
     /// </summary>
     /// <param name="service">The webhook service instance</param>
     /// <param name="webhookConfigs">Collection of webhook configurations to register</param>
+    /// <exception cref="ArgumentNullException"><paramref name="service"/> is <see langword="null"/></exception>
+    /// <exception cref="ArgumentNullException"><paramref name="webhookConfigs"/> is <see langword="null"/></exception>
     /// <returns>Number of successfully registered webhooks</returns>
     public static int RegisterWebhooks(this WebhookService service, IEnumerable<(string url, string eventType, bool isActive)> webhookConfigs)
     {
-        if (service is null)
-            throw new ArgumentNullException(nameof(service));
+        ArgumentNullException.ThrowIfNull(service);
 
-        if (webhookConfigs is null)
-            throw new ArgumentNullException(nameof(webhookConfigs));
+        ArgumentNullException.ThrowIfNull(webhookConfigs);
 
         int registeredCount = 0;
         foreach (var config in webhookConfigs)
@@ -43,14 +43,14 @@ public static class WebhookServiceExtensions
     /// </summary>
     /// <param name="service">The webhook service instance</param>
     /// <param name="eventType">The event type to check</param>
+    /// <exception cref="ArgumentNullException"><paramref name="service"/> is <see langword="null"/></exception>
+    /// <exception cref="ArgumentException"><paramref name="eventType"/> is <see langword="null"/> or empty</exception>
     /// <returns>True if an active webhook exists for the event type; otherwise false</returns>
     public static bool HasActiveWebhookForEvent(this WebhookService service, string eventType)
     {
-        if (service is null)
-            throw new ArgumentNullException(nameof(service));
+        ArgumentNullException.ThrowIfNull(service);
 
-        if (string.IsNullOrEmpty(eventType))
-            throw new ArgumentException("Event type cannot be empty", nameof(eventType));
+        ArgumentException.ThrowIfNullOrEmpty(eventType, nameof(eventType));
 
         var webhooks = service.GetRegisteredWebhooks();
         return webhooks.Any(w =>
@@ -62,11 +62,11 @@ public static class WebhookServiceExtensions
     /// Get statistics for all registered webhooks
     /// </summary>
     /// <param name="service">The webhook service instance</param>
+    /// <exception cref="ArgumentNullException"><paramref name="service"/> is <see langword="null"/></exception>
     /// <returns>A tuple containing total webhooks, active webhooks, total success count, and total failure count</returns>
     public static (int total, int active, int totalSuccess, int totalFailure) GetWebhookStatistics(this WebhookService service)
     {
-        if (service is null)
-            throw new ArgumentNullException(nameof(service));
+        ArgumentNullException.ThrowIfNull(service);
 
         var webhooks = service.GetRegisteredWebhooks();
         int total = webhooks.Count;
@@ -82,14 +82,14 @@ public static class WebhookServiceExtensions
     /// </summary>
     /// <param name="service">The webhook service instance</param>
     /// <param name="urlPattern">URL pattern to search for (case-insensitive)</param>
+    /// <exception cref="ArgumentNullException"><paramref name="service"/> is <see langword="null"/></exception>
+    /// <exception cref="ArgumentException"><paramref name="urlPattern"/> is <see langword="null"/> or empty</exception>
     /// <returns>List of matching webhooks</returns>
     public static List<Webhook> FindWebhooksByUrl(this WebhookService service, string urlPattern)
     {
-        if (service is null)
-            throw new ArgumentNullException(nameof(service));
+        ArgumentNullException.ThrowIfNull(service);
 
-        if (string.IsNullOrEmpty(urlPattern))
-            throw new ArgumentException("URL pattern cannot be empty", nameof(urlPattern));
+        ArgumentException.ThrowIfNullOrEmpty(urlPattern, nameof(urlPattern));
 
         var webhooks = service.GetRegisteredWebhooks();
         return webhooks
@@ -101,11 +101,11 @@ public static class WebhookServiceExtensions
     /// Clear all failed webhooks (those with failure count > 0) and reset their statistics
     /// </summary>
     /// <param name="service">The webhook service instance</param>
+    /// <exception cref="ArgumentNullException"><paramref name="service"/> is <see langword="null"/></exception>
     /// <returns>Number of webhooks cleared</returns>
     public static int ClearFailedWebhooks(this WebhookService service)
     {
-        if (service is null)
-            throw new ArgumentNullException(nameof(service));
+        ArgumentNullException.ThrowIfNull(service);
 
         var webhooks = service.GetRegisteredWebhooks();
         int clearedCount = 0;
@@ -125,11 +125,11 @@ public static class WebhookServiceExtensions
     /// Get webhooks grouped by event type
     /// </summary>
     /// <param name="service">The webhook service instance</param>
+    /// <exception cref="ArgumentNullException"><paramref name="service"/> is <see langword="null"/></exception>
     /// <returns>Dictionary mapping event types to lists of webhooks</returns>
     public static Dictionary<string, List<Webhook>> GetWebhooksGroupedByEventType(this WebhookService service)
     {
-        if (service is null)
-            throw new ArgumentNullException(nameof(service));
+        ArgumentNullException.ThrowIfNull(service);
 
         var webhooks = service.GetRegisteredWebhooks();
         return webhooks
@@ -145,17 +145,17 @@ public static class WebhookServiceExtensions
     /// <param name="eventType">The event type to trigger</param>
     /// <param name="payload">The payload to send</param>
     /// <param name="timeoutMilliseconds">Timeout in milliseconds (default: 30000)</param>
+    /// <exception cref="ArgumentNullException"><paramref name="service"/> is <see langword="null"/></exception>
+    /// <exception cref="ArgumentException"><paramref name="eventType"/> is <see langword="null"/> or empty</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="timeoutMilliseconds"/> is not positive</exception>
     /// <returns>Task representing the operation</returns>
     public static async Task TriggerWebhooksAsync(this WebhookService service, string eventType, object payload, int timeoutMilliseconds = 30000)
     {
-        if (service is null)
-            throw new ArgumentNullException(nameof(service));
+        ArgumentNullException.ThrowIfNull(service);
 
-        if (string.IsNullOrEmpty(eventType))
-            throw new ArgumentException("Event type cannot be empty", nameof(eventType));
+        ArgumentException.ThrowIfNullOrEmpty(eventType, nameof(eventType));
 
-        if (timeoutMilliseconds <= 0)
-            throw new ArgumentOutOfRangeException(nameof(timeoutMilliseconds), "Timeout must be positive");
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(timeoutMilliseconds, 0);
 
         using var cts = new CancellationTokenSource(timeoutMilliseconds);
         await service.TriggerWebhooksAsync(eventType, payload).ConfigureAwait(false);
