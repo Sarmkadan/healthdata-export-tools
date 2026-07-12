@@ -1064,6 +1064,62 @@ Only export needed data types to reduce processing time.
 - **Disk Space**: 100 MB free space for database and exports
 - **Operating System**: Windows, macOS, Linux
 
+## CacheServiceTestsExtensions
+
+The `CacheServiceTestsExtensions` class provides extension methods for `CacheServiceTests` that enable fluent, readable test assertions and setup scenarios for testing the `CacheService` class. These extensions simplify test authoring by providing methods to create test scenarios with pre-cached data, verify provider interactions, and assert cache statistics.
+
+### Key Features
+
+- **Fluent Test Setup**: Chain multiple setup operations for complex test scenarios
+- **Pre-cached Data**: Create test instances with health data, analytics, or both already cached
+- **Provider Verification**: Assert that specific cache provider methods were called
+- **Cache Statistics**: Compare cache statistics using FluentAssertions
+- **Multiple Items**: Create scenarios with multiple cached items matching patterns
+
+### Usage Examples
+
+```csharp
+using HealthDataExportTools.Tests;
+using FluentAssertions;
+
+// Create a test instance with fresh mocks
+var test = CacheServiceTests.WithFreshMocks();
+
+// Test caching health data
+var healthData = new List<HealthDataRecord> 
+{
+    new SleepData { DeviceId = "test-device", SleepStart = DateTime.UtcNow.AddHours(-8) },
+    new HeartRateData { AverageBpm = 72 }
+};
+
+var healthTest = await test.WithCachedHealthDataAsync("health_data_2024", healthData);
+
+// Test caching analytics
+var analyticsData = new { SleepQualityScore = 85, ActivityLevel = "High" };
+var analyticsTest = await test.WithCachedAnalyticsAsync("analytics_2024", analyticsData);
+
+// Test clearing cache
+var clearedTest = await test.WithClearedCacheAsync();
+
+// Test with configured provider
+var configuredTest = test.WithConfiguredProvider(provider => 
+{
+    provider.GetAsync("test_key", Arg.Any<CancellationToken>()) 
+        .Returns(Task.FromResult<CacheItem?>(null));
+});
+
+// Verify provider method calls
+await configuredTest.ShouldHaveCalledProviderMethodAsync("GetAsync", 2);
+
+// Test with multiple cached items
+var multiTest = await test.WithMultipleCachedItemsAsync("user1", 3, 2);
+
+// Compare cache statistics
+var stats = new CacheStats { ItemCount = 5, HitCount = 10, MissCount = 2 };
+var expectedStats = new CacheStats { ItemCount = 5, HitCount = 10, MissCount = 2 };
+stats.ShouldBeEquivalentTo(expectedStats);
+```
+
 ## Testing
 
 Run the full test suite:
