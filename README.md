@@ -1266,6 +1266,142 @@ var expectedStats = new CacheStats { ItemCount = 5, HitCount = 10, MissCount = 2
 stats.ShouldBeEquivalentTo(expectedStats);
 ```
 
+## DataTransformationUtilityTestsExtensions
+
+The `DataTransformationUtilityTestsExtensions` class provides extension methods for `DataTransformationUtilityTests` that facilitate testing data transformation utilities. These extensions simplify test authoring by providing methods to create test data records (sleep, heart rate, steps), verify data transformations, and validate batch processing scenarios.
+
+### Key Features
+
+- **Test Data Creation**: Generate realistic test instances of sleep, heart rate, and steps data records
+- **Data Validation**: Assert that transformed data matches expected values and ranges
+- **Batch Testing**: Create collections of test records for batch processing scenarios
+- **Range Validation**: Verify records fall within expected date ranges
+- **Statistical Testing**: Generate test data for statistical analysis and normalization tests
+
+### Usage Examples
+
+```csharp
+using HealthDataExportTools.Tests;
+using HealthDataExportTools.Domain.Models;
+using HealthDataExportTools.Domain.Enums;
+using FluentAssertions;
+
+// Create a test instance
+var test = new DataTransformationUtilityTests();
+
+// Example 1: Create individual test records
+var sleepRecord = test.CreateTestSleepData(
+    DateTime.Today.AddDays(-1),
+    480, // 8 hours
+    SleepQuality.Good,
+    120, // 2 hours deep sleep
+    90   // 1.5 hours REM sleep
+);
+
+var heartRateRecord = test.CreateTestHeartRateData(
+    DateTime.Today,
+    72,  // average BPM
+    55,  // minimum BPM
+    110  // maximum BPM
+);
+
+var stepsRecord = test.CreateTestStepsData(
+    DateTime.Today,
+    12500, // 12,500 steps
+    8.2,    // 8.2 km distance
+    650     // 650 calories burned
+);
+
+var healthRecord = test.CreateTestHealthDataRecord(DateTime.Today.AddDays(-2));
+
+// Example 2: Create batch of test records
+var sleepRecords = test.CreateTestSleepDataBatch(7, i => 
+    test.CreateTestSleepData(
+        DateTime.Today.AddDays(-i),
+        420 + (i * 30), // increasing duration
+        i % 2 == 0 ? SleepQuality.Good : SleepQuality.Fair,
+        90 + (i * 5),
+        60 + (i * 3)
+    )
+);
+
+// Example 3: Validate transformed data
+var aggregatedSleep = new Dictionary<DateTime, AggregatedSleepData>
+{
+    [DateTime.Today.AddDays(-1)] = new AggregatedSleepData
+    {
+        TotalDurationMinutes = 480,
+        AverageDurationMinutes = 480,
+        AverageQuality = SleepQuality.Good,
+        TotalDeepSleepMinutes = 120,
+        TotalRemoSleepMinutes = 90,
+        Count = 1
+    }
+};
+
+var expectedSleep = new Dictionary<DateTime, AggregatedSleepData>
+{
+    [DateTime.Today.AddDays(-1)] = new AggregatedSleepData
+    {
+        TotalDurationMinutes = 480,
+        AverageDurationMinutes = 480,
+        AverageQuality = SleepQuality.Good,
+        TotalDeepSleepMinutes = 120,
+        TotalRemoSleepMinutes = 90,
+        Count = 1
+    }
+};
+
+aggregatedSleep.ShouldBeEquivalentTo(expectedSleep);
+
+// Example 4: Validate date ranges
+var recordsInRange = new List<HealthDataRecord>
+{
+    new StepsData { RecordDate = DateTime.Today.AddDays(-3) },
+    new StepsData { RecordDate = DateTime.Today.AddDays(-2) },
+    new StepsData { RecordDate = DateTime.Today.AddDays(-1) }
+};
+
+recordsInRange.ShouldContainRecordsInRange(
+    DateTime.Today.AddDays(-4),
+    DateTime.Today.AddDays(-1)
+);
+
+// Example 5: Create test data for statistical analysis
+var doubleValues = test.CreateTestDoubleValues(100, i => 
+    Math.Round(Random.Shared.NextDouble() * 100, 2)
+);
+
+doubleValues.ShouldBeNormalized();
+
+// Example 6: Batch processing with heart rate data
+var heartRateRecords = test.CreateTestHeartRateDataBatch(30, i => 
+    test.CreateTestHeartRateData(
+        DateTime.Today.AddDays(-i),
+        60 + (i % 20),
+        45 + (i % 15),
+        90 + (i % 30)
+    )
+);
+```
+
+### Available Extension Methods
+
+| Method | Description |
+|--------|-------------|
+| `CreateTestSleepData` | Creates a test sleep record with specified parameters |
+| `CreateTestHeartRateData` | Creates a test heart rate record with specified parameters |
+| `CreateTestStepsData` | Creates a test steps record with specified parameters |
+| `CreateTestHealthDataRecord` | Creates a basic test health data record |
+| `ShouldBeEquivalentTo` | Asserts that two dictionaries of aggregated data are equivalent |
+| `ShouldContainRecordsInRange` | Asserts that records fall within a specific date range |
+| `CreateTestSleepDataBatch` | Creates a batch of test sleep records |
+| `CreateTestHeartRateDataBatch` | Creates a batch of test heart rate records |
+| `CreateTestStepsDataBatch` | Creates a batch of test steps records |
+| `CreateTestHealthDataBatch` | Creates a batch of test health data records |
+| `CreateTestDoubleValues` | Creates a list of test double values for statistical testing |
+| `ShouldBeNormalized` | Asserts that values are normalized to 0-100 range |
+
 ## Testing
 
 Run the full test suite:
