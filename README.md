@@ -1068,6 +1068,152 @@ Only export needed data types to reduce processing time.
 
 The `CacheServiceTestsExtensions` class provides extension methods for `CacheServiceTests` that enable fluent, readable test assertions and setup scenarios for testing the `CacheService` class. These extensions simplify test authoring by providing methods to create test scenarios with pre-cached data, verify provider interactions, and assert cache statistics.
 
+### Usage Examples
+
+```csharp
+using HealthDataExportTools.Tests;
+using FluentAssertions;
+
+// Create a test instance with fresh mocks
+var test = CacheServiceTests.WithFreshMocks();
+
+// Test caching health data
+var healthData = new List<HealthDataRecord>
+{
+    new SleepData { DeviceId = "test-device", SleepStart = DateTime.UtcNow.AddHours(-8) },
+    new HeartRateData { AverageBpm = 72 }
+};
+
+var healthTest = await test.WithCachedHealthDataAsync("health_data_2024", healthData);
+
+// Test caching analytics
+var analyticsData = new { SleepQualityScore = 85, ActivityLevel = "High" };
+var analyticsTest = await test.WithCachedAnalyticsAsync("analytics_2024", analyticsData);
+
+// Test clearing cache
+var clearedTest = await test.WithClearedCacheAsync();
+
+// Test with configured provider
+var configuredTest = test.WithConfiguredProvider(provider =>
+{
+    provider.GetAsync("test_key", Arg.Any<CancellationToken>())
+        .Returns(Task.FromResult<CacheItem?>(null));
+});
+
+// Verify provider method calls
+await configuredTest.ShouldHaveCalledProviderMethodAsync("GetAsync", 2);
+
+// Test with multiple cached items
+var multiTest = await test.WithMultipleCachedItemsAsync("user1", 3, 2);
+
+// Compare cache statistics
+var stats = new CacheStats { ItemCount = 5, HitCount = 10, MissCount = 2 };
+var expectedStats = new CacheStats { ItemCount = 5, HitCount = 10, MissCount = 2 };
+stats.ShouldBeEquivalentTo(expectedStats);
+```
+
+## BatchProcessingServiceTestsExtensions
+
+The `BatchProcessingServiceTestsExtensions` class provides extension methods for `BatchProcessingServiceTests` that simplify testing batch processing scenarios. These extensions enable the creation of batch processors with tracking capabilities, timing measurements, and progress monitoring, making it easier to test batch operations with various configurations and error conditions.
+
+### Key Features
+
+- **Batch Service Creation**: Create configured `BatchProcessingService` instances for testing
+- **Tracking Processors**: Create batch processors that track processed items and can simulate errors
+- **Timing Measurements**: Create processors that measure and track processing times
+- **Progress Tracking**: Create callbacks to monitor batch processing progress
+- **Assertion Helpers**: Verify that expected items were processed successfully
+- **Custom Processors**: Create processors with custom processing logic
+
+### Usage Examples
+
+```csharp
+using HealthDataExportTools.Tests;
+using HealthDataExportTools.Services;
+using FluentAssertions;
+using Microsoft.Extensions.Logging;
+
+// Create a batch processing service with logger
+var logger = Substitute.For<ILogger<BatchProcessingService>>();
+var batchService = BatchProcessingServiceTestsExtensions.CreateBatchProcessingService(null, logger);
+
+// Create a tracking batch processor that fails specific items
+var itemsToFail = new List<string> { "error-item-1", "error-item-2" };
+var processedItems = new List<string>();
+var trackingProcessor = BatchProcessingServiceTestsExtensions.CreateTrackingBatchProcessor(
+    null, 
+    itemsToFail, 
+    processedItems
+);
+
+// Process a batch with some items that should fail
+var batch = new List<string> { "item-1", "error-item-1", "item-2", "error-item-2", "item-3" };
+
+try
+{
+    await trackingProcessor(batch);
+}
+catch (Exception ex)
+{
+    // Expected to fail on error items
+    ex.Message.Should().Contain("Simulated error");
+}
+
+// Verify only successful items were tracked
+processedItems.Should().HaveCount(3);
+processedItems.Should().BeEquivalentTo(new[] { "item-1", "item-2", "item-3" });
+
+// Create a timed batch processor to measure performance
+var processingTimes = new List<TimeSpan>();
+var timedProcessor = BatchProcessingServiceTestsExtensions.CreateTimedBatchProcessor(
+    null, 
+    processingTimes,
+    delayMs: 10
+);
+
+// Process a batch and measure time
+var testBatch = Enumerable.Range(1, 100).Select(i => $"item-{i}").ToList();
+await timedProcessor(testBatch);
+
+// Verify timing was recorded
+processingTimes.Should().HaveCount(1);
+processingTimes[0].TotalMilliseconds.Should().BeGreaterThan(0);
+
+// Create a progress tracker to monitor batch processing
+var progressUpdates = new List<BatchProgress>();
+var progressTracker = BatchProcessingServiceTestsExtensions.CreateProgressTracker(null, progressUpdates);
+
+// Process a batch with progress tracking
+var batchWithProgress = new List<int> { 1, 2, 3, 4, 5 };
+await timedProcessor(batchWithProgress);
+
+// Verify progress was tracked
+progressUpdates.Should().NotBeEmpty();
+
+// Create a custom batch processor with specific logic
+var customProcessor = BatchProcessingServiceTestsExtensions.CreateBatchProcessor<int>(
+    null,
+    async batch => 
+    {
+        // Custom processing logic
+        foreach (var item in batch)
+        {
+            await Task.Delay(5);
+        }
+    }
+);
+
+// Use the processor
+await customProcessor(batchWithProgress);
+
+// Verify all expected items were processed
+BatchProcessingServiceTestsExtensions.ShouldHaveProcessedAllItems(
+    null,
+    processedItems,
+    new List<string> { "item-1", "item-2", "item-3" }
+);
+```
+
 ### Key Features
 
 - **Fluent Test Setup**: Chain multiple setup operations for complex test scenarios
