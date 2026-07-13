@@ -21,6 +21,7 @@ public sealed class HealthDataParserService
 
     public HealthDataParserService(IValidationService validationService)
     {
+        ArgumentNullException.ThrowIfNull(validationService);
         _validationService = validationService;
     }
 
@@ -116,7 +117,8 @@ public sealed class HealthDataParserService
         if (element.TryGetProperty("score", out var score))
             sleep.Score = score.GetInt32();
 
-        if (element.TryGetProperty("quality", out var quality) && int.TryParse(quality.GetString(), out var q))
+        if (element.TryGetProperty("quality", out var quality) &&
+            int.TryParse(quality.GetString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var q))
             sleep.Quality = (SleepQuality)q;
 
         return sleep;
