@@ -33,3 +33,27 @@ Console.WriteLine($"Restorative Sleep: {isRestorative}");
 
 ...
 
+## BackgroundTaskSchedulerExtensions
+
+The `BackgroundTaskSchedulerExtensions` class provides utility methods for managing background tasks, including scheduling one-time and recurring tasks, canceling tasks by name, and retrieving lists of pending, running, and completed tasks. It enables efficient task orchestration and monitoring within the health data export tools.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Tasks;
+
+// Schedule a one-time task
+string taskId1 = BackgroundTaskScheduler.ScheduleOnce("CleanCacheTask", () => Console.WriteLine("Cache cleaned"), TimeSpan.FromHours(1));
+
+// Schedule a recurring task
+string taskId2 = BackgroundTaskScheduler.ScheduleRecurring("DataBackupTask", () => Console.WriteLine("Data backed up"), "0 0 * * *"); // Daily at midnight
+
+// Check if a task exists
+bool hasTask = BackgroundTaskScheduler.TaskExists("DataBackupTask");
+
+// Get pending tasks
+List<ScheduledTask> pendingTasks = BackgroundTaskScheduler.GetPendingTasks();
+
+// Cancel all tasks with a specific name
+int canceledCount = BackgroundTaskScheduler.CancelTasksByName("OldDataCleanupTask");
+```
