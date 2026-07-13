@@ -2,98 +2,74 @@
 
 ...
 
-## SleepDataExtensions
+## ExportServiceExtensions
 
-The `SleepDataExtensions` class provides utility methods for analyzing sleep data, calculating sleep metrics, and formatting sleep-related information. It includes methods to determine sleep efficiency, awake percentage, restorative sleep status, sleep debt, and more, enabling comprehensive sleep analysis from raw sleep data.
+The `ExportServiceExtensions` class provides a set of static methods for exporting various health data summaries to CSV files. It offers methods for exporting sleep summary, heart rate analytics, health dashboard, and data quality report. These methods allow for easy and efficient data export, making it convenient for users to access and analyze their health data.
 
 ### Usage Example
 
 ```csharp
-using HealthDataExportTools.Domain.Models;
+using HealthDataExportTools.Services;
 
-var sleepData = new SleepData
-{
-    TotalDuration = 360, // in minutes
-    LightSleepDuration = 90,
-    DeepSleepDuration = 60,
-    RemSleepDuration = 30,
-    Awakenings = 2
-};
+// Export sleep summary to CSV
+await ExportServiceExtensions.ExportSleepSummaryToCsvAsync("sleep_summary.csv");
 
-double efficiency = sleepData.GetSleepEfficiency() ?? 0.0;
-string formattedDuration = sleepData.GetFormattedDuration();
-bool isRestorative = sleepData.IsRestorativeSleep();
+// Export heart rate analytics to CSV
+await ExportServiceExtensions.ExportHeartRateAnalyticsToCsvAsync("heart_rate_analytics.csv");
 
-Console.WriteLine($"Sleep Efficiency: {efficiency:P}");
-Console.WriteLine($"Total Sleep Duration: {formattedDuration}");
-Console.WriteLine($"Restorative Sleep: {isRestorative}");
+// Export health dashboard to CSV
+await ExportServiceExtensions.ExportHealthDashboardToCsvAsync("health_dashboard.csv");
+
+// Export data quality report to CSV
+await ExportServiceExtensions.ExportDataQualityReportToCsvAsync("data_quality_report.csv");
+
+// Get total records
+int totalRecords = ExportServiceExtensions.TotalRecords;
+
+// Get total duration in minutes
+int totalDurationMinutes = ExportServiceExtensions.TotalDurationMinutes;
+
+// Get total deep sleep minutes
+int totalDeepSleepMinutes = ExportServiceExtensions.TotalDeepSleepMinutes;
+
+// Get total light sleep minutes
+int totalLightSleepMinutes = ExportServiceExtensions.TotalLightSleepMinutes;
+
+// Get total REM minutes
+int totalRemMinutes = ExportServiceExtensions.TotalRemMinutes;
+
+// Get total awake minutes
+int totalAwakeMinutes = ExportServiceExtensions.TotalAwakeMinutes;
+
+// Get average quality
+double? avgQuality = ExportServiceExtensions.AvgQuality;
+
+// Get average score
+int? avgScore = ExportServiceExtensions.AvgScore;
+
+// Get best sleep date
+string? bestSleepDate = ExportServiceExtensions.BestSleepDate;
+
+// Get worst sleep date
+string? worstSleepDate = ExportServiceExtensions.WorstSleepDate;
+
+// Get deep sleep percentage
+double deepSleepPercentage = ExportServiceExtensions.DeepSleepPercentage;
+
+// Get REM percentage
+double remPercentage = ExportServiceExtensions.RemPercentage;
+
+// Get efficiency percentage
+double efficiencyPercentage = ExportServiceExtensions.EfficiencyPercentage;
+
+// Get date
+string? date = ExportServiceExtensions.Date;
+
+// Get duration in minutes
+int durationMinutes = ExportServiceExtensions.DurationMinutes;
+
+// Get deep sleep minutes
+int deepSleepMinutes = ExportServiceExtensions.DeepSleepMinutes;
 ```
 
-## WebhookServiceExtensions
-
-...
-
-## BackgroundTaskSchedulerExtensions
-
-The `BackgroundTaskSchedulerExtensions` class provides utility methods for managing background tasks, including scheduling one-time and recurring tasks, canceling tasks by name, and retrieving lists of pending, running, and completed tasks. It enables efficient task orchestration and monitoring within the health data export tools.
-
-### Usage Example
-
-```csharp
-using HealthDataExportTools.Tasks;
-
-// Schedule a one-time task
-string taskId1 = BackgroundTaskScheduler.ScheduleOnce("CleanCacheTask", () => Console.WriteLine("Cache cleaned"), TimeSpan.FromHours(1));
-
-// Schedule a recurring task
-string taskId2 = BackgroundTaskScheduler.ScheduleRecurring("DataBackupTask", () => Console.WriteLine("Data backed up"), "0 0 * * *"); // Daily at midnight
-
-// Check if a task exists
-bool hasTask = BackgroundTaskScheduler.TaskExists("DataBackupTask");
-
-// Get pending tasks
-List<ScheduledTask> pendingTasks = BackgroundTaskScheduler.GetPendingTasks();
-
-// Cancel all tasks with a specific name
-int canceledCount = BackgroundTaskScheduler.CancelTasksByName("OldDataCleanupTask");
-```
-
-## ValidationResultDtoExtensions
-
-The `ValidationResultDtoExtensions` class offers a set of extension methods for `ValidationResultDto` objects, making it easy to retrieve validation statistics, error details, and summary information. These helpers simplify reporting and decision‑making based on the outcome of validation processes.
-
-### Usage Example
-
-```csharp
-using HealthDataExportTools.DTOs;
-
-// Assume `validationService` returns a ValidationResultDto after validating some input.
-var validationResult = validationService.Validate(someInputDto);
-
-// Basic rates
-double invalidRate = validationResult.GetInvalidRate();
-double validRate = validationResult.GetValidRate();
-
-// Error analysis
-bool hasCritical = validationResult.HasCriticalErrors();
-var mostSevereError = validationResult.GetMostSevereError();
-int specificErrorCount = validationResult.GetErrorCountByCode(42);
-
-// Summary and warnings
-string summary = validationResult.GetSummary();
-bool hasWarnings = validationResult.HasWarnings();
-var firstWarning = validationResult.GetFirstWarning();
-
-// Ratio
-double validToInvalidRatio = validationResult.GetValidToInvalidRatio();
-
-Console.WriteLine($"Invalid Rate: {invalidRate:P}");
-Console.WriteLine($"Valid Rate: {validRate:P}");
-Console.WriteLine($"Critical Errors: {hasCritical}");
-Console.WriteLine($"Most Severe Error: {mostSevereError?.Message ?? "None"}");
-Console.WriteLine($"Errors with code 42: {specificErrorCount}");
-Console.WriteLine($"Summary: {summary}");
-Console.WriteLine($"Has Warnings: {hasWarnings}");
-Console.WriteLine($"First Warning: {firstWarning?.Message ?? "None"}");
-Console.WriteLine($"Valid/Invalid Ratio: {validToInvalidRatio:F2}");
 ```
