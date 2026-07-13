@@ -60,7 +60,7 @@ public sealed class CacheServiceTests
         // Assert
         await _mockCacheProvider.Received(1).SetAsync(
             Arg.Is<string>(s => s.Contains("health_data_")), records, Arg.Any<TimeSpan?>());
-        _mockLogger.Received(1).LogInformation(Arg.Any<string>(), Arg.Any<int>(), Arg.Any<string>());
+        _mockLogger.ReceivedWithAnyArgs(1).LogInformation((string)default!, default!, default!);
     }
 
     /// <summary>
@@ -81,7 +81,7 @@ public sealed class CacheServiceTests
         // Assert
         await _mockCacheProvider.Received(1).GetAsync<List<HealthDataRecord>>(Arg.Is<string>(s => s.Contains("health_data_"))).ConfigureAwait(false);
         result.Should().BeEquivalentTo(expectedRecords);
-        _mockLogger.Received(1).LogInformation(Arg.Any<string>(), Arg.Any<string>());
+        _mockLogger.ReceivedWithAnyArgs(1).LogInformation((string)default!, default!);
     }
 
     /// <summary>
@@ -95,7 +95,7 @@ public sealed class CacheServiceTests
 
         // Assert
         await _mockCacheProvider.Received(1).ClearAsync().ConfigureAwait(false);
-        _mockLogger.Received(1).LogInformation(Arg.Any<string>());
+        _mockLogger.ReceivedWithAnyArgs(1).LogInformation((string)default!);
     }
 
     /// <summary>
@@ -149,7 +149,7 @@ public sealed class CacheServiceTests
         // Assert
         await _mockCacheProvider.Received(1).SetAsync(
             Arg.Is<string>(s => s.Contains("analytics_")), analyticsData, Arg.Any<TimeSpan?>());
-        _mockLogger.Received(1).LogInformation(Arg.Any<string>(), Arg.Any<string>());
+        _mockLogger.ReceivedWithAnyArgs(1).LogInformation((string)default!, default!);
     }
 
     /// <summary>
@@ -169,8 +169,8 @@ public sealed class CacheServiceTests
 
         // Assert
         await _mockCacheProvider.Received(1).GetAsync<dynamic>(Arg.Is<string>(s => s.Contains("analytics_"))).ConfigureAwait(false);
-        result.Should().BeEquivalentTo(expectedAnalyticsData);
-        _mockLogger.Received(1).LogInformation(Arg.Any<string>(), Arg.Any<string>());
+        ((object)result).Should().BeEquivalentTo(expectedAnalyticsData);
+        _mockLogger.ReceivedWithAnyArgs(1).LogInformation((string)default!, default!);
     }
 
     /// <summary>
@@ -190,6 +190,6 @@ public sealed class CacheServiceTests
         await _mockCacheProvider.Received(1).RemoveAsync("health_data_user1").ConfigureAwait(false);
         await _mockCacheProvider.Received(1).RemoveAsync("analytics_user1").ConfigureAwait(false);
         await _mockCacheProvider.DidNotReceive().RemoveAsync("other_data_user2").ConfigureAwait(false);
-        _mockLogger.Received(1).LogInformation(Arg.Any<string>(), Arg.Any<int>(), Arg.Any<string>());
+        _mockLogger.ReceivedWithAnyArgs(1).LogInformation((string)default!, default!, default!);
     }
 }

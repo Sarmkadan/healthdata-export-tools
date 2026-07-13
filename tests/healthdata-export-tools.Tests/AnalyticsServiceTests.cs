@@ -163,7 +163,7 @@ public sealed class AnalyticsServiceTests
     public void CalculateAverageSleepDuration_ShouldCalculateCorrectlyForRecentRecords()
     {
         // Arrange
-        var sleepRecords = CreateSleepData(10); // Records for past 10 days
+        var sleepRecords = CreateSleepData(10, DateTime.UtcNow.AddDays(-10).AddMinutes(1)); // Records for past 10 days, with a small buffer so the 7-day cutoff boundary is not clock-drift sensitive
         var expectedAverage = sleepRecords.Skip(3).Average(r => r.DurationMinutes) / 60.0; // Last 7 days
 
         // Act
@@ -180,7 +180,7 @@ public sealed class AnalyticsServiceTests
     public void CalculateAverageHeartRate_ShouldCalculateCorrectly()
     {
         // Arrange
-        var hrRecords = CreateHeartRateData(7);
+        var hrRecords = CreateHeartRateData(7, DateTime.UtcNow.AddDays(-7).AddMinutes(1)); // small buffer so the boundary record is not excluded by clock drift
         var expectedAverage = (int)hrRecords.Average(r => r.AverageBpm);
 
         // Act
@@ -197,7 +197,7 @@ public sealed class AnalyticsServiceTests
     public void CalculateTotalSteps_ShouldCalculateCorrectlyForRecentRecords()
     {
         // Arrange
-        var stepsRecords = CreateStepsData(10);
+        var stepsRecords = CreateStepsData(10, DateTime.UtcNow.AddDays(-10).AddMinutes(1)); // small buffer so the 7-day cutoff boundary is not clock-drift sensitive
         var expectedTotal = stepsRecords.Skip(3).Sum(r => r.TotalSteps); // Last 7 days
 
         // Act
@@ -298,7 +298,7 @@ public sealed class AnalyticsServiceTests
 
         // Assert
         score.Should().BeGreaterThan(50);
-        score.Should().Be(110); // 50 (base) + 10 (sleep) + 15 (hr) + 15 (spo2) + 15 (steps) = 105, capped at 100
+        score.Should().Be(100); // 50 (base) + 10 (sleep) + 15 (hr) + 15 (spo2) + 15 (steps) = 105, capped at 100
     }
 
     /// <summary>

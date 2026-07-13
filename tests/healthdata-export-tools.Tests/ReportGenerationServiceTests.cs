@@ -238,7 +238,11 @@ public sealed class ReportGenerationServiceTests
 	public async Task GenerateWeeklySummaryReportAsync_WithValidData_ReturnsWeeklyReports()
 	{
 		// Arrange
-		var today = DateTime.UtcNow.Date;
+		// Anchored to a fixed mid-week date (Wednesday) rather than DateTime.UtcNow.Date:
+		// grouping is by ISO week, so "today" and "today minus 1 day" only land in the same
+		// week when today isn't a Monday - using UtcNow made this test flaky depending on
+		// which day it happened to run.
+		var today = new DateTime(2024, 1, 10, 0, 0, 0, DateTimeKind.Utc);
 		var sleepData = new List<SleepData>
 		{
 			new SleepData { RecordDate = today, DurationMinutes = 480, Quality = SleepQuality.Good },
@@ -295,7 +299,11 @@ public sealed class ReportGenerationServiceTests
 	public async Task GenerateWeeklySummaryReportAsync_WithSpO2AndActivity_PopulatesNewFields()
 	{
 		// Arrange
-		var today = DateTime.UtcNow.Date;
+		// Anchored to a fixed mid-week date (Wednesday) rather than DateTime.UtcNow.Date:
+		// grouping is by ISO week, so "today" and "today minus 1 day" only land in the same
+		// week when today isn't a Monday - using UtcNow made this test flaky depending on
+		// which day it happened to run.
+		var today = new DateTime(2024, 1, 10, 0, 0, 0, DateTimeKind.Utc);
 		var spo2Data = new List<SpO2Data>
 		{
 			new SpO2Data { RecordDate = today, AveragePercentage = 97, MinimumPercentage = 94, MaximumPercentage = 99, LowSpO2Events = 1 },

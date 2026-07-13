@@ -211,13 +211,20 @@ public sealed class ExportService
 
             foreach (var steps in records)
             {
+                // GoalAchievementPercentage is only populated when the caller has explicitly
+                // invoked StepsData.UpdateGoalAchievement(); export should reflect the derived
+                // value regardless, so compute it directly from TotalSteps/DailyGoal here.
+                var goalAchievement = steps.DailyGoal > 0
+                    ? (int)(steps.TotalSteps / (double)steps.DailyGoal * 100)
+                    : 0;
+
                 var record = new StepsCsvRecord
                 {
                     Date = steps.RecordDate.ToString("yyyy-MM-dd"),
                     Steps = steps.TotalSteps,
                     DistanceKm = steps.DistanceKm,
                     Calories = steps.CaloriesBurned,
-                    GoalAchievement = steps.GoalAchievementPercentage,
+                    GoalAchievement = goalAchievement,
                     ActiveMinutes = steps.ActiveMinutes,
                     Walking = steps.WalkingMinutes,
                     Running = steps.RunningMinutes

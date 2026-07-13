@@ -222,8 +222,18 @@ public sealed class TrendAnomalyDetectionServiceTests
 		result.Metrics.Should().Contain(m => m.MetricName == "SpO2" && m.TrendStatus == "Stable");
 		result.Metrics.Should().Contain(m => m.MetricName == "Steps" && m.TrendStatus == "Stable");
 		result.Metrics.Should().Contain(m => m.MetricName == "SleepDuration" && m.TrendStatus == "Improving");
-		_mockLogger.Received(1).LogInformation(Arg.Is<string>(s => s.Contains("Starting trend and anomaly analysis")), Arg.Any<int>(), Arg.Any<double>());
-		_mockLogger.Received(1).LogInformation(Arg.Is<string>(s => s.Contains("Analysis complete")), Arg.Any<int>(), Arg.Any<int>());
+		_mockLogger.Received(1).Log(
+			LogLevel.Information,
+			Arg.Any<EventId>(),
+			Arg.Is<object>(o => o.ToString()!.Contains("Starting trend and anomaly analysis")),
+			null,
+			Arg.Any<Func<object, Exception?, string>>());
+		_mockLogger.Received(1).Log(
+			LogLevel.Information,
+			Arg.Any<EventId>(),
+			Arg.Is<object>(o => o.ToString()!.Contains("Analysis complete")),
+			null,
+			Arg.Any<Func<object, Exception?, string>>());
 	}
 
 	[Fact]

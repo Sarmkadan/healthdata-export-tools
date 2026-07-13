@@ -54,10 +54,18 @@ public sealed class BatchProcessingServiceTests
         result.IsSuccessful.Should().BeTrue();
         processedItems.Should().HaveCount(100);
         processedItems.Should().BeEquivalentTo(itemsToProcess);
-        _mockLogger.Received(1).LogInformation(
-            Arg.Is<string>(s => s.Contains("Starting batch processing")), itemsToProcess.Count, 10);
-        _mockLogger.Received(1).LogInformation(
-            Arg.Is<string>(s => s.Contains("Batch processing completed")), Arg.Any<int>(), Arg.Any<int>(), Arg.Any<double>());
+        _mockLogger.Received(1).Log(
+            LogLevel.Information,
+            Arg.Any<EventId>(),
+            Arg.Is<object>(o => o.ToString()!.Contains("Starting batch processing")),
+            null,
+            Arg.Any<Func<object, Exception?, string>>());
+        _mockLogger.Received(1).Log(
+            LogLevel.Information,
+            Arg.Any<EventId>(),
+            Arg.Is<object>(o => o.ToString()!.Contains("Batch processing completed")),
+            null,
+            Arg.Any<Func<object, Exception?, string>>());
     }
 
     [Fact]
@@ -91,8 +99,12 @@ public sealed class BatchProcessingServiceTests
         result.Errors.Should().ContainSingle().Which.Should().Contain("Error processing item 5");
         processedItems.Should().HaveCount(8);
         processedItems.Should().NotContain(5).And.NotContain(6);
-        _mockLogger.Received(1).LogError(
-            Arg.Any<Exception>(), Arg.Is<string>(s => s.Contains("Error processing batch")), Arg.Any<int>(), Arg.Any<int>());
+        _mockLogger.Received(1).Log(
+            LogLevel.Error,
+            Arg.Any<EventId>(),
+            Arg.Is<object>(o => o.ToString()!.Contains("Error processing batch")),
+            Arg.Any<Exception>(),
+            Arg.Any<Func<object, Exception?, string>>());
     }
 
     [Fact]
@@ -161,8 +173,12 @@ public sealed class BatchProcessingServiceTests
         result.IsSuccessful.Should().BeTrue();
         processedItems.Should().HaveCount(100);
         processedItems.Should().BeEquivalentTo(itemsToProcess);
-        _mockLogger.Received(1).LogInformation(
-            Arg.Is<string>(s => s.Contains("Starting parallel batch processing")), Arg.Any<int>(), Arg.Any<int>(), Arg.Any<int>());
+        _mockLogger.Received(1).Log(
+            LogLevel.Information,
+            Arg.Any<EventId>(),
+            Arg.Is<object>(o => o.ToString()!.Contains("Starting parallel batch processing")),
+            null,
+            Arg.Any<Func<object, Exception?, string>>());
     }
 
     [Fact]
@@ -196,8 +212,12 @@ public sealed class BatchProcessingServiceTests
         result.Errors.Should().ContainMatch("Error processing items in batch containing 5");
         processedItems.Should().HaveCount(8);
         processedItems.Should().NotContain(5).And.NotContain(6);
-        _mockLogger.Received(1).LogError(
-            Arg.Any<Exception>(), Arg.Is<string>(s => s.Contains("Error in parallel batch processing")));
+        _mockLogger.Received(1).Log(
+            LogLevel.Error,
+            Arg.Any<EventId>(),
+            Arg.Is<object>(o => o.ToString()!.Contains("Error in parallel batch processing")),
+            Arg.Any<Exception>(),
+            Arg.Any<Func<object, Exception?, string>>());
     }
 
     [Fact]
