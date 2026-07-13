@@ -2,44 +2,34 @@
 
 ...
 
-## WebhookServiceExtensions
+## SleepDataExtensions
 
-The `WebhookServiceExtensions` class provides extension methods for managing webhook integrations, including registration, status checks, statistics, and event triggering. It enables grouping webhooks by event type, clearing failed deliveries, and validating active subscriptions.
+The `SleepDataExtensions` class provides utility methods for analyzing sleep data, calculating sleep metrics, and formatting sleep-related information. It includes methods to determine sleep efficiency, awake percentage, restorative sleep status, sleep debt, and more, enabling comprehensive sleep analysis from raw sleep data.
 
 ### Usage Example
 
 ```csharp
-using HealthDataExportTools.Integration;
+using HealthDataExportTools.Domain.Models;
 
-var service = new WebhookService();
-var webhooks = new List<Webhook>
+var sleepData = new SleepData
 {
-    new Webhook { Url = "https://example.com/webhook1", EventType = "health_data_imported", Status = "active" },
-    new Webhook { Url = "https://example.com/webhook2", EventType = "sleep_analysis_complete", Status = "inactive" }
+    TotalDuration = 360, // in minutes
+    LightSleepDuration = 90,
+    DeepSleepDuration = 60,
+    RemSleepDuration = 30,
+    Awakenings = 2
 };
 
-// Register webhooks and get count
-int registeredCount = service.RegisterWebhooks(webhooks);
+double efficiency = sleepData.GetSleepEfficiency() ?? 0.0;
+string formattedDuration = sleepData.GetFormattedDuration();
+bool isRestorative = sleepData.IsRestorativeSleep();
 
-// Check if event has active webhook
-bool hasActive = service.HasActiveWebhookForEvent("health_data_imported");
-
-// Get statistics
-var stats = service.GetWebhookStatistics(); // (total: 2, active: 1, success: 0, failure: 0)
-
-// Find webhooks by URL
-var found = service.FindWebhooksByUrl("https://example.com/webhook1");
-
-// Clear failed webhooks
-int clearedCount = service.ClearFailedWebhooks();
-
-// Group webhooks by event type
-var grouped = service.GetWebhooksGroupedByEventType();
-
-// Trigger webhooks for specific event
-await service.TriggerWebhooksAsync("health_data_imported");
+Console.WriteLine($"Sleep Efficiency: {efficiency:P}");
+Console.WriteLine($"Total Sleep Duration: {formattedDuration}");
+Console.WriteLine($"Restorative Sleep: {isRestorative}");
 ```
 
-## DataComparisonServiceTestsExtensions
+## WebhookServiceExtensions
 
 ...
+
