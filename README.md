@@ -467,6 +467,74 @@ if (importEvent.GetImportDuration().TotalSeconds > 30)
 Console.WriteLine(importEvent.ToString());
 ```
 
+## SpO2Data
+
+The `SpO2Data` class represents blood oxygen saturation measurements collected from wearable devices or health monitoring systems. It tracks daily SpO2 statistics including minimum, maximum, and average readings, along with detailed measurement history and reliability indicators. This data is crucial for assessing respiratory health and detecting potential oxygen desaturation events.
+
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Domain.Models;
+using System;
+using System.Collections.Generic;
+
+// Create SpO2Data for a day
+var spo2Data = new SpO2Data
+{
+    RecordDate = DateTime.Today,
+    MinimumPercentage = 92,
+    MaximumPercentage = 98,
+    AveragePercentage = 95,
+    RestingPercentage = 96,
+    MeasurementCount = 0,
+    LowSpO2Events = 0,
+    LowestAlertValue = null,
+    ReliabilityScore = 95
+};
+
+// Add measurements throughout the day
+spo2Data.AddMeasurement(new SpO2Measurement
+{
+    Timestamp = DateTime.Today.AddHours(8),
+    Percentage = 95,
+    Confidence = 98
+});
+
+spo2Data.AddMeasurement(new SpO2Measurement
+{
+    Timestamp = DateTime.Today.AddHours(14),
+    Percentage = 93,
+    Confidence = 97
+});
+
+spo2Data.AddMeasurement(new SpO2Measurement
+{
+    Timestamp = DateTime.Today.AddHours(20),
+    Percentage = 97,
+    Confidence = 99
+});
+
+// Check if SpO2 levels are concerning
+bool hasConcerningLevels = spo2Data.HasConcerningLevels();
+Console.WriteLine($"Has concerning levels: {hasConcerningLevels}");
+
+// Calculate percentage of measurements below threshold
+var below95Percent = spo2Data.GetPercentageBelowThreshold(95);
+Console.WriteLine($"Percentage below 95%: {below95Percent:F2}%");
+
+// Get summary data
+var summary = spo2Data.GetSummary();
+foreach (var kvp in summary)
+{
+    Console.WriteLine($"{kvp.Key}: {kvp.Value}");
+}
+
+// Validate data
+bool isValid = spo2Data.IsValid();
+Console.WriteLine($"Data is valid: {isValid}");
+```
+
 ## RetryHandler
 
 The `RetryHandler` class implements resilient operation execution with configurable retry policies and exponential backoff. It supports both synchronous and asynchronous operations, allowing you to automatically retry failed operations based on customizable retry conditions. The handler is particularly useful for transient failures like network issues, timeouts, or temporary service unavailability.
