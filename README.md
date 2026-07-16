@@ -267,3 +267,47 @@ Console.WriteLine($"Cache contains {keys.Count} keys");
 cacheProvider.Dispose();
 ```
 
+## IMiddleware
+
+The `IMiddleware` interface defines the contract for middleware components in the request processing pipeline. It provides properties for tracking request context, metadata, and processing state, allowing middleware to handle requests and responses consistently.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Middleware;
+
+// Implement a custom middleware
+public class CustomMiddleware : IMiddleware
+{
+    public string RequestId { get; set; }
+    public DateTime StartTime { get; set; }
+    public Dictionary<string, object> Metadata { get; set; } = new();
+    public object? Data { get; set; }
+    public Exception? Exception { get; set; }
+    public bool ContinueProcessing { get; set; } = true;
+    public object? Result { get; set; }
+}
+
+// Usage in a request pipeline
+var middleware = new CustomMiddleware
+{
+    RequestId = Guid.NewGuid().ToString(),
+    StartTime = DateTime.UtcNow,
+    Metadata = new Dictionary<string, object>
+    {
+        {"UserId", "user_123"},
+        {"RequestType", "export"}
+    }
+};
+
+// Process request through middleware
+Console.WriteLine($"Processing request: {middleware.RequestId}");
+Console.WriteLine($"Started at: {middleware.StartTime}");
+
+// Set result or exception
+middleware.Result = new { Status = "Completed", Data = new { Records = 100 } };
+// OR
+middleware.Exception = new InvalidOperationException("Invalid data format");
+middleware.ContinueProcessing = false;
+```
+
