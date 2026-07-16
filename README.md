@@ -198,6 +198,66 @@ Console.WriteLine($"Validation warnings count: {result.GetWarningCount()}");
 Console.WriteLine($"Validation duration (ms): {result.DurationMs}");
 ```
 
+## ChartExportOptions
+
+The `ChartExportOptions` class configures chart export behavior for health data visualizations, allowing fine-grained control over which charts are generated and whether summary tables are included in the export. It provides properties to enable/disable specific chart types and methods to export health data to interactive HTML charts.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Services;
+using HealthDataExportTools.Domain.Models;
+
+// Create export options with custom configuration
+var exportOptions = new ChartExportOptions
+{
+    Title = "Patient Health Metrics - Q2 2024",
+    IncludeSummaryTable = true,
+    IncludeSpO2Chart = true,
+    IncludeActivityChart = true,
+    IncludeSleepCompositionChart = false
+};
+
+// Sample health data collection
+var healthData = new HealthDataCollection
+{
+    SleepRecords = new List<SleepData>
+    {
+        new SleepData { RecordDate = DateTime.UtcNow.AddDays(-1), DurationMinutes = 450, DeepSleepMinutes = 95 },
+        new SleepData { RecordDate = DateTime.UtcNow.AddDays(-2), DurationMinutes = 480, DeepSleepMinutes = 105 }
+    },
+    HeartRateRecords = new List<HeartRateData>
+    {
+        new HeartRateData { RecordDate = DateTime.UtcNow.AddDays(-1), AverageBpm = 68 },
+        new HeartRateData { RecordDate = DateTime.UtcNow.AddDays(-2), AverageBpm = 70 }
+    },
+    SpO2Records = new List<SpO2Data>
+    {
+        new SpO2Data { RecordDate = DateTime.UtcNow.AddDays(-1), AveragePercentage = 97 },
+        new SpO2Data { RecordDate = DateTime.UtcNow.AddDays(-2), AveragePercentage = 96 }
+    },
+    StepsRecords = new List<StepsData>
+    {
+        new StepsData { RecordDate = DateTime.UtcNow.AddDays(-1), TotalSteps = 8500 },
+        new StepsData { RecordDate = DateTime.UtcNow.AddDays(-2), TotalSteps = 9200 }
+    },
+    ActivityRecords = new List<ActivityData>
+    {
+        new ActivityData { RecordDate = DateTime.UtcNow.AddDays(-1), DurationMinutes = 60, CaloriesBurned = 300 },
+        new ActivityData { RecordDate = DateTime.UtcNow.AddDays(-2), DurationMinutes = 75, CaloriesBurned = 375 }
+    }
+};
+
+// Export to HTML charts
+var chartService = new ChartExportService();
+await chartService.ExportToHtmlChartsAsync(
+    healthData,
+    exportOptions,
+    outputDirectory: "/exports/patient_charts",
+    fileNamePrefix: "patient_123_q2_2024"
+);
+```
+
 ## DataComparisonService
 
 The `DataComparisonService` provides functionality to compare two distinct sets of health data records across multiple metrics including sleep, heart rate, steps, SpO2, and activity data. It supports both direct comparison of pre-built periods and comparison by date ranges within a single collection, calculating percentage changes and generating narrative summaries.
