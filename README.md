@@ -44,6 +44,71 @@ await cacheProvider.RemoveAsync("patient_12345");
 // Clear entire cache
 await cacheProvider.ClearAsync();
 ```
+
+## AnalyticsService
+
+The `AnalyticsService` provides comprehensive health data analysis capabilities, computing key metrics for sleep, heart rate, SpO2, steps, and overall health scores. It supports trend analysis, sleep quality assessment, SpO2 health monitoring, and activity intensity distribution to help users understand their health patterns over time.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Services;
+using HealthDataExportTools.Domain.Models;
+
+// Create analytics service
+var analytics = new AnalyticsService();
+
+// Analyze sleep metrics
+var sleepRecords = new List<SleepData> { /* populate with sleep data */ };
+double avgSleepHours = analytics.CalculateAverageSleepDuration(sleepRecords, days: 7);
+double deepSleepPct = analytics.CalculateAverageDeepSleepPercentage(sleepRecords, days: 7);
+double remSleepPct = analytics.CalculateAverageRemPercentage(sleepRecords, days: 7);
+
+// Analyze cardiovascular metrics
+var heartRateRecords = new List<HeartRateData> { /* populate with heart rate data */ };
+int avgHeartRate = analytics.CalculateAverageHeartRate(heartRateRecords, days: 7);
+
+// Analyze SpO2 metrics
+var spo2Records = new List<SpO2Data> { /* populate with SpO2 data */ };
+int avgSpO2 = analytics.CalculateAverageSpO2(spo2Records, days: 7);
+
+// Analyze activity metrics
+var stepsRecords = new List<StepsData> { /* populate with steps data */ };
+int totalSteps = analytics.CalculateTotalSteps(stepsRecords, days: 7);
+
+// Analyze trends
+var heartRateTrend = analytics.AnalyzeTrend(heartRateRecords.Select(r => r.AverageBpm).ToList(), days: 7);
+Console.WriteLine($"Health trend: {heartRateTrend.Status} ({heartRateTrend.PercentChange:F1}% change over {heartRateTrend.DaysAnalyzed} days)");
+
+// Generate comprehensive reports
+var sleepQuality = analytics.AnalyzeSleepQuality(sleepRecords, days: 30);
+Console.WriteLine($"Sleep quality: {sleepQuality.Description}");
+Console.WriteLine($"  - Average duration: {sleepQuality.AverageDuration:F1} minutes");
+Console.WriteLine($"  - Excellent nights: {sleepQuality.ExcellentNights}/{sleepQuality.TotalNights} ({sleepQuality.ExcellenceRate:F1}%)");
+
+var spo2Health = analytics.AnalyzeSpO2Health(spo2Records, days: 30);
+Console.WriteLine($"SpO2 health: {spo2Health.Status}");
+Console.WriteLine($"  - Average: {spo2Health.AverageSpO2}%");
+Console.WriteLine($"  - Minimum: {spo2Health.MinimumSpO2}%");
+
+var activityIntensity = analytics.AnalyzeActivityIntensity(
+    new List<ActivityData> { /* populate with activity data */ },
+    days: 7
+);
+Console.WriteLine($"Activity intensity: {activityIntensity.LowIntensity} low, {activityIntensity.MediumIntensity} medium, {activityIntensity.HighIntensity} high");
+
+// Calculate overall health score
+var healthScore = analytics.CalculateHealthScore(
+    new HealthDataCollection {
+        SleepRecords = sleepRecords,
+        HeartRateRecords = heartRateRecords,
+        SpO2Records = spo2Records,
+        StepsRecords = stepsRecords
+    },
+    days: 7
+);
+Console.WriteLine($"Health score: {healthScore}/100");
+```
 ## AnomalyPoint
 
 The `AnomalyPoint` class represents a single data point that was flagged as anomalous during Z-score analysis, providing detailed information about the anomaly including its date, value, statistical deviation, and severity classification.
