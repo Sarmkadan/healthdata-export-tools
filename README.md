@@ -1596,6 +1596,47 @@ if (fileConnectionManager.DatabaseExists())
 
 The `CorrelationEngineOptions` class provides configuration for the correlation analysis engine that identifies relationships between different health metrics such as sleep, heart rate, SpO2, steps, and activity data. It controls analysis window, statistical thresholds, parallel computation, and insight generation, making it suitable for analyzing wearable data exports of various durations.
 
+## MetricTimeSeries
+
+The `MetricTimeSeries` class represents a time-ordered sequence of scalar values for a single named health metric, with one value per calendar day. It provides convenient properties and methods for analyzing temporal patterns in health data, supporting correlation analysis, trend detection, and statistical computations across time periods.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Correlation;
+
+// Create a time series for sleep duration data
+var sleepTimeSeries = new MetricTimeSeries(
+    MetricName: "SleepDuration",
+    DataPoints: new List<(DateOnly Date, double Value)>
+    {
+        (DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-6)), 420.5),
+        (DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-5)), 450.0),
+        (DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-4)), 480.0),
+        (DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-3)), 435.5),
+        (DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-2)), 510.0),
+        (DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-1)), 495.0)
+    }
+);
+
+// Access series properties
+Console.WriteLine($"Metric: {sleepTimeSeries.MetricName}");
+Console.WriteLine($"Data points: {sleepTimeSeries.Count}");
+Console.WriteLine($"Values: [{string.Join(", ", sleepTimeSeries.Values)}]");
+
+// Check if sufficient data exists for analysis
+if (sleepTimeSeries.HasSufficientData(minimum: 5))
+{
+    Console.WriteLine("Series has enough data for correlation analysis");
+}
+
+// Extract dates and values for custom analysis
+var dates = sleepTimeSeries.DataPoints.Select(p => p.Date).ToList();
+var values = sleepTimeSeries.DataPoints.Select(p => p.Value).ToList();
+
+Console.WriteLine($"\nTime series created: {sleepTimeSeries.MetricName} with {sleepTimeSeries.Count} days of data");
+```
+
 ### Usage Example
 
 ```csharp
