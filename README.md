@@ -1579,6 +1579,62 @@ var activityRecords = healthData.ActivityRecords;
 var metrics = healthData.Metrics;
 ```
 
+## CompressionUtility
+
+The `CompressionUtility` class provides comprehensive file compression and decompression capabilities for health data export operations. It supports GZip compression for individual files and ZIP archives for multiple files, enabling efficient storage and transfer of health data records. The utility includes methods for compression ratio calculation, string compression, and human-readable file size formatting, making it ideal for optimizing data export workflows and reducing storage requirements.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Utilities;
+using System.Text;
+
+// Compress a health data file using GZip
+var inputFile = "/data/patient_records_2024.json";
+var compressedFile = await CompressionUtility.CompressFileGzipAsync(inputFile);
+Console.WriteLine($"Compressed file: {compressedFile}");
+
+// Get compression statistics
+var originalSize = new FileInfo(inputFile).Length;
+var compressedSize = new FileInfo(compressedFile).Length;
+var compressionRatio = CompressionUtility.GetCompressionRatio(inputFile, compressedFile);
+Console.WriteLine($"Original: {CompressionUtility.GetHumanReadableSize(originalSize)}");
+Console.WriteLine($"Compressed: {CompressionUtility.GetHumanReadableSize(compressedSize)}");
+Console.WriteLine($"Compression ratio: {compressionRatio}%");
+
+// Create a ZIP archive from multiple health data files
+var filesToArchive = new List<string> {
+    "/data/patient_records_2024.json",
+    "/data/health_metrics_2024.csv",
+    "/data/sleep_data_2024.json"
+};
+var zipPath = "/exports/health_data_archive_2024.zip";
+var archivePath = await CompressionUtility.CreateZipArchiveAsync(filesToArchive, zipPath);
+Console.WriteLine($"Created ZIP archive: {archivePath}");
+
+// Extract the ZIP archive
+var extractPath = await CompressionUtility.ExtractZipArchiveAsync(archivePath);
+Console.WriteLine($"Extracted to: {extractPath}");
+
+// Decompress the GZip file
+var decompressedPath = await CompressionUtility.DecompressFileGzipAsync(compressedFile);
+Console.WriteLine($"Decompressed file: {decompressedPath}");
+
+// Compress and decompress string content
+var healthDataJson = "{\"patientId\": 123, \"records\": []}";
+var compressedData = CompressionUtility.CompressString(healthDataJson);
+Console.WriteLine($"Compressed string: {compressedData.Length} bytes");
+
+var decompressedJson = CompressionUtility.DecompressString(compressedData);
+Console.WriteLine($"Decompressed string: {decompressedJson}");
+
+// Format file sizes for display
+Console.WriteLine($"\nFile size examples:");
+Console.WriteLine($" 1024 bytes -> {CompressionUtility.GetHumanReadableSize(1024)}");
+Console.WriteLine($" 1536000 bytes -> {CompressionUtility.GetHumanReadableSize(1536000)}");
+Console.WriteLine($" 2097152000 bytes -> {CompressionUtility.GetHumanReadableSize(2097152000)}");
+```
+
 ## InMemoryHealthDataRepository
 
 The `InMemoryHealthDataRepository` provides an in-memory implementation of health data storage for testing and development scenarios. It implements all CRUD operations for sleep, heart rate, SpO2, and steps data with support for both individual record retrieval and range queries, making it ideal for unit testing, prototyping, and scenarios where persistent storage is not required.
