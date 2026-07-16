@@ -1699,6 +1699,151 @@ middleware.ContinueProcessing = false;
 
 The `ServiceCollectionExtensions` class provides extension methods for configuring health data services in the dependency injection container. It includes methods for adding core services, configuring repositories (in-memory or SQLite), and creating test service providers with fluent configuration API support.
 
+## CorrelationEngine
+
+The `CorrelationEngine` analyzes relationships between different health metrics such as sleep, heart rate, SpO2, steps, and activity data. It identifies statistically significant correlations, computes Pearson correlation coefficients, and generates actionable health insights with recommendations for improving cardiovascular fitness, sleep quality, and overall well-being.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Correlation;
+using HealthDataExportTools.Domain.Models;
+using HealthDataExportTools.DTOs;
+
+// Create correlation engine
+var correlationEngine = new CorrelationEngine(logger);
+
+// Sample health data collection
+var healthData = new HealthDataCollection
+{
+    SleepRecords = new List<SleepData>
+    {
+        new SleepData
+        {
+            RecordDate = DateTime.UtcNow.AddDays(-1),
+            DurationMinutes = 480,
+            DeepSleepMinutes = 120,
+            Score = 85,
+            AverageHeartRate = 68
+        },
+        new SleepData
+        {
+            RecordDate = DateTime.UtcNow.AddDays(-2),
+            DurationMinutes = 510,
+            DeepSleepMinutes = 135,
+            Score = 90,
+            AverageHeartRate = 65
+        }
+    },
+    HeartRateRecords = new List<HeartRateData>
+    {
+        new HeartRateData
+        {
+            RecordDate = DateTime.UtcNow.AddDays(-1),
+            AverageBpm = 68,
+            RestingBpm = 55,
+            HeartRateVariability = 60
+        },
+        new HeartRateData
+        {
+            RecordDate = DateTime.UtcNow.AddDays(-2),
+            AverageBpm = 65,
+            RestingBpm = 52,
+            HeartRateVariability = 65
+        }
+    },
+    StepsRecords = new List<StepsData>
+    {
+        new StepsData
+        {
+            RecordDate = DateTime.UtcNow.AddDays(-1),
+            TotalSteps = 8500
+        },
+        new StepsData
+        {
+            RecordDate = DateTime.UtcNow.AddDays(-2),
+            TotalSteps = 9200
+        }
+    },
+    SpO2Records = new List<SpO2Data>
+    {
+        new SpO2Data
+        {
+            RecordDate = DateTime.UtcNow.AddDays(-1),
+            AveragePercentage = 97
+        },
+        new SpO2Data
+        {
+            RecordDate = DateTime.UtcNow.AddDays(-2),
+            AveragePercentage = 98
+        }
+    }
+};
+
+// Analyze correlations with default options (30-day window)
+var analysisResult = await correlationEngine.AnalyzeAsync(healthData);
+
+Console.WriteLine($"Analysis completed: {analysisResult.SignificantCorrelationsFound} significant correlations found");
+Console.WriteLine($"Analysis period: {analysisResult.WindowDays} days");
+
+// Access correlation results
+foreach (var correlation in analysisResult.Correlations)
+{
+    Console.WriteLine($"{correlation.Pair.MetricA} ↔ {correlation.Pair.MetricB}: r = {correlation.Coefficient:F3}");
+}
+
+// Access insights for actionable recommendations
+foreach (var insight in analysisResult.Insights)
+{
+    Console.WriteLine($"\nInsight: {insight.Title}");
+    Console.WriteLine($"Description: {insight.Description}");
+    Console.WriteLine($"Recommendation: {insight.Recommendation}");
+    Console.WriteLine($"Severity: {insight.Severity}");
+}
+
+// Extract time series for custom analysis
+var timeSeries = correlationEngine.ExtractTimeSeries(healthData, windowDays: 60);
+Console.WriteLine($"\nExtracted {timeSeries.Count} time series:");
+foreach (var series in timeSeries)
+{
+    Console.WriteLine($" - {series.MetricName}: {series.DataPoints.Length} data points");
+}
+
+// Compute Pearson correlation between two data series
+var sleepDurations = timeSeries.First(t => t.MetricName == "SleepDuration").DataPoints.Select(p => p.Value).ToList();
+var restingHeartRates = timeSeries.First(t => t.MetricName == "RestingHeartRate").DataPoints.Select(p => p.Value).ToList();
+
+double pearsonR = correlationEngine.ComputePearsonCorrelation(sleepDurations, restingHeartRates);
+Console.WriteLine($"\nPearson correlation (SleepDuration ↔ RestingHeartRate): {pearsonR:F3}");
+
+// Compute lagged correlation to find predictive relationships
+int lagDays = 1;
+double laggedCorrelation = correlationEngine.ComputeLaggedCorrelation(
+    sleepDurations, 
+    restingHeartRates, 
+    lagDays);
+Console.WriteLine($"Lagged correlation ({lagDays} day lag): {laggedCorrelation:F3}");
+
+// Analyze lag effects between metrics
+var sleepSeries = timeSeries.First(t => t.MetricName == "SleepDuration");
+var heartRateSeries = timeSeries.First(t => t.MetricName == "RestingHeartRate");
+
+var lagResults = correlationEngine.AnalyzeLag(sleepSeries, heartRateSeries, maxLagDays: 7);
+Console.WriteLine($"\nLag analysis results ({lagResults.Count} lags):");
+foreach (var lagResult in lagResults)
+{
+    Console.WriteLine($" - {lagResult.Interpretation}");
+}
+
+// Get insights directly for a specific time window
+var insights = await correlationEngine.GetInsightsAsync(healthData, windowDays: 90);
+Console.WriteLine($"\nGenerated {insights.Count} insights for 90-day window");
+```
+
+## ServiceCollectionExtensions
+
+The `ServiceCollectionExtensions` class provides extension methods for configuring health data services in the dependency injection container. It includes methods for adding core services, configuring repositories (in-memory or SQLite), and creating test service providers with fluent configuration API support.
+
 ### Usage Example
 
 ```csharp
