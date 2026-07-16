@@ -298,6 +298,156 @@ await cacheService.ClearAllAsync();
 await cacheService.ClearPatternAsync("analytics_");
 ```
 
+## ValidationService
+
+The `ValidationService` provides comprehensive validation capabilities for health data records, ensuring data quality and consistency across all health metrics including sleep, heart rate, SpO2, steps, activity, and other health measurements. It validates individual records and provides detailed error information for debugging and data cleaning purposes.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Services;
+using HealthDataExportTools.Domain.Models;
+
+// Create validation service
+var validationService = new ValidationService();
+
+// Sample sleep data to validate
+var sleepData = new SleepData
+{
+    RecordDate = DateTime.UtcNow.AddDays(-1),
+    DeviceId = "device_001",
+    DurationMinutes = 480,
+    DeepSleepMinutes = 120,
+    FirmwareVersion = "1.2.3"
+};
+
+// Validate sleep data
+var sleepValidation = validationService.ValidateSleepData(sleepData);
+if (!sleepValidation.IsValid)
+{
+    Console.WriteLine("Sleep data validation failed:");
+    foreach (var error in sleepValidation.Errors)
+    {
+        Console.WriteLine($" - {error}");
+    }
+}
+
+// Sample heart rate data to validate
+var heartRateData = new HeartRateData
+{
+    RecordDate = DateTime.UtcNow.AddDays(-1),
+    DeviceId = "device_001",
+    AverageBpm = 75,
+    MinimumBpm = 50,
+    MaximumBpm = 120,
+    FirmwareVersion = "1.2.3"
+};
+
+// Validate heart rate data
+var heartRateValidation = validationService.ValidateHeartRateData(heartRateData);
+if (!heartRateValidation.IsValid)
+{
+    Console.WriteLine("Heart rate data validation failed:");
+    foreach (var error in heartRateValidation.Errors)
+    {
+        Console.WriteLine($" - {error}");
+    }
+}
+
+// Sample SpO2 data to validate
+var spo2Data = new SpO2Data
+{
+    RecordDate = DateTime.UtcNow.AddDays(-1),
+    DeviceId = "device_001",
+    AveragePercentage = 97,
+    MinimumPercentage = 95,
+    FirmwareVersion = "1.2.3"
+};
+
+// Validate SpO2 data
+var spo2Validation = validationService.ValidateSpO2Data(spo2Data);
+if (!spo2Validation.IsValid)
+{
+    Console.WriteLine("SpO2 data validation failed:");
+    foreach (var error in spo2Validation.Errors)
+    {
+        Console.WriteLine($" - {error}");
+    }
+}
+
+// Sample steps data to validate
+var stepsData = new StepsData
+{
+    RecordDate = DateTime.UtcNow.AddDays(-1),
+    DeviceId = "device_001",
+    TotalSteps = 8500,
+    FirmwareVersion = "1.2.3"
+};
+
+// Validate steps data
+var stepsValidation = validationService.ValidateStepsData(stepsData);
+if (!stepsValidation.IsValid)
+{
+    Console.WriteLine("Steps data validation failed:");
+    foreach (var error in stepsValidation.Errors)
+    {
+        Console.WriteLine($" - {error}");
+    }
+}
+
+// Sample activity data to validate
+var activityData = new ActivityData
+{
+    RecordDate = DateTime.UtcNow.AddDays(-1),
+    DeviceId = "device_001",
+    DurationMinutes = 60,
+    CaloriesBurned = 300,
+    FirmwareVersion = "1.2.3"
+};
+
+// Validate activity data
+var activityValidation = validationService.ValidateActivityData(activityData);
+if (!activityValidation.IsValid)
+{
+    Console.WriteLine("Activity data validation failed:");
+    foreach (var error in activityValidation.Errors)
+    {
+        Console.WriteLine($" - {error}");
+    }
+}
+
+// Validate multiple metrics at once
+var healthMetric = new HealthMetric
+{
+    RecordDate = DateTime.UtcNow.AddDays(-1),
+    DeviceId = "device_001",
+    MetricType = "BloodPressure",
+    Systolic = 120,
+    Diastolic = 80,
+    FirmwareVersion = "1.2.3"
+};
+
+// Validate health metric
+var healthMetricValidation = validationService.ValidateHealthMetric(healthMetric);
+if (!healthMetricValidation.IsValid)
+{
+    Console.WriteLine("Health metric validation failed:");
+    foreach (var error in healthMetricValidation.Errors)
+    {
+        Console.WriteLine($" - {error}");
+    }
+}
+
+// Add custom error to validation result
+var customValidation = new ValidationResult();
+customValidation.AddError("Custom validation failed: field value is out of range");
+Console.WriteLine(customValidation.ToString());
+
+// Check validation result properties
+Console.WriteLine($"Validation result: {(validationService.ValidateSleepData(sleepData).IsValid ? "Valid" : "Invalid")}");
+Console.WriteLine($"Error count: {validationService.ValidateSleepData(sleepData).Errors.Count}");
+```
+
 ## ChartExportOptions
 
 The `ChartExportOptions` class configures chart export behavior for health data visualizations, allowing fine-grained control over which charts are generated and whether summary tables are included in the export. It provides properties to enable/disable specific chart types and methods to export health data to interactive HTML charts.
