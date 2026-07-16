@@ -1135,6 +1135,115 @@ int channelCount = notificationService.GetChannelCount();
 Console.WriteLine($"Registered notification channels: {channelCount}");
 ```
 
+## HealthDataParserService
+
+The `HealthDataParserService` provides comprehensive parsing capabilities for health data from various formats and devices. It supports parsing JSON and CSV data, detecting device types, merging multiple health data collections, and provides access to parsed records including sleep, heart rate, SpO2, steps, and activity data.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Services;
+using HealthDataExportTools.Domain.Models;
+using HealthDataExportTools.Domain.Enums;
+using Microsoft.Extensions.Logging;
+
+// Create validation service and logger
+var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+var logger = loggerFactory.CreateLogger<HealthDataParserService>();
+var validationService = new ValidationService();
+
+// Create parser service
+var parserService = new HealthDataParserService(validationService);
+
+// Sample JSON data containing health records
+var jsonData = @"
+{
+    \"sleep\": [
+        {
+            \"recordDate\": \"2024-01-15T00:00:00Z\",
+            \"deviceId\": \"zepp_watch_001\",
+            \"sleepStart\": \"2024-01-15T22:30:00Z\",
+            \"sleepEnd\": \"2024-01-16T06:30:00Z\",
+            \"durationMinutes\": 480,
+            \"deepSleepMinutes\": 120,
+            \"lightSleepMinutes\": 240,
+            \"remSleepMinutes\": 90,
+            \"awakeMinutes\": 30,
+            \"score\": 85,
+            \"quality\": 2
+        }
+    ],
+    \"heartRate\": [
+        {
+            \"recordDate\": \"2024-01-15T00:00:00Z\",
+            \"deviceId\": \"zepp_watch_001\",
+            \"minimumBpm\": 50,
+            \"maximumBpm\": 120,
+            \"averageBpm\": 68,
+            \"measurementCount\": 1440,
+            \"restingBpm\": 55,
+            \"stressLevel\": 35
+        }
+    ],
+    \"spO2\": [
+        {
+            \"recordDate\": \"2024-01-15T00:00:00Z\",
+            \"deviceId\": \"zepp_watch_001\",
+            \"minimumPercentage\": 95,
+            \"maximumPercentage\": 99,
+            \"averagePercentage\": 97,
+            \"measurementCount\": 720,
+            \"restingPercentage\": 96,
+            \"lowSpO2Events\": 2
+        }
+    ],
+    \"steps\": [
+        {
+            \"recordDate\": \"2024-01-15T00:00:00Z\",
+            \"deviceId\": \"zepp_watch_001\",
+            \"totalSteps\": 8500,
+            \"distanceKm\": 6.2,
+            \"caloriesBurned\": 320,
+            \"dailyGoal\": 10000,
+            \"activeMinutes\": 45
+        }
+    ]
+}";
+
+// Parse JSON data
+var healthData = await parserService.ParseJsonAsync(jsonData);
+
+// Access parsed records
+Console.WriteLine($"Parsed {healthData.SleepRecords.Count} sleep records");
+Console.WriteLine($"Parsed {healthData.HeartRateRecords.Count} heart rate records");
+Console.WriteLine($"Parsed {healthData.SpO2Records.Count} SpO2 records");
+Console.WriteLine($"Parsed {healthData.StepsRecords.Count} steps records");
+
+// Detect device type from device identifier
+var deviceType = parserService.DetectDeviceType("zepp_watch_001");
+Console.WriteLine($"Device type: {deviceType}");
+
+// Merge multiple collections
+var collection2 = new HealthDataParserService.HealthDataCollection
+{
+    SleepRecords = new List<SleepData> { /* additional sleep records */ },
+    HeartRateRecords = new List<HeartRateData> { /* additional heart rate records */ }
+};
+var merged = parserService.MergeCollections(healthData, collection2);
+
+// Get total record count
+var totalRecords = merged.GetTotalRecordCount();
+Console.WriteLine($"Total records in merged collection: {totalRecords}");
+
+// Access all record lists
+var sleepRecords = healthData.SleepRecords;
+var heartRateRecords = healthData.HeartRateRecords;
+var spo2Records = healthData.SpO2Records;
+var stepsRecords = healthData.StepsRecords;
+var activityRecords = healthData.ActivityRecords;
+var metrics = healthData.Metrics;
+```
+
 ## IMiddleware
 
 The `IMiddleware` interface defines the contract for middleware components in the request processing pipeline. It provides properties for tracking request context, metadata, and processing state, allowing middleware to handle requests and responses consistently.
