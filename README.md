@@ -116,3 +116,69 @@ foreach (var kvp in summary)
     Console.WriteLine($"{kvp.Key}: {kvp.Value}");
 }
 ```
+
+## BackgroundTaskScheduler
+
+The `BackgroundTaskScheduler` class provides a thread-safe mechanism for scheduling both one-time and recurring background tasks. It manages task execution, tracking task state and execution history, and supports cancellation of scheduled tasks.
+
+
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Tasks;
+using Microsoft.Extensions.Logging;
+
+// Create a logger (in real application, use dependency injection)
+var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+var logger = loggerFactory.CreateLogger<BackgroundTaskScheduler>();
+
+// Initialize the scheduler
+var scheduler = new BackgroundTaskScheduler(logger);
+
+// Schedule a one-time task to run at a specific time
+var oneTimeTaskId = scheduler.ScheduleOnce(
+    taskName: "GenerateDailyReport",
+    action: async () =>
+    {
+        // Your background task logic here
+        Console.WriteLine("Daily report generation started...");
+        await Task.Delay(1000); // Simulate work
+        Console.WriteLine("Daily report completed!");
+    },
+    executeAt: DateTime.UtcNow.AddMinutes(5) // Run in 5 minutes
+);
+
+// Schedule a recurring task to run every hour
+var recurringTaskId = scheduler.ScheduleRecurring(
+    taskName: "CleanupTempFiles",
+    action: async () =>
+    {
+        // Your cleanup logic here
+        Console.WriteLine("Cleaning up temporary files...");
+        await Task.Delay(500); // Simulate work
+        Console.WriteLine("Cleanup completed!");
+    },
+    interval: TimeSpan.FromHours(1) // Run every hour
+);
+
+// Get all scheduled tasks
+var allTasks = scheduler.GetScheduledTasks();
+Console.WriteLine($"Total scheduled tasks: {allTasks.Count}");
+
+// Get a specific task
+var task = scheduler.GetTask(recurringTaskId);
+if (task != null)
+{
+    Console.WriteLine($"Task: {task.Name}");
+    Console.WriteLine($"Recurring: {task.IsRecurring}");
+    Console.WriteLine($"Created: {task.CreatedAt}");
+    Console.WriteLine($"Next execution: {task.ExecuteAt}");
+    Console.WriteLine($"Interval: {task.Interval}");
+    Console.WriteLine($"Executions: {task.ExecutionCount}");
+}
+
+// Cancel a task
+bool cancelled = scheduler.CancelTask(oneTimeTaskId);
+Console.WriteLine($"Task cancelled: {cancelled}");
+```
