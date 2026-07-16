@@ -198,6 +198,124 @@ Console.WriteLine($"Validation warnings count: {result.GetWarningCount()}");
 Console.WriteLine($"Validation duration (ms): {result.DurationMs}");
 ```
 
+## DataComparisonService
+
+The `DataComparisonService` provides functionality to compare two distinct sets of health data records across multiple metrics including sleep, heart rate, steps, SpO2, and activity data. It supports both direct comparison of pre-built periods and comparison by date ranges within a single collection, calculating percentage changes and generating narrative summaries.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Services;
+using HealthDataExportTools.Domain.Models;
+
+// Create sample health data collections
+var period1 = new HealthDataCollection
+{
+    SleepRecords = new List<SleepData>
+    {
+        new SleepData { RecordDate = DateTime.UtcNow.AddDays(-14), DurationMinutes = 420, DeepSleepMinutes = 95 },
+        new SleepData { RecordDate = DateTime.UtcNow.AddDays(-13), DurationMinutes = 450, DeepSleepMinutes = 105 },
+        new SleepData { RecordDate = DateTime.UtcNow.AddDays(-12), DurationMinutes = 480, DeepSleepMinutes = 110 }
+    },
+    HeartRateRecords = new List<HeartRateData>
+    {
+        new HeartRateData { RecordDate = DateTime.UtcNow.AddDays(-14), AverageBpm = 68 },
+        new HeartRateData { RecordDate = DateTime.UtcNow.AddDays(-13), AverageBpm = 70 },
+        new HeartRateData { RecordDate = DateTime.UtcNow.AddDays(-12), AverageBpm = 69 }
+    },
+    StepsRecords = new List<StepsData>
+    {
+        new StepsData { RecordDate = DateTime.UtcNow.AddDays(-14), TotalSteps = 8500 },
+        new StepsData { RecordDate = DateTime.UtcNow.AddDays(-13), TotalSteps = 9200 },
+        new StepsData { RecordDate = DateTime.UtcNow.AddDays(-12), TotalSteps = 8800 }
+    },
+    SpO2Records = new List<SpO2Data>
+    {
+        new SpO2Data { RecordDate = DateTime.UtcNow.AddDays(-14), AveragePercentage = 97 },
+        new SpO2Data { RecordDate = DateTime.UtcNow.AddDays(-13), AveragePercentage = 96 },
+        new SpO2Data { RecordDate = DateTime.UtcNow.AddDays(-12), AveragePercentage = 98 }
+    },
+    ActivityRecords = new List<ActivityData>
+    {
+        new ActivityData { RecordDate = DateTime.UtcNow.AddDays(-14), DurationMinutes = 60, CaloriesBurned = 300 },
+        new ActivityData { RecordDate = DateTime.UtcNow.AddDays(-13), DurationMinutes = 75, CaloriesBurned = 375 },
+        new ActivityData { RecordDate = DateTime.UtcNow.AddDays(-12), DurationMinutes = 45, CaloriesBurned = 225 }
+    }
+};
+
+var period2 = new HealthDataCollection
+{
+    SleepRecords = new List<SleepData>
+    {
+        new SleepData { RecordDate = DateTime.UtcNow.AddDays(-7), DurationMinutes = 405, DeepSleepMinutes = 85 },
+        new SleepData { RecordDate = DateTime.UtcNow.AddDays(-6), DurationMinutes = 435, DeepSleepMinutes = 95 },
+        new SleepData { RecordDate = DateTime.UtcNow.AddDays(-5), DurationMinutes = 465, DeepSleepMinutes = 100 }
+    },
+    HeartRateRecords = new List<HeartRateData>
+    {
+        new HeartRateData { RecordDate = DateTime.UtcNow.AddDays(-7), AverageBpm = 72 },
+        new HeartRateData { RecordDate = DateTime.UtcNow.AddDays(-6), AverageBpm = 71 },
+        new HeartRateData { RecordDate = DateTime.UtcNow.AddDays(-5), AverageBpm = 70 }
+    },
+    StepsRecords = new List<StepsData>
+    {
+        new StepsData { RecordDate = DateTime.UtcNow.AddDays(-7), TotalSteps = 7200 },
+        new StepsData { RecordDate = DateTime.UtcNow.AddDays(-6), TotalSteps = 6800 },
+        new StepsData { RecordDate = DateTime.UtcNow.AddDays(-5), TotalSteps = 7500 }
+    },
+    SpO2Records = new List<SpO2Data>
+    {
+        new SpO2Data { RecordDate = DateTime.UtcNow.AddDays(-7), AveragePercentage = 95 },
+        new SpO2Data { RecordDate = DateTime.UtcNow.AddDays(-6), AveragePercentage = 94 },
+        new SpO2Data { RecordDate = DateTime.UtcNow.AddDays(-5), AveragePercentage = 96 }
+    },
+    ActivityRecords = new List<ActivityData>
+    {
+        new ActivityData { RecordDate = DateTime.UtcNow.AddDays(-7), DurationMinutes = 30, CaloriesBurned = 150 },
+        new ActivityData { RecordDate = DateTime.UtcNow.AddDays(-6), DurationMinutes = 45, CaloriesBurned = 225 },
+        new ActivityData { RecordDate = DateTime.UtcNow.AddDays(-5), DurationMinutes = 60, CaloriesBurned = 300 }
+    }
+};
+
+// Create comparison service and compare periods
+var comparisonService = new DataComparisonService();
+var result = await comparisonService.ComparePeriodsAsync(period1, period2);
+
+// Access comparison results
+Console.WriteLine($"Generated at: {result.GeneratedAt}");
+Console.WriteLine($"Period 1 records: {result.Period1RecordCount}");
+Console.WriteLine($"Period 2 records: {result.Period2RecordCount}");
+Console.WriteLine($"Sleep change: {result.SleepDurationChangePercentage}%");
+Console.WriteLine($"Deep sleep change: {result.DeepSleepChangePercentage}%");
+Console.WriteLine($"Heart rate change: {result.HeartRateChangePercentage}%");
+Console.WriteLine($"Steps change: {result.StepsChangePercentage}%");
+Console.WriteLine($"SpO2 change: {result.SpO2ChangePercentage}%");
+Console.WriteLine($"Activity minutes change: {result.ActivityMinutesChangePercentage}%");
+Console.WriteLine($"Calories change: {result.CaloriesChangePercentage}%");
+Console.WriteLine($"Summary: {result.NarrativeSummary}");
+
+// Export to JSON
+await comparisonService.ExportToJsonAsync(result, "/tmp/comparison_result.json");
+
+// Compare by date ranges
+var fullCollection = new HealthDataCollection
+{
+    SleepRecords = period1.SleepRecords.Concat(period2.SleepRecords).ToList(),
+    HeartRateRecords = period1.HeartRateRecords.Concat(period2.HeartRateRecords).ToList(),
+    StepsRecords = period1.StepsRecords.Concat(period2.StepsRecords).ToList(),
+    SpO2Records = period1.SpO2Records.Concat(period2.SpO2Records).ToList(),
+    ActivityRecords = period1.ActivityRecords.Concat(period2.ActivityRecords).ToList()
+};
+
+var dateRangeResult = await comparisonService.CompareByDateRangeAsync(
+    fullCollection,
+    DateTime.UtcNow.AddDays(-14),
+    DateTime.UtcNow.AddDays(-12),
+    DateTime.UtcNow.AddDays(-7),
+    DateTime.UtcNow.AddDays(-5)
+);
+```
+
 ## ErrorHandlingMiddleware
 
 The `ErrorHandlingMiddleware` class provides centralized error handling and exception transformation in the HTTP request pipeline. It implements the `IMiddleware` interface and catches exceptions, converting them into structured error responses with consistent error IDs, status codes, and diagnostic information.
