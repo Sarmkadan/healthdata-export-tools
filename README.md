@@ -717,6 +717,65 @@ await exportService.ExportCompleteAsync(
 );
 ```
 
+## HealthDataExportOptions
+
+The `HealthDataExportOptions` class provides configuration for health data export operations, controlling input/output paths, data filtering, validation, analysis, and export behavior. It supports flexible export configurations for different use cases including file-based imports, database storage, and targeted data exports.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Configuration;
+using HealthDataExportTools.Domain.Enums;
+
+// Create export options with default configuration
+var exportOptions = new HealthDataExportOptions
+{
+    InputPath = "/data/health_records",
+    OutputPath = "/exports/output",
+    DatabasePath = "/data/healthdata.db",
+    ExportFormat = ExportFormat.Json,
+    ValidateData = true,
+    PerformAnalysis = true,
+    TrendAnalysisDays = 30,
+    MaxRecordAgeDays = 365,
+    CompressOutput = true,
+    TargetDeviceType = "fitbit",
+    TargetDeviceId = "device_001",
+    StartDate = DateTime.UtcNow.AddDays(-90),
+    EndDate = DateTime.UtcNow,
+    NotificationEmail = "admin@example.com",
+    VerboseLogging = true
+};
+
+// Validate configuration before use
+if (!exportOptions.IsValid())
+{
+    Console.WriteLine(exportOptions.GetValidationErrors());
+    return;
+}
+
+// Use with export service
+var exportService = new ExportService();
+var healthDataCollection = new HealthDataCollection { /* your data */ };
+
+await exportService.ExportToJsonAsync(
+    healthDataCollection,
+    exportOptions.OutputPath + "/health_data.json",
+    exportOptions
+);
+
+// Alternative: Use with file-based import
+var parserService = new HealthDataParserService();
+var healthData = await parserService.ParseDirectoryAsync(
+    exportOptions.InputPath,
+    exportOptions
+);
+
+// Filtered export based on configuration
+var filteredData = healthData.FilterByDeviceType(exportOptions.TargetDeviceType)
+    .FilterByDateRange(exportOptions.StartDate, exportOptions.EndDate);
+```
+
 ## ChartExportOptions
 
 The `ChartExportOptions` class configures chart export behavior for health data visualizations, allowing fine-grained control over which charts are generated and whether summary tables are included in the export. It provides properties to enable/disable specific chart types and methods to export health data to interactive HTML charts.
