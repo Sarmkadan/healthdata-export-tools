@@ -36,3 +36,21 @@ await notificationService.SendNotificationAsync(notificationMessage);
 
 await mockChannel.Received(1).SendAsync(Arg.Is<NotificationMessage>(nm => nm.Body.Contains(notificationMessage.Body)));
 ```
+
+## DataComparisonServiceTests
+
+The `DataComparisonServiceTests` class provides the unit test suite for the `DataComparisonService`, validating its ability to analyze and compare health data collections across different time periods. It covers various scenarios including activity, sleep, heart rate, and SpO2 trends, ensuring that percentage changes and narrative summaries are calculated accurately.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Tests;
+
+// Instantiate the test suite
+var testSuite = new DataComparisonServiceTests();
+
+// Execute specific comparison test cases
+await testSuite.ComparePeriodsAsync_ShouldCalculatePercentageCorrectly();
+await testSuite.ComparePeriodsAsync_WithSpO2Data_ShouldCalculateSpO2Change();
+await testSuite.ComparePeriodsAsync_ShouldPopulateNarrativeSummary();
+```
