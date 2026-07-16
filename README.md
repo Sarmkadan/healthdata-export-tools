@@ -17,7 +17,7 @@ Console.WriteLine(exception.ErrorCode); // Outputs: UNKNOWN_ERROR
 
 // Usage with specific error code
 var validationException = new HealthDataException(
-    "Patient age is out of valid range", 
+    "Patient age is out of valid range",
     "VALIDATION_ERROR"
 );
 Console.WriteLine(validationException.ErrorCode); // Outputs: VALIDATION_ERROR
@@ -32,7 +32,7 @@ var contextData = new Dictionary<string, object>
 };
 
 var detailedException = new HealthDataException(
-    "Data validation failed", 
+    "Data validation failed",
     "VALIDATION_ERROR",
     contextData
 );
@@ -100,6 +100,61 @@ await testSuite.ComparePeriodsAsync_WithSpO2Data_ShouldCalculateSpO2Change();
 await testSuite.ComparePeriodsAsync_ShouldPopulateNarrativeSummary();
 ```
 
+## ExportCompletedEvent
+
+The `ExportCompletedEvent` is raised when a health data export operation completes successfully. It contains comprehensive metadata about the export including format, timing, file information, and any warnings encountered during processing. This event is useful for tracking export operations, monitoring performance, and triggering downstream processes like notifications or data validation.
+
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Events;
+using HealthDataExportTools.Domain.Enums;
+using System;
+using System.Collections.Generic;
+
+// Create an ExportCompletedEvent instance
+var exportId = Guid.NewGuid().ToString();
+var exportStartTime = DateTime.UtcNow.AddMinutes(-5);
+var exportEndTime = DateTime.UtcNow;
+var generatedFiles = new List<string> { "/exports/patient_data_2024.csv", "/exports/patient_data_2024.json" };
+var warnings = new List<string> { "Large patient dataset detected", "Memory usage high during export" };
+
+var exportEvent = new ExportCompletedEvent(
+    exportId: exportId,
+    exportFormat: ExportFormat.Csv,
+    recordsExported: 1542,
+    outputPath: "/exports/patient_data_2024.csv",
+    outputSizeBytes: 4523876,
+    exportStartTime: exportStartTime,
+    exportEndTime: exportEndTime,
+    wasCompressed: true,
+    generatedFiles: generatedFiles,
+    warnings: warnings
+);
+
+// Access export properties
+Console.WriteLine($"Export completed: {exportEvent.RecordsExported} records");
+Console.WriteLine($"Format: {exportEvent.ExportFormat}");
+Console.WriteLine($"Duration: {exportEvent.GetExportDuration().TotalSeconds:F2} seconds");
+Console.WriteLine($"Size: {exportEvent.GetHumanReadableSize()}");
+Console.WriteLine($"Throughput: {exportEvent.GetThroughput():F2} records/sec");
+Console.WriteLine($"Warnings: {exportEvent.Warnings.Count}");
+
+// Check if export had issues
+if (exportEvent.HasWarnings)
+{
+    Console.WriteLine("Warnings encountered:");
+    foreach (var warning in exportEvent.Warnings)
+    {
+        Console.WriteLine($"  - {warning}");
+    }
+}
+
+// Use the ToString() method for quick logging
+Console.WriteLine(exportEvent.ToString());
+```
+
 ## EventBus
 
 The `EventBus` class implements a thread-safe, asynchronous event bus using the publish-subscribe pattern. It enables decoupled communication between components by allowing event publishers to notify multiple subscribers without direct dependencies. The implementation is designed for high-concurrency scenarios with proper synchronization using `ReaderWriterLockSlim`.
@@ -125,7 +180,7 @@ public class PatientDataExportedEvent : EventBase
     public string PatientId { get; }
     public string ExportFormat { get; }
     public int RecordCount { get; }
-    
+
     public PatientDataExportedEvent(string patientId, string exportFormat, int recordCount)
         : base(patientId)
     {
