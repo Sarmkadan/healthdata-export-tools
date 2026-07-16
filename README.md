@@ -332,6 +332,79 @@ Console.WriteLine($"Cache contains {keys.Count} keys");
 cacheProvider.Dispose();
 ```
 
+## NotificationService
+
+The `NotificationService` handles sending notifications about export and import operations, supporting multiple notification channels (email, webhooks, logs, etc.). It provides specialized methods for common operations like export completion, failures, import progress, and data quality warnings, with built-in logging support.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Services;
+using HealthDataExportTools.Domain.Models;
+using Microsoft.Extensions.Logging;
+
+// Create notification service with logger
+var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+var logger = loggerFactory.CreateLogger<NotificationService>();
+var notificationService = new NotificationService(logger);
+
+// Register a log-based notification channel (always available)
+var logChannel = new LogNotificationChannel(logger);
+notificationService.RegisterChannel(logChannel);
+
+// Register additional channels (e.g., email, webhook)
+// notificationService.RegisterChannel(new EmailNotificationChannel(smtpConfig));
+// notificationService.RegisterChannel(new WebhookNotificationChannel(webhookUrl));
+
+// Notify about successful export
+await notificationService.NotifyExportCompletedAsync(
+    exportId: "export_2024_001",
+    recordCount: 1542,
+    outputPath: "/exports/patient_records_2024_001.json",
+    duration: TimeSpan.FromSeconds(45.2)
+);
+
+// Notify about export failure
+try
+{
+    // Export logic here
+}
+catch (Exception ex)
+{
+    await notificationService.NotifyExportFailedAsync(
+        exportId: "export_2024_001",
+        errorMessage: "Failed to connect to database",
+        exception: ex
+    );
+}
+
+// Notify about import progress
+for (int i = 0; i < 1000; i += 100)
+{
+    await notificationService.NotifyImportProgressAsync(
+        importId: "import_2024_002",
+        processedRecords: i,
+        totalRecords: 1000
+    );
+}
+
+// Notify about data quality warnings
+var warnings = new List<string>
+{
+    "Patient age exceeds reasonable range (150 years)",
+    "Missing required field: date_of_birth",
+    "Heart rate value out of normal range"
+};
+await notificationService.NotifyDataQualityWarningsAsync(
+    operationId: "data_quality_check_001",
+    warnings: warnings
+);
+
+// Check how many channels are registered
+int channelCount = notificationService.GetChannelCount();
+Console.WriteLine($"Registered notification channels: {channelCount}");
+```
+
 ## IMiddleware
 
 The `IMiddleware` interface defines the contract for middleware components in the request processing pipeline. It provides properties for tracking request context, metadata, and processing state, allowing middleware to handle requests and responses consistently.
