@@ -1,5 +1,49 @@
 // existing content ...
 
+
+## ICacheProvider
+
+The `ICacheProvider` interface defines the contract for cache providers in HealthData Export Tools, supporting asynchronous get, set, remove, and expiration operations. It provides a standardized way to cache data with optional expiration and includes methods for cache management and statistics.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Cache;
+using HealthDataExportTools.DTOs;
+
+// Get cache statistics
+var stats = await cacheProvider.GetStatsAsync();
+Console.WriteLine($"Cache items: {stats.ItemCount}");
+Console.WriteLine($"Total size: {stats.TotalSize} bytes");
+Console.WriteLine($"Hit rate: {stats.HitRate:P2}");
+Console.WriteLine($"Hits: {stats.HitCount}, Misses: {stats.MissCount}");
+
+// Get a cache entry with metadata
+var entry = await cacheProvider.GetAsync<PatientRecord>("patient_12345");
+if (entry != null)
+{
+    Console.WriteLine($"Key: {entry.Key}");
+    Console.WriteLine($"Value: {entry.Value}");
+    Console.WriteLine($"Created: {entry.CreatedAt}");
+    Console.WriteLine($"Expires: {entry.ExpiresAt}");
+    Console.WriteLine($"Access count: {entry.AccessCount}");
+    Console.WriteLine($"Last accessed: {entry.LastAccessAt}");
+}
+
+// Set a value in cache with 5 minute expiration
+var patientRecord = new PatientRecord { /* populate record */ };
+await cacheProvider.SetAsync("patient_12345", patientRecord, TimeSpan.FromMinutes(5));
+
+// Check if key exists
+bool exists = await cacheProvider.ExistsAsync("patient_12345");
+Console.WriteLine($"Key exists: {exists}");
+
+// Remove from cache
+await cacheProvider.RemoveAsync("patient_12345");
+
+// Clear entire cache
+await cacheProvider.ClearAsync();
+```
 ## AnomalyPoint
 
 The `AnomalyPoint` class represents a single data point that was flagged as anomalous during Z-score analysis, providing detailed information about the anomaly including its date, value, statistical deviation, and severity classification.
