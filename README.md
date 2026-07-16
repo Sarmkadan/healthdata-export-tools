@@ -1533,6 +1533,65 @@ if (fileConnectionManager.DatabaseExists())
 }
 ```
 
+## CorrelationEngineOptions
+
+The `CorrelationEngineOptions` class provides configuration for the correlation analysis engine that identifies relationships between different health metrics such as sleep, heart rate, SpO2, steps, and activity data. It controls analysis window, statistical thresholds, parallel computation, and insight generation, making it suitable for analyzing wearable data exports of various durations.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Configuration;
+using HealthDataExportTools.Correlation;
+
+// Create correlation engine options with custom configuration
+var options = new CorrelationEngineOptions
+{
+    AnalysisWindowDays = 60,                    // Analyze 60 days of data
+    SignificanceThreshold = 0.40,                // Require |r| ≥ 0.40 for significance
+    MinimumSampleCount = 14,                      // Need at least 14 aligned days
+    IncludeWeakCorrelations = false,              // Exclude correlations below threshold
+    ComputeAllPairs = false,                      // Only compute specified pairs
+    EnableParallelComputation = true,              // Use parallel processing
+    MaxDegreeOfParallelism = 8,                  // Use up to 8 concurrent tasks
+    InsightMode = InsightGenerationMode.Standard,  // Standard insight generation
+    MaxLagDays = 14,                            // Explore up to 14-day lags
+    AdditionalMetricPairs = new List<CorrelationPair>  // Add custom metric pairs
+    {
+        new CorrelationPair("SleepDuration", "HeartRateAverage"),
+        new CorrelationPair("Steps", "SpO2Average")
+    }
+};
+
+// Validate configuration
+var validationErrors = options.Validate().ToList();
+if (validationErrors.Any())
+{
+    Console.WriteLine("Configuration errors:");
+    foreach (var error in validationErrors)
+    {
+        Console.WriteLine($" - {error}");
+    }
+}
+else
+{
+    Console.WriteLine("Configuration is valid!");
+}
+
+// Check if valid
+bool isValid = options.IsValid();
+Console.WriteLine($"Is valid: {isValid}");
+
+// Use with correlation engine
+var correlationEngine = new CorrelationEngine(options);
+var correlations = await correlationEngine.AnalyzeAsync(healthDataCollection);
+
+// Access correlation results
+foreach (var correlation in correlations)
+{
+    Console.WriteLine($"{correlation.Metric1} ↔ {correlation.Metric2}: r = {correlation.PearsonR:F3}");
+}
+```
+
 ## IMiddleware
 
 The `IMiddleware` interface defines the contract for middleware components in the request processing pipeline. It provides properties for tracking request context, metadata, and processing state, allowing middleware to handle requests and responses consistently.
