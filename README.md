@@ -1,6 +1,51 @@
 // Health Data Export Tools
 
-...
+## HealthDataException
+
+The `HealthDataException` is the base exception class for all health data processing errors in the HealthData Export Tools library. It provides structured error categorization through the `ErrorCode` property and supports additional context data via the `ContextData` dictionary, enabling detailed error tracking and debugging.
+
+This exception serves as the foundation for more specific exception types like `ParsingException`, `ValidationException`, `ExportException`, and `DataAccessException`, all of which inherit from it.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Exceptions;
+
+// Basic usage with default error code
+var exception = new HealthDataException("Failed to process health data file");
+Console.WriteLine(exception.ErrorCode); // Outputs: UNKNOWN_ERROR
+
+// Usage with specific error code
+var validationException = new HealthDataException(
+    "Patient age is out of valid range", 
+    "VALIDATION_ERROR"
+);
+Console.WriteLine(validationException.ErrorCode); // Outputs: VALIDATION_ERROR
+
+// Usage with context data for detailed error tracking
+var contextData = new Dictionary<string, object>
+{
+    { "PatientId", "PT-12345" },
+    { "Field", "Age" },
+    { "ExpectedRange", "18-120" },
+    { "ActualValue", 16 }
+};
+
+var detailedException = new HealthDataException(
+    "Data validation failed", 
+    "VALIDATION_ERROR",
+    contextData
+);
+
+// Access context data for logging or error handling
+if (detailedException.ContextData != null)
+{
+    foreach (var kvp in detailedException.ContextData)
+    {
+        Console.WriteLine($"{kvp.Key}: {kvp.Value}");
+    }
+}
+```
 
 ## NotificationServiceTests
 
