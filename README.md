@@ -1,5 +1,68 @@
 // Health Data Export Tools
 
+## RateLimiter
+
+The `RateLimiter` class implements a token bucket rate limiting algorithm to control the frequency of operations. It tracks available tokens, refills them at a specified rate, and provides both synchronous and asynchronous methods for acquiring rate limit permits. This is particularly useful for managing API calls, database operations, or other resource-intensive tasks to prevent overwhelming systems.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Interceptors;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Threading.Tasks;
+
+// Create a logger and rate limiter with default capacity of 100 tokens and refill rate of 10 tokens per second
+var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+var logger = loggerFactory.CreateLogger<RateLimiter>();
+var rateLimiter = new RateLimiter(logger, defaultCapacity: 100, refillRate: 10);
+
+// Get current rate limit status for an identifier
+var status = rateLimiter.GetStatus("api-calls");
+Console.WriteLine($"Current tokens: {status.CurrentTokens}");
+Console.WriteLine($"Max tokens: {status.MaxTokens}");
+Console.WriteLine($"Usage: {status.GetUsagePercentage():F2}%");
+Console.WriteLine($"Is rate limited: {status.IsRateLimited}");
+
+// Try to acquire a token synchronously (returns true if operation is allowed, false if rate limit exceeded)
+bool acquired = rateLimiter.TryAcquire("api-calls");
+if (acquired)
+{
+    Console.WriteLine("Token acquired successfully");
+    // Perform rate-limited operation here
+}
+else
+{
+    Console.WriteLine("Rate limit exceeded - operation not allowed");
+}
+
+// Try to acquire multiple tokens
+bool acquiredMultiple = rateLimiter.TryAcquire("api-calls", tokensRequired: 5);
+if (acquiredMultiple)
+{
+    Console.WriteLine("5 tokens acquired successfully");
+}
+
+// Acquire a token asynchronously with timeout (waits until token available or timeout)
+try
+{
+    await rateLimiter.AcquireAsync("api-calls", tokensRequired: 1, maxWait: TimeSpan.FromSeconds(5));
+    Console.WriteLine("Async token acquired successfully");
+}
+catch (InvalidOperationException ex)
+{
+    Console.WriteLine($"Failed to acquire token: {ex.Message}");
+}
+
+// Reset rate limit for a specific identifier
+rateLimiter.Reset("api-calls");
+Console.WriteLine("Rate limit reset for 'api-calls'");
+
+// Clear all rate limits
+rateLimiter.ClearAll();
+Console.WriteLine("All rate limits cleared");
+```
+
 ## HealthDataException
 
 The `HealthDataException` is the base exception class for all health data processing errors in the HealthData Export Tools library. It provides structured error categorization through the `ErrorCode` property and supports additional context data via the `ContextData` dictionary, enabling detailed error tracking and debugging.
