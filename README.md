@@ -133,6 +133,86 @@ Console.WriteLine($"Validation warnings count: {result.GetWarningCount()}");
 Console.WriteLine($"Validation duration (ms): {result.DurationMs}");
 ```
 
+## ErrorHandlingMiddleware
+
+The `ErrorHandlingMiddleware` class provides centralized error handling and exception transformation in the HTTP request pipeline. It implements the `IMiddleware` interface and catches exceptions, converting them into structured error responses with consistent error IDs, status codes, and diagnostic information.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Middleware;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+
+// In your Program.cs or Startup.cs:
+// builder.Services.AddTransient<ErrorHandlingMiddleware>();
+// app.UseMiddleware<ErrorHandlingMiddleware>();
+
+// Example usage in a controller or endpoint:
+public class PatientController : ControllerBase
+{
+    private readonly ErrorHandlingMiddleware _errorHandler;
+    private readonly ILogger<PatientController> _logger;
+    
+    public PatientController(ErrorHandlingMiddleware errorHandler, ILogger<PatientController> logger)
+    {
+        _errorHandler = errorHandler;
+        _logger = logger;
+    }
+    
+    [HttpGet("patients/{id}")]
+    public async Task<IActionResult> GetPatient(string id)
+    {
+        var context = new MiddlewareContext
+        {
+            RequestId = Guid.NewGuid().ToString(),
+            // Other context setup
+        };
+        
+        // Process request through error handling middleware
+        await _errorHandler.ProcessAsync(context, async ctx =>
+        {
+            // Your business logic here
+            var patient = await _patientService.GetPatientAsync(id);
+            if (patient == null)
+            {
+                throw new HealthDataException("Patient not found");
+            }
+            
+            return Results.Ok(patient);
+        });
+        
+        if (!context.ContinueProcessing)
+        {
+            // The error was handled by middleware
+            var errorResponse = context.Result as ErrorResponse;
+            return Results.Problem(
+                statusCode: errorResponse?.StatusCode ?? 500,
+                title: errorResponse?.Message ?? "An error occurred",
+                detail: errorResponse?.Details,
+                extensions: new Dictionary<string, object?>
+                {
+                    ["errorId"] = errorResponse?.ErrorId,
+                    ["requestId"] = errorResponse?.RequestId,
+                    ["timestamp"] = errorResponse?.Timestamp
+                }
+            );
+        }
+        
+        return Results.Ok(context.Result);
+    }
+}
+
+// The ErrorResponse class contains the following properties:
+// - ErrorId: Unique identifier for the error instance
+// - RequestId: Correlation ID for tracing the request
+// - StatusCode: HTTP status code (400, 404, 409, 500, etc.)
+// - Message: Human-readable error message
+// - Details: Detailed error information
+// - ExceptionType: Type of the original exception (optional)
+// - Timestamp: When the error occurred
+```
+
 ## InMemoryCacheProvider
 
 The `InMemoryCacheProvider` class provides a thread-safe, in-memory cache implementation with expiration support and comprehensive statistics tracking. It implements the `ICacheProvider` interface and uses `ReaderWriterLockSlim` for concurrent access, making it suitable for multi-threaded applications.
