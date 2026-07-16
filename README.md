@@ -798,6 +798,87 @@ await exportService.ExportCompleteAsync(
 );
 ```
 
+## PerformanceUtility
+
+The `PerformanceUtility` class provides performance monitoring and measurement capabilities for tracking execution time, memory usage, CPU utilization, and throughput analysis. It includes methods for measuring both synchronous and asynchronous operations, calculating completion percentages, estimating time remaining, and formatting durations in human-readable formats.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Utilities;
+using System.Diagnostics;
+
+// Measure execution time of an async operation
+var (result, duration) = await PerformanceUtility.MeasureAsync(async () =>
+{
+    // Simulate async work
+    await Task.Delay(100);
+    return "Operation completed";
+}, "DataProcessing");
+
+Console.WriteLine($"Async operation completed in {PerformanceUtility.FormatDuration(duration)}");
+Console.WriteLine($"Result: {result}");
+
+// Measure execution time of a sync operation
+var (syncResult, syncDuration) = PerformanceUtility.Measure(() =>
+{
+    // Simulate sync work
+    Thread.Sleep(50);
+    return 42;
+}, "SynchronousCalculation");
+
+Console.WriteLine($"Sync operation completed in {PerformanceUtility.FormatDuration(syncDuration)}");
+Console.WriteLine($"Result: {syncResult}");
+
+// Get memory usage information
+var memoryUsage = PerformanceUtility.GetMemoryUsage();
+Console.WriteLine($"Current memory usage:");
+Console.WriteLine($"  Working Set: {memoryUsage.GetWorkingSetMB()}");
+Console.WriteLine($"  Managed Memory: {memoryUsage.GetManagedMemoryMB()}");
+Console.WriteLine($"  Peak Memory: {memoryUsage.GetPeakMemoryMB()}");
+Console.WriteLine($"  Private Memory: {memoryUsage.PrivateMemoryBytes:N0} bytes");
+
+// Get CPU usage information
+var cpuUsage = PerformanceUtility.GetCpuUsage();
+Console.WriteLine($"CPU usage:");
+Console.WriteLine($"  Processors: {cpuUsage.ProcessorCount}");
+Console.WriteLine($"  Total Processor Time: {cpuUsage.TotalProcessorTime:F0}ms");
+Console.WriteLine($"  User Processor Time: {cpuUsage.UserProcessorTime:F0}ms");
+Console.WriteLine($"  Threads: {cpuUsage.Threads}");
+
+// Calculate throughput for batch processing
+var batchSize = 1000;
+var processingTime = TimeSpan.FromSeconds(2.5);
+var throughput = PerformanceUtility.CalculateThroughput(batchSize, processingTime);
+Console.WriteLine($"Processing throughput: {throughput:N0} records/second");
+
+// Estimate time remaining for a long-running operation
+var startTime = DateTime.UtcNow;
+var processedItems = 0;
+var totalItems = 10000;
+
+// Simulate processing loop
+while (processedItems < totalItems)
+{
+    processedItems += 1000;
+    var elapsed = DateTime.UtcNow - startTime;
+    var remaining = PerformanceUtility.EstimateTimeRemaining(processedItems, totalItems, elapsed);
+    var percentComplete = PerformanceUtility.CalculatePercentComplete(processedItems, totalItems);
+    
+    Console.WriteLine($"Progress: {percentComplete:F1}% - " +
+                     $"Remaining: {PerformanceUtility.FormatDuration(remaining)}");
+    
+    await Task.Delay(100); // Simulate work
+}
+
+// Format various durations for display
+Console.WriteLine($"\nDuration formatting examples:");
+Console.WriteLine($"  500ms -> {PerformanceUtility.FormatDuration(TimeSpan.FromMilliseconds(500))}");
+Console.WriteLine($"  45.2s -> {PerformanceUtility.FormatDuration(TimeSpan.FromSeconds(45.2))}");
+Console.WriteLine($"  90m -> {PerformanceUtility.FormatDuration(TimeSpan.FromMinutes(90))}");
+Console.WriteLine($"  2.5h -> {PerformanceUtility.FormatDuration(TimeSpan.FromHours(2.5))}");
+```
+
 ## HealthDataExportOptions
 
 The `HealthDataExportOptions` class provides configuration for health data export operations, controlling input/output paths, data filtering, validation, analysis, and export behavior. It supports flexible export configurations for different use cases including file-based imports, database storage, and targeted data exports.
