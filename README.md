@@ -448,6 +448,86 @@ Console.WriteLine($"Validation result: {(validationService.ValidateSleepData(sle
 Console.WriteLine($"Error count: {validationService.ValidateSleepData(sleepData).Errors.Count}");
 ```
 
+## ReportGenerationService
+
+The `ReportGenerationService` provides comprehensive report generation capabilities for health data, producing summary reports, trend analysis, and detailed statistics across multiple health metrics including sleep, heart rate, SpO2, steps, and activity data. It supports daily, weekly, and overall health summaries with statistical analysis and export functionality.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Services;
+using HealthDataExportTools.Domain.Models;
+using Microsoft.Extensions.Logging;
+
+// Create logger and service
+var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+var logger = loggerFactory.CreateLogger<ReportGenerationService>();
+var reportService = new ReportGenerationService(logger);
+
+// Sample health data records
+var healthRecords = new List<HealthDataRecord>
+{
+    new SleepData { RecordDate = DateTime.UtcNow.AddDays(-1), DeviceId = "device_001", DurationMinutes = 480, DeepSleepMinutes = 120 },
+    new HeartRateData { RecordDate = DateTime.UtcNow.AddDays(-1), DeviceId = "device_001", AverageBpm = 68 },
+    new StepsData { RecordDate = DateTime.UtcNow.AddDays(-1), DeviceId = "device_001", TotalSteps = 8500 },
+    new SpO2Data { RecordDate = DateTime.UtcNow.AddDays(-1), DeviceId = "device_001", AveragePercentage = 97 },
+    new ActivityData { RecordDate = DateTime.UtcNow.AddDays(-1), DeviceId = "device_001", DurationMinutes = 60, CaloriesBurned = 300 }
+};
+
+// Generate comprehensive summary report
+var summaryReport = await reportService.GenerateSummaryReportAsync(healthRecords);
+Console.WriteLine($"Summary Report - Date: {summaryReport.ReportDate:yyyy-MM-dd}");
+Console.WriteLine($"Total Records: {summaryReport.TotalRecords}");
+Console.WriteLine($"Date Range: {summaryReport.DateRange.StartDate:yyyy-MM-dd} to {summaryReport.DateRange.EndDate:yyyy-MM-dd}");
+Console.WriteLine($"Data Types: {string.Join(", ", summaryReport.DataTypeStatistics.Select(d => d.DataType))}");
+Console.WriteLine($"Devices: {string.Join(", ", summaryReport.DeviceDistribution.Select(d => $"{d.Key} ({d.Value} records)"))}");
+
+// Generate daily summary report for a specific date
+var dailyReport = await reportService.GenerateDailyReportAsync(
+    new List<SleepData> { new SleepData { RecordDate = DateTime.UtcNow.AddDays(-1), DurationMinutes = 480, DeepSleepMinutes = 120, RemSleepMinutes = 90, Quality = Domain.Enums.SleepQuality.Good } },
+    new List<HeartRateData> { new HeartRateData { RecordDate = DateTime.UtcNow.AddDays(-1), AverageBpm = 68, MinimumBpm = 55, MaximumBpm = 85 } },
+    DateTime.UtcNow.AddDays(-1)
+);
+Console.WriteLine($"\nDaily Report - {dailyReport.Date:yyyy-MM-dd}");
+Console.WriteLine($"Sleep: {dailyReport.SleepMetrics?.TotalDurationMinutes} minutes, Quality: {dailyReport.SleepMetrics?.AverageQuality}");
+Console.WriteLine($"Heart Rate: Avg {dailyReport.HeartRateMetrics?.AverageHeartRate} BPM (Min: {dailyReport.HeartRateMetrics?.MinHeartRate}, Max: {dailyReport.HeartRateMetrics?.MaxHeartRate})");
+
+// Generate weekly summary reports
+var weeklyReports = await reportService.GenerateWeeklySummaryReportAsync(
+    new List<SleepData> { new SleepData { RecordDate = DateTime.UtcNow.AddDays(-7), DurationMinutes = 450, DeepSleepMinutes = 105, Quality = Domain.Enums.SleepQuality.Excellent } },
+    new List<HeartRateData> { new HeartRateData { RecordDate = DateTime.UtcNow.AddDays(-7), AverageBpm = 70 } },
+    new List<StepsData> { new StepsData { RecordDate = DateTime.UtcNow.AddDays(-7), TotalSteps = 9200 } }
+);
+Console.WriteLine($"\nWeekly Reports Generated: {weeklyReports.Count}");
+foreach (var weeklyReport in weeklyReports)
+{
+    Console.WriteLine($"Week {weeklyReport.WeekIdentifier}: Health Score {weeklyReport.WeeklyHealthScore}/100");
+    Console.WriteLine($"  - Sleep: {weeklyReport.AverageSleepDurationMinutes} minutes avg, Quality: {weeklyReport.AverageSleepQuality}");
+    Console.WriteLine($"  - Steps: {weeklyReport.TotalSteps} total, Goal days: {weeklyReport.GoalAchievedDays}");
+    Console.WriteLine($"  - SpO2: {weeklyReport.AverageSpO2}% avg, Min: {weeklyReport.MinimumSpO2}%");
+    if (weeklyReport.Changes != null)
+    {
+        Console.WriteLine($"  - Changes vs previous week:");
+        Console.WriteLine($"    Sleep: {weeklyReport.Changes.SleepDurationChangePercent}%");
+        Console.WriteLine($"    Steps: {weeklyReport.Changes.StepsChangePercent}%");
+        Console.WriteLine($"    Health Score: {weeklyReport.Changes.HealthScoreChangePoints} points");
+    }
+}
+
+// Export weekly reports to JSON
+await reportService.ExportWeeklySummaryToJsonAsync(weeklyReports, "/tmp/weekly_reports.json");
+Console.WriteLine("\nWeekly reports exported to JSON");
+
+// Generate trend analysis report
+var trendReport = await reportService.GenerateTrendReportAsync(healthRecords, windowDays: 7);
+Console.WriteLine($"\nTrend Analysis - Last {trendReport.WindowDays} days");
+Console.WriteLine($"Analysis Date: {trendReport.AnalysisDate:yyyy-MM-dd}");
+foreach (var metric in trendReport.MetricTrends)
+{
+    Console.WriteLine($"  {metric.MetricType}: {metric.AverageValue:F2} avg, Trend: {metric.TrendDirection}, Variation: {metric.VariationPercent:F1}%");
+}
+```
+
 ## ChartExportOptions
 
 The `ChartExportOptions` class configures chart export behavior for health data visualizations, allowing fine-grained control over which charts are generated and whether summary tables are included in the export. It provides properties to enable/disable specific chart types and methods to export health data to interactive HTML charts.
