@@ -528,6 +528,81 @@ foreach (var metric in trendReport.MetricTrends)
 }
 ```
 
+## HttpHealthDataClient
+
+The `HttpHealthDataClient` provides HTTP communication capabilities for integrating with external health data APIs. It handles fetching health records, uploading parsed data, checking API connectivity, downloading exports, and retrieving device information with built-in error handling, logging, and timeout management.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Services;
+using HealthDataExportTools.Domain.Models;
+using Microsoft.Extensions.Logging;
+
+// Create logger and HTTP client
+var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+var logger = loggerFactory.CreateLogger<HttpHealthDataClient>();
+var httpClient = new HttpClient();
+
+// Create HTTP health data client
+var httpClientService = new HttpHealthDataClient(httpClient, logger);
+
+// Set custom timeout (default is 30 seconds)
+httpClientService.SetTimeout(TimeSpan.FromSeconds(60));
+
+// Add custom headers for API authentication
+httpClientService.AddDefaultHeader("Authorization", "Bearer your-api-token-here");
+httpClientService.AddDefaultHeader("X-API-Key", "your-api-key-here");
+
+// Fetch health data from API
+var healthRecords = await httpClientService.FetchHealthDataAsync(
+    apiUrl: "https://api.healthdata.example.com/v1/records",
+    deviceType: "fitbit",
+    startDate: DateTime.UtcNow.AddDays(-7),
+    endDate: DateTime.UtcNow
+);
+
+Console.WriteLine($"Fetched {healthRecords.Count} health records");
+
+// Upload parsed health data to remote service
+var uploadResponse = await httpClientService.UploadHealthDataAsync(
+    uploadUrl: "https://api.healthdata.example.com/v1/upload",
+    records: healthRecords
+);
+
+Console.WriteLine($"Upload response: {uploadResponse}");
+
+// Check API health and connectivity
+bool isHealthy = await httpClientService.CheckApiHealthAsync(
+    healthCheckUrl: "https://api.healthdata.example.com/health"
+);
+
+Console.WriteLine($"API Health: {(isHealthy ? "Healthy" : "Unhealthy")}");
+
+// Download export file from API
+var exportPath = await httpClientService.DownloadExportAsync(
+    downloadUrl: "https://api.healthdata.example.com/exports/patient_records_2024.json",
+    outputPath: "/data/exports/patient_records_2024.json"
+);
+
+Console.WriteLine($"Export downloaded to: {exportPath}");
+
+// Fetch device information
+var deviceInfo = await httpClientService.GetDeviceInfoAsync(
+    apiUrl: "https://api.healthdata.example.com/v1",
+    deviceId: "device_001"
+);
+
+if (deviceInfo != null)
+{
+    Console.WriteLine("Device information:");
+    foreach (var kvp in deviceInfo)
+    {
+        Console.WriteLine($"  {kvp.Key}: {kvp.Value}");
+    }
+}
+```
+
 ## ChartExportOptions
 
 The `ChartExportOptions` class configures chart export behavior for health data visualizations, allowing fine-grained control over which charts are generated and whether summary tables are included in the export. It provides properties to enable/disable specific chart types and methods to export health data to interactive HTML charts.
