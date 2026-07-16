@@ -407,6 +407,63 @@ if (importEvent.GetImportDuration().TotalSeconds > 30)
 Console.WriteLine(importEvent.ToString());
 ```
 
+## RetryHandler
+
+The `RetryHandler` class implements resilient operation execution with configurable retry policies and exponential backoff. It supports both synchronous and asynchronous operations, allowing you to automatically retry failed operations based on customizable retry conditions. The handler is particularly useful for transient failures like network issues, timeouts, or temporary service unavailability.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Integration;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
+
+// Create a logger and retry handler with default configuration
+var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+var logger = loggerFactory.CreateLogger<RetryHandler>();
+var retryHandler = new RetryHandler(logger, maxRetries: 3, initialDelayMs: 100);
+
+// Execute an async operation with retries
+var result = await retryHandler.ExecuteAsync(
+    "FetchPatientData",
+    async () => 
+    {
+        using var httpClient = new HttpClient();
+        var response = await httpClient.GetAsync("https://api.example.com/patients/PT-12345");
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadAsStringAsync();
+    }
+);
+Console.WriteLine($"Operation completed successfully: {result.Length} bytes");
+
+// Execute a sync operation with retries
+var fileContent = retryHandler.Execute(
+    "ReadPatientFile",
+    () => System.IO.File.ReadAllText("/data/patients/PT-12345.json")
+);
+Console.WriteLine($"File read successfully: {fileContent.Length} characters");
+
+// Use predefined retry configurations
+var aggressiveRetry = RetryHandler.CreateAggressive(logger);
+var conservativeRetry = RetryHandler.CreateConservative(logger);
+
+// Access retry handler properties
+Console.WriteLine($"Max Retries: {retryHandler.MaxRetries}");
+Console.WriteLine($"Initial Delay: {retryHandler.InitialDelayMs}ms");
+Console.WriteLine($"Backoff Multiplier: {retryHandler.BackoffMultiplier}");
+
+// Custom retry policy with specific exception types
+var customRetry = new RetryHandler(
+    logger,
+    maxRetries: 5,
+    initialDelayMs: 200,
+    backoffMultiplier: 1.5
+);
+```
+
 ## MetricsCollector
 
 The `MetricsCollector` class collects and tracks metrics for operations, providing insights into performance and usage patterns. It maintains detailed statistics including success/failure counts, execution times, throughput, and item processing rates. This is particularly useful for monitoring performance bottlenecks, tracking operation health, and analyzing system behavior over time.
