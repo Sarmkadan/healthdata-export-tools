@@ -1473,6 +1473,66 @@ await repository.DeleteSleepAsync(sleepData.Id);
 await repository.ClearAllAsync();
 ```
 
+## SqliteConnectionManager
+
+The `SqliteConnectionManager` class manages SQLite database connections and initialization for HealthData Export Tools. It provides methods for creating and managing SQLite connections, initializing database schemas, checking database existence, and performing database operations. It handles both file-based and in-memory SQLite databases, with special support for named in-memory databases to ensure proper sharing across connections.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Data;
+using Microsoft.Data.Sqlite;
+
+// Create a connection manager for a file-based database
+var fileDbPath = "/data/healthdata.db";
+var fileConnectionManager = new SqliteConnectionManager(fileDbPath);
+
+// Check if database exists
+bool databaseExists = fileConnectionManager.DatabaseExists();
+Console.WriteLine($"Database exists: {databaseExists}");
+
+// Get a new SQLite connection
+using var connection = fileConnectionManager.GetConnection();
+
+// Initialize database schema
+await fileConnectionManager.InitializeDatabaseAsync();
+
+// Verify database connectivity
+await fileConnectionManager.VerifyConnectionAsync();
+
+// Get database size
+long dbSize = fileConnectionManager.GetDatabaseSize();
+Console.WriteLine($"Database size: {dbSize} bytes");
+
+// Get connection string
+string connectionString = fileConnectionManager.GetConnectionString();
+Console.WriteLine($"Connection string: {connectionString}");
+
+// Create a connection manager for an in-memory database
+var memoryConnectionManager = new SqliteConnectionManager(":memory:");
+
+// Get a connection to the in-memory database
+using var memoryConnection = memoryConnectionManager.GetConnection();
+
+// Initialize the in-memory database schema
+await memoryConnectionManager.InitializeDatabaseAsync();
+
+// Verify the in-memory connection works
+bool memoryConnectionValid = await memoryConnectionManager.VerifyConnectionAsync();
+Console.WriteLine($"In-memory connection valid: {memoryConnectionValid}");
+
+// Get size of in-memory database (will be 0 for file-based check)
+long memoryDbSize = memoryConnectionManager.GetDatabaseSize();
+Console.WriteLine($"In-memory database size: {memoryDbSize} bytes");
+
+// Delete the file-based database when done (in-memory is automatically cleaned up)
+if (fileConnectionManager.DatabaseExists())
+{
+    fileConnectionManager.DeleteDatabase();
+    Console.WriteLine("Database deleted successfully");
+}
+```
+
 ## IMiddleware
 
 The `IMiddleware` interface defines the contract for middleware components in the request processing pipeline. It provides properties for tracking request context, metadata, and processing state, allowing middleware to handle requests and responses consistently.
