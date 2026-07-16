@@ -224,3 +224,52 @@ eventBus.Unsubscribe<PatientDataExportedEvent>(async @event => {
 // Clear all subscribers
 eventBus.ClearAllSubscribers();
 ```
+
+## HealthDataImportedEvent
+
+The `HealthDataImportedEvent` is raised when health data is successfully imported from a wearable device or external source. It contains comprehensive metadata about the import operation including record count, timing information, source details, device type, and the types of metrics imported. This event is useful for triggering downstream processes like data validation, caching, indexing, or analytics pipeline updates.
+
+
+
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Events;
+using HealthDataExportTools.Domain.Enums;
+using System;
+using System.Collections.Generic;
+
+// Create a HealthDataImportedEvent instance
+var importId = Guid.NewGuid().ToString();
+var importStartTime = DateTime.UtcNow.AddMinutes(-2);
+var importEndTime = DateTime.UtcNow;
+var metricTypes = new List<string> { "HeartRate", "Steps", "Sleep", "SpO2" };
+
+var importEvent = new HealthDataImportedEvent(
+    importId: importId,
+    recordCount: 2487,
+    importStartTime: importStartTime,
+    importEndTime: importEndTime,
+    importSource: "zepp://user/12345/data.json",
+    deviceType: DeviceType.Zepp,
+    importedMetricTypes: metricTypes
+);
+
+// Access import properties
+Console.WriteLine($"Import completed: {importEvent.RecordCount} records");
+Console.WriteLine($"Source: {importEvent.ImportSource}");
+Console.WriteLine($"Device: {importEvent.DeviceType}");
+Console.WriteLine($"Metrics: {string.Join(", ", importEvent.ImportedMetricTypes)}");
+Console.WriteLine($"Duration: {importEvent.GetImportDuration().TotalSeconds:F2} seconds");
+Console.WriteLine($"Throughput: {importEvent.GetThroughput():F2} records/sec");
+
+// Check if import had issues (duration > 30 seconds)
+if (importEvent.GetImportDuration().TotalSeconds > 30)
+{
+    Console.WriteLine("Warning: Import took longer than expected");
+}
+
+// Use the ToString() method for quick logging
+Console.WriteLine(importEvent.ToString());
+```
