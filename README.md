@@ -2,6 +2,88 @@
 
 The `ActivityData` class represents a collection of activity metrics derived from wearable devices or health monitoring systems. It tracks various activity indicators such as activity type, start/end time, duration, distance, average pace, and calories burned. This data is crucial for assessing physical activity and detecting potential health risks.
 
+
+## SleepData
+
+The `SleepData` class represents a single sleep session with detailed metrics captured from wearable devices or sleep tracking systems. It tracks various sleep indicators such as sleep start/end times, duration, sleep stages (deep, light, REM), awake periods, and quality assessments. This data is crucial for analyzing sleep patterns and identifying potential sleep issues.
+
+### Properties
+
+* `SleepStart` and `SleepEnd`: The start and end times of the sleep session
+* `DurationMinutes`: The total duration of the sleep session in minutes
+* `DeepSleepMinutes`, `LightSleepMinutes`, `RemSleepMinutes`, `AwakeMinutes`: Durations of different sleep stages and awake periods in minutes
+* `Quality`: The overall quality assessment of the sleep session (Excellent, Good, Average, Poor)
+* `Score`: An optional sleep score assigned by the device (typically 0-100)
+* `CycleCount`: An optional count of sleep cycles detected
+* `IsNap`: Indicates if this is a short nap rather than a full sleep session
+* `AverageHeartRate`: The average heart rate during the sleep session (optional)
+
+### Methods
+
+* `CalculateQuality()`: Calculate sleep quality based on duration and sleep stage percentages
+* `IsValid()`: Validate sleep data integrity and plausibility
+* `GetSummary()`: Get a summary of the sleep session's key metrics
+* `GetDeepSleepPercentage()`: Calculate the percentage of time spent in deep sleep
+* `GetRemSleepPercentage()`: Calculate the percentage of time spent in REM sleep
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Domain.Models;
+using HealthDataExportTools.Domain.Enums;
+
+// Create a new SleepData instance for a full night's sleep
+var sleepData = new SleepData
+{
+    SleepStart = new DateTime(2024, 3, 15, 22, 30, 0), // 10:30 PM
+    SleepEnd = new DateTime(2024, 3, 16, 6, 45, 0),   // 6:45 AM
+    DurationMinutes = 495,
+    DeepSleepMinutes = 90,
+    LightSleepMinutes = 270,
+    RemSleepMinutes = 75,
+    AwakeMinutes = 60,
+    Quality = SleepQuality.Good,
+    Score = 82,
+    CycleCount = 4,
+    IsNap = false,
+    AverageHeartRate = 58,
+    DeviceId = "SLEEP-001",
+    RecordDate = new DateTime(2024, 3, 16)
+};
+
+// Access sleep data properties
+Console.WriteLine($"Sleep Date: {sleepData.RecordDate:yyyy-MM-dd}");
+Console.WriteLine($"Duration: {sleepData.DurationMinutes} minutes");
+Console.WriteLine($"Start Time: {sleepData.SleepStart:HH:mm}");
+Console.WriteLine($"End Time: {sleepData.SleepEnd:HH:mm}");
+Console.WriteLine($"Deep Sleep: {sleepData.DeepSleepMinutes} minutes ({sleepData.GetDeepSleepPercentage():F1}%)");
+Console.WriteLine($"Light Sleep: {sleepData.LightSleepMinutes} minutes");
+Console.WriteLine($"REM Sleep: {sleepData.RemSleepMinutes} minutes ({sleepData.GetRemSleepPercentage():F1}%)");
+Console.WriteLine($"Awake Time: {sleepData.AwakeMinutes} minutes");
+Console.WriteLine($"Quality: {sleepData.Quality}");
+Console.WriteLine($"Score: {sleepData.Score}");
+Console.WriteLine($"Cycles: {sleepData.CycleCount}");
+Console.WriteLine($"Is Nap: {sleepData.IsNap}");
+Console.WriteLine($"Average Heart Rate: {sleepData.AverageHeartRate} bpm");
+
+// Calculate quality programmatically
+var calculatedQuality = sleepData.CalculateQuality();
+Console.WriteLine($"Calculated Quality: {calculatedQuality}");
+
+// Validate data
+if (sleepData.IsValid())
+{
+    Console.WriteLine("Sleep data is valid and ready for analysis");
+}
+
+// Get summary data
+var summary = sleepData.GetSummary();
+foreach (var item in summary)
+{
+    Console.WriteLine($"{item.Key}: {item.Value}");
+}
+```
+
 ### Properties
 
 * `ActivityType`: The type of activity (e.g., walking, running, cycling)
