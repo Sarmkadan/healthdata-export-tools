@@ -603,6 +603,120 @@ if (deviceInfo != null)
 }
 ```
 
+## ExportService
+
+The `ExportService` provides comprehensive export capabilities for health data, enabling conversion of health metrics into structured JSON and CSV formats. It supports exporting complete datasets or individual record types (sleep, heart rate, steps) with specialized methods for different data formats and use cases.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Services;
+using HealthDataExportTools.Domain.Models;
+using HealthDataExportTools.Domain.Enums;
+
+// Create export service
+var exportService = new ExportService();
+
+// Sample health data records
+var sleepRecords = new List<SleepData>
+{
+    new SleepData
+    {
+        RecordDate = DateTime.UtcNow.AddDays(-1),
+        DurationMinutes = 480,
+        DeepSleepMinutes = 120,
+        LightSleepMinutes = 240,
+        RemSleepMinutes = 90,
+        AwakeMinutes = 30,
+        Quality = SleepQuality.Good,
+        Score = 85,
+        AverageHeartRate = 68
+    }
+};
+
+var heartRateRecords = new List<HeartRateData>
+{
+    new HeartRateData
+    {
+        RecordDate = DateTime.UtcNow.AddDays(-1),
+        MinimumBpm = 50,
+        MaximumBpm = 120,
+        AverageBpm = 68,
+        RestingBpm = 55,
+        MeasurementCount = 1440,
+        StressLevel = 35,
+        CardioZoneMinutes = 30,
+        ZoneMinutes = new int[] { 60, 120, 90, 45, 15 }
+    }
+};
+
+var stepsRecords = new List<StepsData>
+{
+    new StepsData
+    {
+        RecordDate = DateTime.UtcNow.AddDays(-1),
+        TotalSteps = 8500,
+        DistanceKm = 6.2,
+        CaloriesBurned = 320,
+        DailyGoal = 10000,
+        ActiveMinutes = 45,
+        WalkingMinutes = 30,
+        RunningMinutes = 15
+    }
+};
+
+// Export sleep data to CSV
+await exportService.ExportSleepToCsvAsync(
+    sleepRecords,
+    "/exports/sleep_data.csv"
+);
+
+// Export heart rate data to CSV
+await exportService.ExportHeartRateToCsvAsync(
+    heartRateRecords,
+    "/exports/heart_rate_data.csv"
+);
+
+// Export steps data to CSV
+await exportService.ExportStepsToCsvAsync(
+    stepsRecords,
+    "/exports/steps_data.csv"
+);
+
+// Export heart rate data with zones to CSV (requires max heart rate)
+await exportService.ExportHeartRateWithZonesToCsvAsync(
+    heartRateRecords,
+    "/exports/heart_rate_with_zones.csv",
+    maxHeartRate: 180
+);
+
+// Export complete health data collection to JSON
+var healthDataCollection = new HealthDataCollection
+{
+    SleepRecords = sleepRecords,
+    HeartRateRecords = heartRateRecords,
+    StepsRecords = stepsRecords
+};
+
+await exportService.ExportToJsonAsync(
+    healthDataCollection,
+    "/exports/health_data.json"
+);
+
+// Export to separate JSON files per data type
+await exportService.ExportToJsonPerTypeAsync(
+    healthDataCollection,
+    "/exports/json_per_type"
+);
+
+// Export complete dataset in a specific format
+await exportService.ExportCompleteAsync(
+    healthDataCollection,
+    "/exports/complete_dataset",
+    ExportFormat.Json
+);
+```
+
 ## ChartExportOptions
 
 The `ChartExportOptions` class configures chart export behavior for health data visualizations, allowing fine-grained control over which charts are generated and whether summary tables are included in the export. It provides properties to enable/disable specific chart types and methods to export health data to interactive HTML charts.
