@@ -133,3 +133,57 @@ Console.WriteLine($"Validation warnings count: {result.GetWarningCount()}");
 Console.WriteLine($"Validation duration (ms): {result.DurationMs}");
 ```
 
+## InMemoryCacheProvider
+
+The `InMemoryCacheProvider` class provides a thread-safe, in-memory cache implementation with expiration support and comprehensive statistics tracking. It implements the `ICacheProvider` interface and uses `ReaderWriterLockSlim` for concurrent access, making it suitable for multi-threaded applications.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Cache;
+using Microsoft.Extensions.Logging;
+
+// Create cache provider with logger
+var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+var logger = loggerFactory.CreateLogger<InMemoryCacheProvider>();
+var cacheProvider = new InMemoryCacheProvider(logger);
+
+// Set a value in cache with 10 minute expiration
+var patientData = new { Id = 123, Name = "John Doe", Age = 45 };
+await cacheProvider.SetAsync("patient_123", patientData, TimeSpan.FromMinutes(10));
+
+// Get a value from cache
+var cachedData = await cacheProvider.GetAsync<object>("patient_123");
+if (cachedData != null)
+{
+    Console.WriteLine("Cache hit!");
+}
+else
+{
+    Console.WriteLine("Cache miss - value not found or expired");
+}
+
+// Check if key exists
+bool exists = await cacheProvider.ExistsAsync("patient_123");
+Console.WriteLine($"Key exists: {exists}");
+
+// Get cache statistics
+var stats = await cacheProvider.GetStatsAsync();
+Console.WriteLine($"Cache items: {stats.ItemCount}");
+Console.WriteLine($"Hit rate: {(stats.HitCount + stats.MissCount > 0 ? (double)stats.HitCount / (stats.HitCount + stats.MissCount) : 0):P2}");
+Console.WriteLine($"Total size: {stats.TotalSize} bytes");
+
+// Remove a specific key
+await cacheProvider.RemoveAsync("patient_123");
+
+// Clear entire cache
+await cacheProvider.ClearAsync();
+
+// Get all cache keys
+var keys = await cacheProvider.GetKeysAsync();
+Console.WriteLine($"Cache contains {keys.Count} keys");
+
+// Dispose when done
+cacheProvider.Dispose();
+```
+
