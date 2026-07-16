@@ -1,5 +1,32 @@
 // existing content ...
 
+## AnomalyPoint
+
+The `AnomalyPoint` class represents a single data point that was flagged as anomalous during Z-score analysis, providing detailed information about the anomaly including its date, value, statistical deviation, and severity classification.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.DTOs;
+
+// Create a new AnomalyPoint instance
+var anomaly = new AnomalyPoint
+{
+    Date = DateTime.UtcNow.AddHours(-2),
+    Value = 145.5,
+    ZScore = 3.2,
+    DeviationFromMean = 22.3,
+    Severity = "Severe"
+};
+
+// Accessing properties
+Console.WriteLine($"Anomaly Date: {anomaly.Date}");
+Console.WriteLine($"Measured Value: {anomaly.Value}");
+Console.WriteLine($"Z-Score: {anomaly.ZScore}");
+Console.WriteLine($"Deviation from Mean: {anomaly.DeviationFromMean}");
+Console.WriteLine($"Severity: {anomaly.Severity}");
+```
+
 ## ValidationResultDto
 
 The `ValidationResultDto` class represents the result of a validation operation, providing detailed information about the validation process, including the validation ID, timestamp, and statistics about the validation outcome.
