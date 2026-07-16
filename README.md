@@ -467,6 +467,62 @@ if (importEvent.GetImportDuration().TotalSeconds > 30)
 Console.WriteLine(importEvent.ToString());
 ```
 
+## HealthMetric
+
+The `HealthMetric` class represents computed health metrics derived from multiple data sources. It tracks various health indicators such as VO2Max, RestingHeartRate, SleepDebt, and other quantitative health measurements. The class provides comprehensive functionality for tracking values over time, calculating trends, assessing health status, and validating data integrity.
+
+Metrics can be updated with new values, which automatically calculates percentage changes and trend indicators (-1 for worsening, 0 for stable, 1 for improving). Health status is assessed based on configurable normal ranges, with automatic categorization into "Optimal", "Normal", "Caution", or "Alert" states.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Domain.Models;
+using System;
+using System.Collections.Generic;
+
+// Create a new health metric for Resting Heart Rate
+var restingHeartRate = new HealthMetric
+{
+    MetricName = "RestingHeartRate",
+    Value = 62.5,
+    Unit = "BPM",
+    NormalRangeLow = 60.0,
+    NormalRangeHigh = 100.0,
+    ConfidenceScore = 95,
+    DataSources = new List<string> { "Fitbit", "AppleHealth" },
+    SampleDays = 30
+};
+
+// Assess health status based on normal ranges
+restingHeartRate.AssessHealthStatus();
+Console.WriteLine($"Health Status: {restingHeartRate.HealthStatus}"); // Outputs: "Optimal"
+
+// Check if value is within normal range
+bool isNormal = restingHeartRate.IsInNormalRange();
+Console.WriteLine($"Is in normal range: {isNormal}"); // Outputs: True
+
+// Update metric with new value (automatically calculates trend and percentage change)
+restingHeartRate.UpdateValue(68.2);
+Console.WriteLine($"New Value: {restingHeartRate.Value} {restingHeartRate.Unit}");
+Console.WriteLine($"Previous Value: {restingHeartRate.PreviousValue} {restingHeartRate.Unit}");
+Console.WriteLine($"Percentage Change: {restingHeartRate.PercentageChange:F1}%");
+Console.WriteLine($"Trend: {(restingHeartRate.Trend == 1 ? "Improving" : restingHeartRate.Trend == -1 ? "Worsening" : "Stable")}");
+
+// Add additional data source
+restingHeartRate.AddDataSource("Garmin");
+
+// Get metric summary
+var summary = restingHeartRate.GetSummary();
+foreach (var kvp in summary)
+{
+    Console.WriteLine($"{kvp.Key}: {kvp.Value}");
+}
+
+// Validate metric data
+bool isValid = restingHeartRate.IsValid();
+Console.WriteLine($"Metric is valid: {isValid}");
+```
+
 ## SpO2Data
 
 The `SpO2Data` class represents blood oxygen saturation measurements collected from wearable devices or health monitoring systems. It tracks daily SpO2 statistics including minimum, maximum, and average readings, along with detailed measurement history and reliability indicators. This data is crucial for assessing respiratory health and detecting potential oxygen desaturation events.
