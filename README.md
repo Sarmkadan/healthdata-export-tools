@@ -198,6 +198,106 @@ Console.WriteLine($"Validation warnings count: {result.GetWarningCount()}");
 Console.WriteLine($"Validation duration (ms): {result.DurationMs}");
 ```
 
+## CacheService
+
+The `CacheService` provides a high-level interface for caching health data, analytics results, and file parse results with configurable time-to-live (TTL). It abstracts the underlying cache provider and adds domain-specific caching methods for common health data scenarios, including automatic key prefixing and comprehensive error handling.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Services;
+using HealthDataExportTools.Domain.Models;
+using HealthDataExportTools.Cache;
+using Microsoft.Extensions.Logging;
+
+// Create logger and cache provider
+var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+var logger = loggerFactory.CreateLogger<CacheService>();
+var cacheProvider = new InMemoryCacheProvider(logger);
+
+// Create cache service with 2-hour default TTL
+var cacheService = new CacheService(cacheProvider, logger, TimeSpan.FromHours(2));
+
+// Sample health data records (using SleepData as concrete implementation)
+var healthRecords = new List<HealthDataRecord>
+{
+    new SleepData
+    {
+        RecordDate = DateTime.UtcNow.AddDays(-1),
+        DeviceId = "device_001",
+        DurationMinutes = 480,
+        DeepSleepMinutes = 120,
+        FirmwareVersion = "1.2.3"
+    },
+    new SleepData
+    {
+        RecordDate = DateTime.UtcNow.AddDays(-2),
+        DeviceId = "device_001",
+        DurationMinutes = 510,
+        DeepSleepMinutes = 135,
+        FirmwareVersion = "1.2.3"
+    }
+};
+
+// Cache health data with custom key
+await cacheService.CacheHealthDataAsync("patient_12345_sleep", healthRecords);
+
+// Retrieve cached health data
+var cachedRecords = await cacheService.GetCachedHealthDataAsync("patient_12345_sleep");
+if (cachedRecords != null)
+{
+    Console.WriteLine($"Retrieved {cachedRecords.Count} cached health records");
+    foreach (var record in cachedRecords)
+    {
+        Console.WriteLine($" - Record date: {record.RecordDate:yyyy-MM-dd}, Device: {record.DeviceId}");
+    }
+}
+
+// Cache analytics data (using anonymous object as example)
+var analyticsData = new { TotalRecords = 1500, AvgSleepDuration = 495.5, AnalysisDate = DateTime.UtcNow };
+await cacheService.CacheAnalyticsAsync("sleep_analytics_q2_2024", analyticsData);
+
+// Retrieve cached analytics
+var cachedAnalytics = await cacheService.GetCachedAnalyticsAsync<object>("sleep_analytics_q2_2024");
+if (cachedAnalytics != null)
+{
+    Console.WriteLine($"Cached analytics retrieved: {cachedAnalytics.TotalRecords} records");
+}
+
+// Cache file parse results
+var filePath = "/data/patient_records_2024.json";
+await cacheService.CacheParseResultAsync(filePath, healthRecords);
+
+// Retrieve cached parse result
+var cachedParseResult = await cacheService.GetCachedParseResultAsync(filePath);
+if (cachedParseResult != null)
+{
+    Console.WriteLine($"Parse result cached for file: {filePath}");
+}
+
+// Check if health data is cached
+bool isCached = await cacheService.IsHealthDataCachedAsync("patient_12345_sleep");
+Console.WriteLine($"Health data cached: {isCached}");
+
+// Get cache statistics
+var stats = await cacheService.GetStatsAsync();
+if (stats != null)
+{
+    Console.WriteLine($"Cache items: {stats.ItemCount}");
+    Console.WriteLine($"Total size: {stats.TotalSize} bytes");
+    Console.WriteLine($"Hit rate: {stats.HitRate:P2}");
+}
+
+// Remove specific cache entry
+await cacheService.RemoveAsync("patient_12345_sleep");
+
+// Clear all cache entries
+await cacheService.ClearAllAsync();
+
+// Clear cache entries matching a pattern
+await cacheService.ClearPatternAsync("analytics_");
+```
+
 ## ChartExportOptions
 
 The `ChartExportOptions` class configures chart export behavior for health data visualizations, allowing fine-grained control over which charts are generated and whether summary tables are included in the export. It provides properties to enable/disable specific chart types and methods to export health data to interactive HTML charts.
