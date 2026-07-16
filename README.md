@@ -99,3 +99,73 @@ await testSuite.ComparePeriodsAsync_ShouldCalculatePercentageCorrectly();
 await testSuite.ComparePeriodsAsync_WithSpO2Data_ShouldCalculateSpO2Change();
 await testSuite.ComparePeriodsAsync_ShouldPopulateNarrativeSummary();
 ```
+
+## EventBus
+
+The `EventBus` class implements a thread-safe, asynchronous event bus using the publish-subscribe pattern. It enables decoupled communication between components by allowing event publishers to notify multiple subscribers without direct dependencies. The implementation is designed for high-concurrency scenarios with proper synchronization using `ReaderWriterLockSlim`.
+
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Events;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
+
+// Create an EventBus instance
+var serviceCollection = new ServiceCollection();
+serviceCollection.AddLogging(configure => configure.AddConsole());
+var serviceProvider = serviceCollection.BuildServiceProvider();
+var logger = serviceProvider.GetRequiredService<ILogger<EventBus>>();
+var eventBus = new EventBus(logger);
+
+// Define a custom event
+public class PatientDataExportedEvent : EventBase
+{
+    public string PatientId { get; }
+    public string ExportFormat { get; }
+    public int RecordCount { get; }
+    
+    public PatientDataExportedEvent(string patientId, string exportFormat, int recordCount)
+        : base(patientId)
+    {
+        PatientId = patientId;
+        ExportFormat = exportFormat;
+        RecordCount = recordCount;
+    }
+}
+
+// Subscribe to events
+var notificationService = new NotificationService(logger);
+eventBus.Subscribe<PatientDataExportedEvent>(async @event => {
+    await notificationService.SendNotificationAsync(new NotificationMessage
+    {
+        Subject = "Patient Data Exported",
+        Body = $"Patient {@event.PatientId} data exported to {@event.ExportFormat} ({@event.RecordCount} records)",
+        Type = NotificationType.Info,
+        Timestamp = DateTime.UtcNow
+    });
+});
+
+// Publish an event
+var exportEvent = new PatientDataExportedEvent("PT-12345", "PDF", 42);
+await eventBus.PublishAsync(exportEvent);
+
+// Check subscriber count
+var subscriberCount = eventBus.GetSubscriberCount<PatientDataExportedEvent>();
+Console.WriteLine($"Subscribers: {subscriberCount}");
+
+// Unsubscribe when no longer needed
+eventBus.Unsubscribe<PatientDataExportedEvent>(async @event => {
+    await notificationService.SendNotificationAsync(new NotificationMessage
+    {
+        Subject = "Unsubscribed from Patient Data Exported",
+        Body = $"No longer receiving export notifications for patient {@event.PatientId}",
+        Type = NotificationType.Info,
+        Timestamp = DateTime.UtcNow
+    });
+});
+
+// Clear all subscribers
+eventBus.ClearAllSubscribers();
+```
