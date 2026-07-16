@@ -1358,6 +1358,121 @@ var activityRecords = healthData.ActivityRecords;
 var metrics = healthData.Metrics;
 ```
 
+## InMemoryHealthDataRepository
+
+The `InMemoryHealthDataRepository` provides an in-memory implementation of health data storage for testing and development scenarios. It implements all CRUD operations for sleep, heart rate, SpO2, and steps data with support for both individual record retrieval and range queries, making it ideal for unit testing, prototyping, and scenarios where persistent storage is not required.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Data;
+using HealthDataExportTools.Domain.Models;
+
+// Create in-memory repository
+var repository = new InMemoryHealthDataRepository();
+
+// Add sleep data
+var sleepData = new SleepData
+{
+    RecordDate = DateTime.UtcNow.AddDays(-1),
+    DeviceId = "device_001",
+    DurationMinutes = 480,
+    DeepSleepMinutes = 120,
+    LightSleepMinutes = 240,
+    RemSleepMinutes = 90,
+    AwakeMinutes = 30,
+    Quality = Domain.Enums.SleepQuality.Good,
+    Score = 85,
+    AverageHeartRate = 68
+};
+await repository.AddSleepAsync(sleepData);
+
+// Add heart rate data
+var heartRateData = new HeartRateData
+{
+    RecordDate = DateTime.UtcNow.AddDays(-1),
+    DeviceId = "device_001",
+    MinimumBpm = 50,
+    MaximumBpm = 120,
+    AverageBpm = 68,
+    RestingBpm = 55,
+    MeasurementCount = 1440,
+    StressLevel = 35,
+    CardioZoneMinutes = 30,
+    ZoneMinutes = new int[] { 60, 120, 90, 45, 15 }
+};
+await repository.AddHeartRateAsync(heartRateData);
+
+// Add SpO2 data
+var spo2Data = new SpO2Data
+{
+    RecordDate = DateTime.UtcNow.AddDays(-1),
+    DeviceId = "device_001",
+    MinimumPercentage = 95,
+    MaximumPercentage = 99,
+    AveragePercentage = 97,
+    MeasurementCount = 720,
+    RestingPercentage = 96,
+    LowSpO2Events = 2
+};
+await repository.AddSpO2Async(spo2Data);
+
+// Add steps data
+var stepsData = new StepsData
+{
+    RecordDate = DateTime.UtcNow.AddDays(-1),
+    DeviceId = "device_001",
+    TotalSteps = 8500,
+    DistanceKm = 6.2,
+    CaloriesBurned = 320,
+    DailyGoal = 10000,
+    ActiveMinutes = 45,
+    WalkingMinutes = 30,
+    RunningMinutes = 15
+};
+await repository.AddStepsAsync(stepsData);
+
+// Retrieve sleep data by ID
+var retrievedSleep = await repository.GetSleepByIdAsync(sleepData.Id);
+Console.WriteLine($"Retrieved sleep record: {retrievedSleep?.DurationMinutes} minutes");
+
+// Retrieve sleep data by date
+var sleepByDate = await repository.GetSleepByDateAsync(DateTime.UtcNow.AddDays(-1));
+Console.WriteLine($"Sleep records for date: {sleepByDate.Count} records");
+
+// Retrieve sleep data by date range
+var sleepByRange = await repository.GetSleepRangeAsync(
+    DateTime.UtcNow.AddDays(-3),
+    DateTime.UtcNow.AddDays(-1)
+);
+Console.WriteLine($"Sleep records in range: {sleepByRange.Count} records");
+
+// Retrieve heart rate data by date
+var heartRateByDate = await repository.GetHeartRateByDateAsync(DateTime.UtcNow.AddDays(-1));
+Console.WriteLine($"Heart rate records for date: {heartRateByDate?.AverageBpm} BPM");
+
+// Retrieve SpO2 data by date
+var spo2ByDate = await repository.GetSpO2ByDateAsync(DateTime.UtcNow.AddDays(-1));
+Console.WriteLine($"SpO2 records for date: {spo2ByDate?.AveragePercentage}%");
+
+// Retrieve steps data by date
+var stepsByDate = await repository.GetStepsByDateAsync(DateTime.UtcNow.AddDays(-1));
+Console.WriteLine($"Steps records for date: {stepsByDate?.TotalSteps} steps");
+
+// Update sleep data
+if (retrievedSleep != null)
+{
+    retrievedSleep.DurationMinutes = 510;
+    await repository.UpdateSleepAsync(retrievedSleep);
+}
+
+// Delete sleep data
+await repository.DeleteSleepAsync(sleepData.Id);
+
+// Clear all data
+await repository.ClearAllAsync();
+```
+
 ## IMiddleware
 
 The `IMiddleware` interface defines the contract for middleware components in the request processing pipeline. It provides properties for tracking request context, metadata, and processing state, allowing middleware to handle requests and responses consistently.
