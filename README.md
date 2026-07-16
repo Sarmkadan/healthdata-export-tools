@@ -1,5 +1,75 @@
 // Health Data Export Tools
 
+## WebhookService
+
+The `WebhookService` manages webhook registrations and event notifications, enabling external systems to receive real-time updates when specific events occur within the HealthData Export Tools. It supports registering, unregistering, and triggering webhooks with detailed tracking of invocation history, success/failure counts, and retry attempts.
+
+
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Integration;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+// Create a logger and webhook service
+var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+var logger = loggerFactory.CreateLogger<WebhookService>();
+var webhookService = new WebhookService(logger);
+
+// Register a new webhook
+var webhookId = webhookService.RegisterWebhook(
+    url: "https://api.example.com/webhooks/healthdata",
+    eventType: "PatientDataExported",
+    isActive: true);
+Console.WriteLine($"Webhook registered with ID: {webhookId}");
+
+// Get registered webhooks
+var registeredWebhooks = webhookService.GetRegisteredWebhooks();
+Console.WriteLine($"Total registered webhooks: {registeredWebhooks.Count}");
+
+// Activate/deactivate a webhook
+var activationResult = webhookService.SetWebhookActive(webhookId, isActive: true);
+Console.WriteLine($"Webhook activation status: {activationResult}");
+
+// Trigger webhooks for a specific event
+var webhookEvent = new WebhookEvent
+{
+    EventType = "PatientDataExported",
+    Timestamp = DateTime.UtcNow,
+    Payload = new Dictionary<string, object>
+    {
+        { "patientId", "PT-12345" },
+        { "exportFormat", "CSV" },
+        { "recordsExported", 1542 },
+        { "exportId", Guid.NewGuid().ToString() }
+    }
+};
+
+await webhookService.TriggerWebhooksAsync(webhookEvent);
+
+// Get detailed webhook information
+var webhookDetails = webhookService.GetRegisteredWebhooks()
+    .FirstOrDefault(w => w.Id == webhookId);
+if (webhookDetails != null)
+{
+    Console.WriteLine($"Webhook URL: {webhookDetails.Url}");
+    Console.WriteLine($"Event Type: {webhookDetails.EventType}");
+    Console.WriteLine($"Is Active: {webhookDetails.IsActive}");
+    Console.WriteLine($"Created At: {webhookDetails.CreatedAt}");
+    Console.WriteLine($"Last Invoked: {webhookDetails.LastInvokedAt}");
+    Console.WriteLine($"Success Count: {webhookDetails.SuccessCount}");
+    Console.WriteLine($"Failure Count: {webhookDetails.FailureCount}");
+}
+
+// Unregister a webhook
+var unregisterResult = webhookService.UnregisterWebhook(webhookId);
+Console.WriteLine($"Webhook unregistered: {unregisterResult}");
+```
+
 ## RateLimiter
 
 The `RateLimiter` class implements a token bucket rate limiting algorithm to control the frequency of operations. It tracks available tokens, refills them at a specified rate, and provides both synchronous and asynchronous methods for acquiring rate limit permits. This is particularly useful for managing API calls, database operations, or other resource-intensive tasks to prevent overwhelming systems.
