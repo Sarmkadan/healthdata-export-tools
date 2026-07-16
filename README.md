@@ -706,6 +706,103 @@ var dateRangeResult = await comparisonService.CompareByDateRangeAsync(
 );
 ```
 
+## BatchProcessingService
+
+The `BatchProcessingService` provides efficient batch processing capabilities for large datasets of health records, enabling parallel and sequential processing with progress tracking and comprehensive statistics. It handles large volumes of health data efficiently with configurable batch sizes and supports both synchronous and asynchronous batch processing patterns.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Services;
+using Microsoft.Extensions.Logging;
+
+// Create logger and batch processing service
+var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+var logger = loggerFactory.CreateLogger<BatchProcessingService>();
+var batchService = new BatchProcessingService(logger);
+
+// Sample health data records (using SleepData as example)
+var healthRecords = new List<SleepData>();
+for (int i = 0; i < 5000; i++)
+{
+    healthRecords.Add(new SleepData
+    {
+        RecordDate = DateTime.UtcNow.AddDays(-i % 30),
+        DeviceId = $"device_{i % 10}",
+        DurationMinutes = 450 + (i % 60),
+        DeepSleepMinutes = 90 + (i % 30),
+        FirmwareVersion = "1.2.3"
+    });
+}
+
+// Process in batches with progress callback
+var processingResult = await batchService.ProcessInBatchesAsync(
+    healthRecords,
+    async (batch) =>
+    {
+        // Process each batch of records
+        foreach (var record in batch)
+        {
+            // Your processing logic here
+            await Task.Delay(1); // Simulate work
+        }
+    },
+    batchSize: 500,
+    progressCallback: progress =>
+    {
+        Console.WriteLine($"Progress: {progress.PercentComplete}% - " +
+                        $"Batch {progress.CurrentBatch}/{progress.TotalBatches} - " +
+                        $"{progress.ProcessedItems}/{progress.TotalItems} items");
+    }
+);
+
+// Check processing results
+Console.WriteLine($"\nProcessing completed in {processingResult.GetDuration().TotalSeconds:F2} seconds");
+Console.WriteLine($"Total items: {processingResult.TotalItems}");
+Console.WriteLine($"Processed items: {processingResult.ProcessedItems}");
+Console.WriteLine($"Failed items: {processingResult.FailedItems}");
+Console.WriteLine($"Success rate: {processingResult.GetSuccessRate():F2}%");
+Console.WriteLine($"Throughput: {processingResult.GetThroughput():F2} items/second");
+Console.WriteLine($"Status: {(processingResult.IsSuccessful ? "SUCCESS" : "FAILED")}");
+
+if (!processingResult.IsSuccessful && processingResult.Errors.Any())
+{
+    Console.WriteLine("\nErrors encountered:");
+    foreach (var error in processingResult.Errors)
+    {
+        Console.WriteLine($" - {error}");
+    }
+}
+
+// Process in parallel batches for better performance
+var parallelResult = await batchService.ProcessInParallelBatchesAsync(
+    healthRecords,
+    async (batch) =>
+    {
+        // Process each batch in parallel
+        foreach (var record in batch)
+        {
+            // Your parallel processing logic here
+            await Task.Delay(1);
+        }
+    },
+    batchSize: 1000,
+    maxParallelism: 8
+);
+
+Console.WriteLine($"\nParallel processing completed: {parallelResult.ProcessedItems} items");
+
+// Partition data into batches without processing
+var batches = batchService.PartitionIntoBatches(healthRecords, batchSize: 1000);
+Console.WriteLine($"\nCreated {batches.Count} batches of {batches[0].Count} items each");
+
+// Access batch progress properties
+Console.WriteLine($"\nBatch Progress Properties:");
+Console.WriteLine($" - CurrentBatch: {processingResult.CurrentBatch}");
+Console.WriteLine($" - TotalBatches: {processingResult.TotalBatches}");
+Console.WriteLine($" - PercentComplete: {processingResult.PercentComplete}%");
+```
+
 ## ErrorHandlingMiddleware
 
 The `ErrorHandlingMiddleware` class provides centralized error handling and exception transformation in the HTTP request pipeline. It implements the `IMiddleware` interface and catches exceptions, converting them into structured error responses with consistent error IDs, status codes, and diagnostic information.
