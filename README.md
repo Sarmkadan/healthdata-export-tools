@@ -1695,3 +1695,115 @@ middleware.Exception = new InvalidOperationException("Invalid data format");
 middleware.ContinueProcessing = false;
 ```
 
+## ServiceCollectionExtensions
+
+The `ServiceCollectionExtensions` class provides extension methods for configuring health data services in the dependency injection container. It includes methods for adding core services, configuring repositories (in-memory or SQLite), and creating test service providers with fluent configuration API support.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Configuration;
+using HealthDataExportTools.Data;
+using HealthDataExportTools.Services;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+
+// Basic service registration with default configuration
+var services = new ServiceCollection();
+
+services.AddHealthDataExportServices(options =>
+{
+    options.InputPath = "/data/health_records";
+    options.OutputPath = "/exports/output";
+    options.DatabasePath = "/data/healthdata.db";
+    options.ExportFormat = Domain.Enums.ExportFormat.Json;
+    options.ValidateData = true;
+    options.PerformAnalysis = true;
+    options.TrendAnalysisDays = 30;
+    options.VerboseLogging = true;
+});
+
+// Add in-memory repository for testing
+services.AddInMemoryRepository();
+
+// Build service provider
+var serviceProvider = services.BuildServiceProvider();
+
+// Resolve services
+var exportService = serviceProvider.GetRequiredService<ExportService>();
+var validationService = serviceProvider.GetRequiredService<ValidationService>();
+var repository = serviceProvider.GetRequiredService<IHealthDataRepository>();
+
+Console.WriteLine("Health data services configured successfully!");
+```
+
+### Fluent Configuration API
+
+```csharp
+using HealthDataExportTools.Configuration;
+using HealthDataExportTools.Domain.Enums;
+using Microsoft.Extensions.DependencyInjection;
+
+// Create service collection
+var services = new ServiceCollection();
+
+// Use fluent API for configuration
+var serviceProvider = new HealthDataExportConfigurationBuilder(services)
+    .WithInputPath("/data/health_records")
+    .WithOutputPath("/exports/output")
+    .WithDatabasePath("/data/healthdata.db")
+    .WithExportFormat(ExportFormat.Json)
+    .WithDataValidation()
+    .WithAnalysis()
+    .WithTrendAnalysisDays(30)
+    .WithDateRange(DateTime.UtcNow.AddDays(-90), DateTime.UtcNow)
+    .WithVerboseLogging()
+    .Build();
+
+// Services are automatically registered
+var exportService = serviceProvider.GetRequiredService<ExportService>();
+var repository = serviceProvider.GetRequiredService<IHealthDataRepository>();
+
+Console.WriteLine("Services configured using fluent API!");
+```
+
+### Creating Test Service Providers
+
+```csharp
+using HealthDataExportTools.Configuration;
+
+// Create test service provider with in-memory repository
+var testServiceProvider = ServiceCollectionExtensions.CreateTestServiceProvider();
+var exportService = testServiceProvider.GetRequiredService<ExportService>();
+
+Console.WriteLine("Test service provider created with in-memory repository!");
+
+// Create test service provider with SQLite database
+var sqliteServiceProvider = ServiceCollectionExtensions.CreateTestServiceProvider(
+    "/tmp/test_healthdata.db"
+);
+var sqliteRepository = sqliteServiceProvider.GetRequiredService<IHealthDataRepository>();
+
+Console.WriteLine("Test service provider created with SQLite repository!");
+```
+
+### Adding SQLite Repository
+
+```csharp
+using HealthDataExportTools.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+
+var services = new ServiceCollection();
+
+// Add SQLite repository with automatic database initialization
+services.AddSqliteRepository("/data/healthdata.db");
+
+// Add core services
+services.AddHealthDataExportServices();
+
+var serviceProvider = services.BuildServiceProvider();
+var repository = serviceProvider.GetRequiredService<IHealthDataRepository>();
+
+Console.WriteLine("SQLite repository configured!");
+```
+
