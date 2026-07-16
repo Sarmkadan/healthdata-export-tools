@@ -336,3 +336,76 @@ if (importEvent.GetImportDuration().TotalSeconds > 30)
 // Use the ToString() method for quick logging
 Console.WriteLine(importEvent.ToString());
 ```
+
+## MetricsCollector
+
+The `MetricsCollector` class collects and tracks metrics for operations, providing insights into performance and usage patterns. It maintains detailed statistics including success/failure counts, execution times, throughput, and item processing rates. This is particularly useful for monitoring performance bottlenecks, tracking operation health, and analyzing system behavior over time.
+
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Interceptors;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Threading.Tasks;
+
+// Create a logger and metrics collector
+var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+var logger = loggerFactory.CreateLogger<MetricsCollector>();
+var metricsCollector = new MetricsCollector(logger);
+
+// Record successful operations
+metricsCollector.RecordSuccess("DataExport", TimeSpan.FromSeconds(2.5), itemsProcessed: 1500);
+metricsCollector.RecordSuccess("DataImport", TimeSpan.FromSeconds(1.8), itemsProcessed: 800);
+metricsCollector.RecordSuccess("DataValidation", TimeSpan.FromSeconds(0.7), itemsProcessed: 2000);
+
+// Record failed operations
+try
+{
+    // Simulate a failing operation
+    throw new InvalidOperationException("Database connection failed");
+}
+catch (Exception ex)
+{
+    metricsCollector.RecordFailure("DataExport", ex);
+}
+
+// Get metrics for a specific operation
+var exportMetrics = metricsCollector.GetMetrics("DataExport");
+if (exportMetrics != null)
+{
+    Console.WriteLine($"Operation: {exportMetrics.OperationName}");
+    Console.WriteLine($"Success Count: {exportMetrics.SuccessCount}");
+    Console.WriteLine($"Failure Count: {exportMetrics.FailureCount}");
+    Console.WriteLine($"Total Items: {exportMetrics.TotalItemsProcessed}");
+    Console.WriteLine($"Total Duration: {exportMetrics.TotalDurationMs}ms");
+    Console.WriteLine($"Average Duration: {exportMetrics.AverageDurationMs:F2}ms");
+    Console.WriteLine($"Throughput: {exportMetrics.Throughput:F2} items/sec");
+    Console.WriteLine($"Min Duration: {exportMetrics.MinDurationMs}ms");
+    Console.WriteLine($"Max Duration: {exportMetrics.MaxDurationMs}ms");
+    Console.WriteLine($"First Execution: {exportMetrics.FirstExecutionTime}");
+    Console.WriteLine($"Last Execution: {exportMetrics.LastExecutionTime}");
+}
+
+// Get all metrics
+var allMetrics = metricsCollector.GetAllMetrics();
+Console.WriteLine($"Total operations tracked: {allMetrics.Count}");
+
+// Get summary statistics
+var summary = metricsCollector.GetSummary();
+Console.WriteLine($"Total Operations: {summary.TotalOperations}");
+Console.WriteLine($"Total Successful: {summary.TotalSuccessful}");
+Console.WriteLine($"Total Failed: {summary.TotalFailed}");
+Console.WriteLine($"Success Rate: {summary.SuccessRate:F2}%");
+Console.WriteLine($"Average Duration: {summary.AverageDuration:F2}ms");
+Console.WriteLine($"Total Items Processed: {summary.TotalItemsProcessed}");
+
+// Reset metrics for a specific operation
+metricsCollector.ResetOperation("DataValidation");
+Console.WriteLine("Metrics reset for 'DataValidation'");
+
+// Reset all metrics
+metricsCollector.Reset();
+Console.WriteLine("All metrics have been reset");
+```
