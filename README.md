@@ -588,6 +588,56 @@ await chartService.ExportToHtmlChartsAsync(
 );
 ```
 
+## CsvExportOptions
+
+The `CsvExportOptions` class provides configuration for CSV export operations, allowing fine-grained control over which health data metrics to include and which specific columns to export for each data type. It supports selective inclusion of sleep, heart rate, SpO2, steps, and activity records, along with customizable date formatting and column selection.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Services;
+
+// Create export options with default configuration (all metrics included)
+var exportOptions = new CsvExportOptions
+{
+    DateFormat = "yyyy-MM-dd",
+    IncludeSleep = true,
+    IncludeHeartRate = true,
+    IncludeSpO2 = true,
+    IncludeSteps = true,
+    IncludeActivity = true
+};
+
+// Export all health data to CSV
+var csvExportService = new CsvExportService();
+await csvExportService.ExportToCsvAsync(
+    healthRecords,
+    exportOptions,
+    outputPath: "/exports/patient_health_data_2024.csv"
+);
+
+// Create export options with selective metrics and custom columns
+var selectiveOptions = new CsvExportOptions
+{
+    DateFormat = "MM/dd/yyyy",
+    IncludeSleep = true,
+    IncludeHeartRate = true,
+    IncludeSpO2 = false,  // Exclude SpO2 data
+    IncludeSteps = true,
+    IncludeActivity = false, // Exclude activity data
+    SleepColumns = new List<string> { "Date", "Duration", "DeepSleep", "Quality" },
+    HeartRateColumns = new List<string> { "Date", "AvgBpm", "MinBpm", "MaxBpm" },
+    StepsColumns = new List<string> { "Date", "Steps", "GoalAchievement" }
+};
+
+// Export only selected metrics and columns
+await csvExportService.ExportToCsvAsync(
+    healthRecords,
+    selectiveOptions,
+    outputPath: "/exports/patient_summary_2024.csv"
+);
+```
+
 ## DataComparisonService
 
 The `DataComparisonService` provides functionality to compare two distinct sets of health data records across multiple metrics including sleep, heart rate, steps, SpO2, and activity data. It supports both direct comparison of pre-built periods and comparison by date ranges within a single collection, calculating percentage changes and generating narrative summaries.
