@@ -237,6 +237,85 @@ var healthValidationResult = mockValidationService.ValidateHealthMetric(healthMe
 ```
 
 
+## ExportServiceTests
+
+The `ExportServiceTests` class contains comprehensive unit tests for the `ExportService` class, verifying its export functionality for JSON and CSV formats, handling of empty collections, directory creation, and various data types. It tests scenarios for exporting sleep, heart rate, steps data, and complete health data collections.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Services;
+using HealthDataExportTools.Domain.Models;
+using FluentAssertions;
+using Xunit;
+
+// Create an export service instance
+var exportService = new ExportService();
+
+// Test JSON export with sample health data
+var collection = new HealthDataCollection();
+collection.SleepRecords.Add(new SleepData
+{
+    RecordDate = new DateTime(2024, 1, 1),
+    DeviceId = "device1",
+    DurationMinutes = 480,
+    DeepSleepMinutes = 90,
+    LightSleepMinutes = 270,
+    RemSleepMinutes = 60,
+    AwakeMinutes = 60,
+    Quality = SleepQuality.Good,
+    Score = 85
+});
+
+collection.HeartRateRecords.Add(new HeartRateData
+{
+    RecordDate = new DateTime(2024, 1, 1),
+    DeviceId = "device1",
+    MinimumBpm = 50,
+    MaximumBpm = 120,
+    AverageBpm = 70
+});
+
+collection.StepsRecords.Add(new StepsData
+{
+    RecordDate = new DateTime(2024, 1, 1),
+    DeviceId = "device1",
+    TotalSteps = 10000,
+    DistanceKm = 7.5,
+    CaloriesBurned = 500,
+    DailyGoal = 10000
+});
+
+// Export to JSON
+var jsonPath = "/tmp/health_data_export.json";
+await exportService.ExportToJsonAsync(collection, jsonPath);
+File.Exists(jsonPath).Should().BeTrue();
+
+// Export sleep data to CSV
+var sleepCsvPath = "/tmp/sleep_data.csv";
+await exportService.ExportSleepToCsvAsync(collection.SleepRecords, sleepCsvPath);
+File.Exists(sleepCsvPath).Should().BeTrue();
+
+// Export heart rate data to CSV
+var hrCsvPath = "/tmp/heart_rate_data.csv";
+await exportService.ExportHeartRateToCsvAsync(collection.HeartRateRecords, hrCsvPath);
+File.Exists(hrCsvPath).Should().BeTrue();
+
+// Export steps data to CSV
+var stepsCsvPath = "/tmp/steps_data.csv";
+await exportService.ExportStepsToCsvAsync(collection.StepsRecords, stepsCsvPath);
+File.Exists(stepsCsvPath).Should().BeTrue();
+
+// Export complete collection to all formats
+var outputDir = "/tmp/health_data_complete";
+await exportService.ExportCompleteAsync(collection, outputDir, ExportFormat.All);
+Directory.Exists(outputDir).Should().BeTrue();
+File.Exists(Path.Combine(outputDir, "health_data.json")).Should().BeTrue();
+File.Exists(Path.Combine(outputDir, "sleep.csv")).Should().BeTrue();
+File.Exists(Path.Combine(outputDir, "heart_rate.csv")).Should().BeTrue();
+File.Exists(Path.Combine(outputDir, "steps.csv")).Should().BeTrue();
+```
+
 ## ChartExportServiceTests
 
 The `ChartExportServiceTests` class contains comprehensive unit tests for the `ChartExportService` class. It tests various chart export scenarios including HTML generation, chart rendering, data handling, and configuration options for different health data types like SpO2 records, sleep data, and summary tables.
