@@ -109,6 +109,87 @@ var healthScore = analytics.CalculateHealthScore(
 );
 Console.WriteLine($"Health score: {healthScore}/100");
 ```
+
+## JsonUtility
+
+The `JsonUtility` class provides a comprehensive set of utilities for JSON parsing, serialization, validation, and transformation operations. It includes methods for converting between JSON and dynamic objects, validating JSON structure, merging JSON objects, extracting values by path, and formatting JSON for readability.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Utilities;
+using System.Text.Json;
+
+// Serialize an object to JSON
+var person = new { Name = "John Doe", Age = 30, Active = true };
+string json = JsonUtility.SerializeToJson(person);
+Console.WriteLine(json);
+// Output: {
+//   "name": "John Doe",
+//   "age": 30,
+//   "active": true
+// }
+
+// Deserialize JSON to a typed object
+string jsonData = "{\"name\":\"Jane Smith\",\"age\":25,\"active\":false}";
+var deserialized = JsonUtility.DeserializeFromJson<dynamic>(jsonData);
+Console.WriteLine($"Deserialized: {deserialized?.name}, Age: {deserialized?.age}");
+
+// Parse JSON to dynamic object
+string dynamicJson = "{\"records\":[{\"id\":1,\"value\":\"test\"}]}";
+var dynamicObj = JsonUtility.ParseJsonToDynamic(dynamicJson);
+Console.WriteLine($"Dynamic object type: {dynamicObj?.GetType().Name}");
+
+// Validate JSON structure
+bool isValid = JsonUtility.IsValidJson(jsonData);
+Console.WriteLine($"Is valid JSON: {isValid}");
+
+// Pretty-print JSON
+string minifiedJson = "{\"name\":\"John\",\"age\":30}";
+string prettyJson = JsonUtility.PrettyPrint(minifiedJson);
+Console.WriteLine(prettyJson);
+// Output: {
+//   "name": "John",
+//   "age": 30
+// }
+
+// Merge two JSON objects
+string json1 = "{\"name\":\"John\",\"age\":30}";
+string json2 = "{\"age\":31,\"city\":\"NYC\"}";
+string mergedJson = JsonUtility.MergeJson(json1, json2);
+Console.WriteLine(mergedJson);
+// Output: {
+//   "name": "John",
+//   "age": 31,
+//   "city": "NYC"
+// }
+
+// Extract value by path
+string pathJson = "{\"user\":{\"profile\":{\"name\":\"Alice\",\"age\":28}}}";
+var nameValue = JsonUtility.GetValueByPath(pathJson, "user.profile.name");
+Console.WriteLine($"Name: {nameValue}");
+
+// Minify JSON (remove whitespace)
+string prettyJson2 = "{\n  \"name\": \"Bob\",
+  \"age\": 40
+}";
+string minified = JsonUtility.Minify(prettyJson2);
+Console.WriteLine(minified);
+// Output: {"name":"Bob","age":40}
+
+// Validate JSON structure against required fields
+var requiredFields = new Dictionary<string, string> {
+{ "name", "String" },
+{ "age", "Number" }
+};
+var validationErrors = JsonUtility.ValidateJsonStructure(jsonData, requiredFields);
+if (validationErrors.Count > 0)
+{
+Console.WriteLine("Validation errors:");
+foreach (var error in validationErrors) Console.WriteLine($" - {error}");
+}
+```
+
 ## AnomalyPoint
 
 The `AnomalyPoint` class represents a single data point that was flagged as anomalous during Z-score analysis, providing detailed information about the anomaly including its date, value, statistical deviation, and severity classification.
