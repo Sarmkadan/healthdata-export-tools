@@ -358,6 +358,66 @@ eventBus.Unsubscribe<PatientDataExportedEvent>(async @event => {
 eventBus.ClearAllSubscribers();
 ```
 
+## CliOptions
+
+The `CliOptions` class defines all command-line arguments and options for the HealthData Export Tools CLI application. It handles input/output paths, database connections, export formats, device specifications, date ranges, and various operational flags for controlling the export process. This class is typically used with command-line parsing libraries like `System.CommandLine` or `Microsoft.Extensions.Configuration`.
+
+
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Cli;
+using System;
+using System.IO;
+
+// Create CliOptions with common export parameters
+var options = new CliOptions
+{
+    InputPath = "/data/health_records/2024",
+    OutputPath = "/exports/patient_data_2024",
+    DatabasePath = "/databases/healthdata.db",
+    Format = "CSV",
+    Device = "Zepp",
+    DataType = "Activity",
+    StartDate = "2024-01-01",
+    EndDate = "2024-12-31",
+    Validate = true,
+    Analyze = true,
+    Compare = true,
+    Verbose = true,
+    Compress = true,
+    Parallel = true,
+    MaxParallelism = 4,
+    EnableCache = true,
+    CacheDurationMinutes = 60
+};
+
+// Validate required fields
+if (string.IsNullOrEmpty(options.InputPath) || !Directory.Exists(options.InputPath))
+{
+    Console.Error.WriteLine("Error: Input path is required and must exist");
+    return;
+}
+
+if (string.IsNullOrEmpty(options.OutputPath))
+{
+    options.OutputPath = Path.Combine(options.InputPath, "output");
+    Directory.CreateDirectory(options.OutputPath);
+}
+
+// Display configuration summary
+Console.WriteLine("HealthData Export Tools CLI");
+Console.WriteLine($"Input: {options.InputPath}");
+Console.WriteLine($"Output: {options.OutputPath}");
+Console.WriteLine($"Format: {options.Format}");
+Console.WriteLine($"Device: {options.Device}");
+Console.WriteLine($"Data Type: {options.DataType}");
+Console.WriteLine($"Date Range: {options.StartDate} to {options.EndDate}");
+Console.WriteLine($"Parallel Processing: {options.Parallel} ({options.MaxParallelism} threads)");
+Console.WriteLine($"Cache Enabled: {options.EnableCache} (Duration: {options.CacheDurationMinutes} minutes)");
+```
+
 ## HealthDataImportedEvent
 
 The `HealthDataImportedEvent` is raised when health data is successfully imported from a wearable device or external source. It contains comprehensive metadata about the import operation including record count, timing information, source details, device type, and the types of metrics imported. This event is useful for triggering downstream processes like data validation, caching, indexing, or analytics pipeline updates.
