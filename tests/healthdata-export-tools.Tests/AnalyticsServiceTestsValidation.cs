@@ -5,7 +5,6 @@
 // CTO & Software Architect
 // =============================================================================
 
-using System.Globalization;
 using HealthDataExportTools.Services;
 
 namespace HealthDataExportTools.Tests;
@@ -28,8 +27,21 @@ public static class AnalyticsServiceTestsValidation
 
         var problems = new List<string>();
 
-        // Validate private field _analyticsService
-        if (value.GetType().GetField("_analyticsService", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.GetValue(value) is not AnalyticsService analyticsService)
+        // Validate that the test instance has a properly initialized AnalyticsService
+        // This is validated by checking that the public constructor was called successfully
+        // The AnalyticsServiceTests class initializes _analyticsService in its constructor
+        // If this field is null, it indicates the constructor failed or the instance was improperly constructed
+        var analyticsServiceField = value.GetType()
+            .GetField("_analyticsService", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+        if (analyticsServiceField is null)
+        {
+            problems.Add("Type 'AnalyticsServiceTests' is missing expected private field '_analyticsService'");
+            return problems.AsReadOnly();
+        }
+
+        var fieldValue = analyticsServiceField.GetValue(value);
+        if (fieldValue is not AnalyticsService)
         {
             problems.Add("Private field '_analyticsService' is null or not of type AnalyticsService");
         }
