@@ -10,16 +10,17 @@ using System.Globalization;
 namespace HealthDataExportTools.Configuration;
 
 /// <summary>
-/// Extension methods for <see cref="HealthDataExportOptions"/> providing common operations and validations
+/// Extension methods for <see cref="HealthDataExportOptions"/> providing common operations and validations.
+/// All members are thread-safe and immutable with respect to their input parameters.
 /// </summary>
 public static class HealthDataExportOptionsExtensions
 {
     /// <summary>
-    /// Creates a deep copy of the <see cref="HealthDataExportOptions"/> instance
+    /// Creates a deep copy of the <see cref="HealthDataExportOptions"/> instance.
     /// </summary>
-    /// <param name="options">The options to copy</param>
-    /// <returns>A new instance with the same values</returns>
-    /// <exception cref="ArgumentNullException">Thrown when options is null</exception>
+    /// <param name="options">The options to copy.</param>
+    /// <returns>A new instance with the same values.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is null.</exception>
     public static HealthDataExportOptions Clone(this HealthDataExportOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
@@ -45,11 +46,11 @@ public static class HealthDataExportOptionsExtensions
     }
 
     /// <summary>
-    /// Gets the effective input path - returns DatabasePath if InputPath is empty, otherwise InputPath
+    /// Gets the effective input path - returns DatabasePath if InputPath is empty or whitespace, otherwise InputPath.
     /// </summary>
-    /// <param name="options">The options instance</param>
-    /// <returns>The effective input path</returns>
-    /// <exception cref="ArgumentNullException">Thrown when options is null</exception>
+    /// <param name="options">The options instance.</param>
+    /// <returns>The effective input path.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is null.</exception>
     public static string GetEffectiveInputPath(this HealthDataExportOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
@@ -60,12 +61,12 @@ public static class HealthDataExportOptionsExtensions
     }
 
     /// <summary>
-    /// Gets the effective output directory - ensures it exists by creating if necessary
+    /// Gets the effective output directory - ensures it exists by creating if necessary.
     /// </summary>
-    /// <param name="options">The options instance</param>
-    /// <returns>The effective output directory path</returns>
-    /// <exception cref="ArgumentNullException">Thrown when options is null</exception>
-    /// <exception cref="InvalidOperationException">Thrown when OutputPath cannot be created</exception>
+    /// <param name="options">The options instance.</param>
+    /// <returns>The effective output directory path.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is null.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when OutputPath cannot be created.</exception>
     public static string EnsureOutputDirectoryExists(this HealthDataExportOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
@@ -85,11 +86,11 @@ public static class HealthDataExportOptionsExtensions
     }
 
     /// <summary>
-    /// Gets the date range as a tuple for easy consumption
+    /// Gets the date range as a tuple for easy consumption.
     /// </summary>
-    /// <param name="options">The options instance</param>
-    /// <returns>A tuple containing (StartDate, EndDate) where null values are preserved</returns>
-    /// <exception cref="ArgumentNullException">Thrown when options is null</exception>
+    /// <param name="options">The options instance.</param>
+    /// <returns>A tuple containing (StartDate, EndDate) where null values are preserved.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is null.</exception>
     public static (DateTime? StartDate, DateTime? EndDate) GetDateRange(this HealthDataExportOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
@@ -98,11 +99,11 @@ public static class HealthDataExportOptionsExtensions
     }
 
     /// <summary>
-    /// Gets the effective file extension for the configured export format
+    /// Gets the effective file extension for the configured export format.
     /// </summary>
-    /// <param name="options">The options instance</param>
-    /// <returns>The file extension including dot (e.g., ".json", ".csv")</returns>
-    /// <exception cref="ArgumentNullException">Thrown when options is null</exception>
+    /// <param name="options">The options instance.</param>
+    /// <returns>The file extension including dot (e.g., ".json", ".csv").</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is null.</exception>
     public static string GetFileExtension(this HealthDataExportOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
@@ -119,11 +120,11 @@ public static class HealthDataExportOptionsExtensions
     }
 
     /// <summary>
-    /// Gets the device filter as a formatted string for logging purposes
+    /// Gets the device filter as a formatted string for logging purposes.
     /// </summary>
-    /// <param name="options">The options instance</param>
-    /// <returns>A formatted string representing the device filter</returns>
-    /// <exception cref="ArgumentNullException">Thrown when options is null</exception>
+    /// <param name="options">The options instance.</param>
+    /// <returns>A formatted string representing the device filter.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is null.</exception>
     public static string GetDeviceFilterDescription(this HealthDataExportOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
@@ -138,7 +139,7 @@ public static class HealthDataExportOptionsExtensions
             return $"Device Type: {options.TargetDeviceType}, Device ID: {options.TargetDeviceId}";
         }
 
-        if (!string.IsNullOrWhiteSpace(options.TargetDeviceType))
+        if (options.TargetDeviceType is { Length: > 0 })
         {
             return $"Device Type: {options.TargetDeviceType}";
         }
@@ -147,12 +148,12 @@ public static class HealthDataExportOptionsExtensions
     }
 
     /// <summary>
-    /// Gets the configured analysis period as a TimeSpan
+    /// Gets the configured analysis period as a TimeSpan.
     /// </summary>
-    /// <param name="options">The options instance</param>
-    /// <returns>The analysis period as TimeSpan</returns>
-    /// <exception cref="ArgumentNullException">Thrown when options is null</exception>
-    /// <exception cref="InvalidOperationException">Thrown when TrendAnalysisDays is negative</exception>
+    /// <param name="options">The options instance.</param>
+    /// <returns>The analysis period as TimeSpan.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is null.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when TrendAnalysisDays is negative.</exception>
     public static TimeSpan GetAnalysisPeriod(this HealthDataExportOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
@@ -166,12 +167,12 @@ public static class HealthDataExportOptionsExtensions
     }
 
     /// <summary>
-    /// Gets the configured maximum record age as a TimeSpan
+    /// Gets the configured maximum record age as a TimeSpan.
     /// </summary>
-    /// <param name="options">The options instance</param>
-    /// <returns>The maximum record age as TimeSpan</returns>
-    /// <exception cref="ArgumentNullException">Thrown when options is null</exception>
-    /// <exception cref="InvalidOperationException">Thrown when MaxRecordAgeDays is negative</exception>
+    /// <param name="options">The options instance.</param>
+    /// <returns>The maximum record age as TimeSpan.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is null.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when MaxRecordAgeDays is negative.</exception>
     public static TimeSpan GetMaxRecordAge(this HealthDataExportOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
@@ -185,13 +186,13 @@ public static class HealthDataExportOptionsExtensions
     }
 
     /// <summary>
-    /// Gets the output file path for a given base filename using the configured format
+    /// Gets the output file path for a given base filename using the configured format.
     /// </summary>
-    /// <param name="options">The options instance</param>
-    /// <param name="baseFilename">The base filename without extension</param>
-    /// <returns>The full output file path with appropriate extension</returns>
-    /// <exception cref="ArgumentNullException">Thrown when options or baseFilename is null</exception>
-    /// <exception cref="InvalidOperationException">Thrown when OutputPath is not specified</exception>
+    /// <param name="options">The options instance.</param>
+    /// <param name="baseFilename">The base filename without extension.</param>
+    /// <returns>The full output file path with appropriate extension.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> or <paramref name="baseFilename"/> is null.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when OutputPath is not specified.</exception>
     public static string GetOutputFilePath(this HealthDataExportOptions options, string baseFilename)
     {
         ArgumentNullException.ThrowIfNull(options);
@@ -205,11 +206,11 @@ public static class HealthDataExportOptionsExtensions
     }
 
     /// <summary>
-    /// Gets all configured validation rules as an enumerable of strings
+    /// Gets all configured validation rules as an enumerable of strings.
     /// </summary>
-    /// <param name="options">The options instance</param>
-    /// <returns>An enumerable of validation rule descriptions</returns>
-    /// <exception cref="ArgumentNullException">Thrown when options is null</exception>
+    /// <param name="options">The options instance.</param>
+    /// <returns>An enumerable of validation rule descriptions.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is null.</exception>
     public static IEnumerable<string> GetValidationRules(this HealthDataExportOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
@@ -217,16 +218,16 @@ public static class HealthDataExportOptionsExtensions
         yield return "InputPath or DatabasePath must be specified";
         yield return "OutputPath must be specified";
         yield return "MaxRecordAgeDays must be non-negative";
-        yield return "TrendAnalysisDays must be positive";
+        yield return "TrendAnalysisDays must be non-negative";
         yield return "StartDate cannot be after EndDate";
         yield return "NotificationEmail must be a valid email if specified";
 
-        if (!string.IsNullOrWhiteSpace(options.TargetDeviceType))
+        if (options.TargetDeviceType is { Length: > 0 })
         {
             yield return $"TargetDeviceType is set to: {options.TargetDeviceType}";
         }
 
-        if (!string.IsNullOrWhiteSpace(options.TargetDeviceId))
+        if (options.TargetDeviceId is { Length: > 0 })
         {
             yield return $"TargetDeviceId is set to: {options.TargetDeviceId}";
         }
