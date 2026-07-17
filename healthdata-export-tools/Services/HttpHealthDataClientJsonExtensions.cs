@@ -4,6 +4,8 @@
 // CTO & Software Architect
 // =====================================================================
 
+using System.Globalization;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using HealthDataExportTools.Domain.Models;
 using HealthDataExportTools.Exceptions;
@@ -11,7 +13,7 @@ using HealthDataExportTools.Exceptions;
 namespace HealthDataExportTools.Services;
 
 /// <summary>
-/// Provides System.Text.Json serialization extensions for HttpHealthDataClient
+/// Provides System.Text.Json serialization extensions for <see cref="HttpHealthDataClient"/>
 /// </summary>
 public static class HttpHealthDataClientJsonExtensions
 {
@@ -19,7 +21,9 @@ public static class HttpHealthDataClientJsonExtensions
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         WriteIndented = false,
-        PropertyNameCaseInsensitive = true
+        PropertyNameCaseInsensitive = true,
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
 
     /// <summary>
@@ -60,6 +64,7 @@ public static class HttpHealthDataClientJsonExtensions
     /// <param name="json">The JSON string to deserialize</param>
     /// <param name="value">Receives the deserialized HttpHealthDataClient if successful</param>
     /// <returns>True if deserialization succeeded; otherwise false</returns>
+    /// <exception cref="ArgumentNullException">Thrown when json is null or empty</exception>
     public static bool TryFromJson(string json, out HttpHealthDataClient? value)
     {
         ArgumentException.ThrowIfNullOrEmpty(json);
