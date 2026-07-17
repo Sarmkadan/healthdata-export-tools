@@ -37,13 +37,16 @@ public static class AnomalyPointJsonExtensions
     /// Deserializes an <see cref="AnomalyPoint"/> instance from a JSON string.
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
-    /// <returns>The deserialized <see cref="AnomalyPoint"/> instance, or <see langword="null"/> if the JSON is empty or whitespace.</returns>
-    /// <exception cref="JsonException">Thrown when the JSON is invalid or cannot be deserialized.</exception>
-    public static AnomalyPoint? FromJson(string json)
+    /// <returns>The deserialized <see cref="AnomalyPoint"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is empty or consists only of whitespace.</exception>
+    /// <exception cref="JsonException">Thrown when the JSON is invalid or cannot be deserialized into an <see cref="AnomalyPoint"/> instance.</exception>
+    public static AnomalyPoint FromJson(string json)
     {
         ArgumentException.ThrowIfNullOrEmpty(json);
 
-        return JsonSerializer.Deserialize<AnomalyPoint>(json, _jsonSerializerOptions);
+        return JsonSerializer.Deserialize<AnomalyPoint>(json, _jsonSerializerOptions)
+            ?? throw new JsonException("Deserialized JSON resulted in a null instance.");
     }
 
     /// <summary>
@@ -52,6 +55,8 @@ public static class AnomalyPointJsonExtensions
     /// <param name="json">The JSON string to deserialize.</param>
     /// <param name="value">Receives the deserialized <see cref="AnomalyPoint"/> instance if successful; otherwise, <see langword="null"/>.</param>
     /// <returns><see langword="true"/> if deserialization succeeded; otherwise, <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is empty or consists only of whitespace.</exception>
     public static bool TryFromJson(string json, out AnomalyPoint? value)
     {
         ArgumentException.ThrowIfNullOrEmpty(json);
@@ -59,7 +64,7 @@ public static class AnomalyPointJsonExtensions
         try
         {
             value = JsonSerializer.Deserialize<AnomalyPoint>(json, _jsonSerializerOptions);
-            return true;
+            return value is not null;
         }
         catch (JsonException)
         {
