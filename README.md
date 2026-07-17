@@ -112,3 +112,88 @@ Console.WriteLine($"Description: {formatter.Description}");
 Console.WriteLine($"Is Compressible: {formatter.IsCompressible}");
 Console.WriteLine($"Max Records Per File: {formatter.MaxRecordsPerFile}");
 ```
+
+## JsonFormatter
+
+`JsonFormatter` implements `IDataFormatter` to serialize health‑data records into JSON. It can format a single record, a generic collection, and specialized collections such as sleep, heart‑rate, SpO2, and steps data, while also providing a validation step before serialization.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Formatters;
+using HealthDataExportTools.Domain.Models;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+// Create logger (in a real app this would be injected via DI)
+var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+var logger = loggerFactory.CreateLogger<JsonFormatter>();
+var jsonFormatter = new JsonFormatter(logger);
+
+// Example 1: Format a single concrete record (HeartRateData)
+var heartRateRecord = new HeartRateData
+{
+    RecordDate = DateTime.UtcNow,
+    DeviceId = "Polar-H10",
+    AverageBpm = 70,
+    MaximumBpm = 120,
+    MinimumBpm = 55
+};
+
+string jsonSingle = await jsonFormatter.FormatAsync(heartRateRecord);
+Console.WriteLine(jsonSingle);
+
+// Example 2: Format a collection of generic health records
+var records = new List<HealthDataRecord>
+{
+    new HeartRateData
+    {
+        RecordDate = DateTime.UtcNow.AddMinutes(-10),
+        DeviceId = "Polar-H10",
+        AverageBpm = 68,
+        MaximumBpm = 110,
+        MinimumBpm = 50
+    },
+    new StepsData
+    {
+        RecordDate = DateTime.UtcNow.AddHours(-1),
+        DeviceId = "Fitbit-123",
+        TotalSteps = 3500,
+        DistanceKm = 2.8,
+        CaloriesBurned = 150
+    }
+};
+
+string jsonCollection = await jsonFormatter.FormatCollectionAsync(records);
+Console.WriteLine(jsonCollection);
+
+// Example 3: Format sleep data
+var sleepRecords = new List<SleepData>
+{
+    new SleepData
+    {
+        RecordDate = DateTime.UtcNow.Date,
+        DurationMinutes = 420,
+        DeepSleepMinutes = 100,
+        RemSleepMinutes = 80,
+        AwakeMinutes = 30,
+        Quality = "Good",
+        DeviceId = "Fitbit-Sleep"
+    }
+};
+
+string jsonSleep = await jsonFormatter.FormatSleepDataAsync(sleepRecords);
+Console.WriteLine(jsonSleep);
+
+// Example 4: Validate records before formatting
+var validationErrors = await jsonFormatter.ValidateAsync(records);
+if (validationErrors.Count > 0)
+{
+    foreach (var err in validationErrors)
+    {
+        Console.WriteLine($"Validation error: {err}");
+    }
+}
+```
