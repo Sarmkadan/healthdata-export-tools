@@ -156,6 +156,68 @@ var heartRate = new HeartRateData
 var hrErrors = heartRate.Validate();
 ```
 
+## CorrelationEngineOptionsExtensions
+
+The `CorrelationEngineOptionsExtensions` static class provides extension methods for `CorrelationEngineOptions` that simplify correlation analysis configuration and validation. It offers methods to validate analysis windows, compute effective lag periods, determine parallel computation strategies, retrieve computation pairs, validate significance thresholds, and configure minimum sample requirements.
+
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Configuration;
+using HealthDataExportTools.Domain.Models;
+using System;
+using System.Collections.Generic;
+
+// Create correlation engine options with typical configuration
+var options = new CorrelationEngineOptions
+{
+    AnalysisWindowDays = 30,
+    MaxLagDays = 15,
+    EnableParallelComputation = true,
+    MaxDegreeOfParallelism = 4,
+    AdditionalMetricPairs = new List<CorrelationPair>
+    {
+        new CorrelationPair("SleepDuration", "RestingHeartRate"),
+        new CorrelationPair("Steps", "CaloriesBurned")
+    },
+    SignificanceThreshold = 0.1,
+    MinimumSampleCount = 50,
+    IncludeWeakCorrelations = true
+};
+
+// Example 1: Validate that the analysis window is within acceptable bounds
+bool isWindowValid = options.IsAnalysisWindowValid();
+Console.WriteLine($"Analysis window valid: {isWindowValid}");
+
+// Example 2: Get the effective maximum lag days (capped at 50% of analysis window)
+int effectiveMaxLag = options.GetEffectiveMaxLagDays();
+Console.WriteLine($"Effective max lag days: {effectiveMaxLag}");
+
+// Example 3: Determine if parallel computation should be used
+bool useParallel = options.ShouldUseParallelComputation();
+Console.WriteLine($"Use parallel computation: {useParallel}");
+
+// Example 4: Get the list of correlation pairs to compute
+IReadOnlyList<CorrelationPair> pairs = options.GetComputationPairs();
+Console.WriteLine($"Computation pairs count: {pairs.Count}");
+
+// Example 5: Validate significance threshold configuration
+IEnumerable<string> thresholdErrors = options.ValidateSignificanceThreshold();
+foreach (var error in thresholdErrors)
+{
+    Console.WriteLine($"Validation error: {error}");
+}
+
+// Example 6: Get minimum sample count (ensures at least 10 samples)
+int minSampleCount = options.GetMinimumSampleCount();
+Console.WriteLine($"Minimum sample count: {minSampleCount}");
+
+// Example 7: Determine if weak correlations should be included
+bool includeWeak = options.ShouldIncludeWeakCorrelations();
+Console.WriteLine($"Include weak correlations: {includeWeak}");
+```
+
 ## HealthDataExportOptionsExtensions
 
 The `HealthDataExportOptionsExtensions` static class provides extension methods for the `HealthDataExportOptions` class that simplify common operations like cloning, path resolution, date range extraction, and configuration validation. These methods help standardize how health data export options are manipulated throughout the application.
