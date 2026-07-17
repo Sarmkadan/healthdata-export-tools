@@ -3,7 +3,7 @@
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
-// =============================================================================
+// =====================================================================
 
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
@@ -11,7 +11,7 @@ using System.Text.Json.Serialization.Metadata;
 namespace HealthDataExportTools.Interceptors;
 
 /// <summary>
-/// Provides System.Text.Json serialization and deserialization extensions for MetricsCollector
+/// Provides System.Text.Json serialization and deserialization extensions for <see cref="MetricsCollector"/>
 /// </summary>
 public static class MetricsCollectorJsonExtensions
 {
@@ -24,12 +24,12 @@ public static class MetricsCollectorJsonExtensions
     };
 
     /// <summary>
-    /// Serializes a MetricsCollector instance to a JSON string
+    /// Serializes a <see cref="MetricsCollector"/> instance to a JSON string
     /// </summary>
     /// <param name="value">The metrics collector to serialize</param>
     /// <param name="indented">Whether to format the JSON with indentation for readability</param>
     /// <returns>A JSON string representation of the metrics collector</returns>
-    /// <exception cref="ArgumentNullException">Thrown when value is null</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="value"/> is null</exception>
     public static string ToJson(this MetricsCollector value, bool indented = false)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -42,11 +42,11 @@ public static class MetricsCollectorJsonExtensions
     }
 
     /// <summary>
-    /// Deserializes a JSON string to a MetricsCollector instance
+    /// Deserializes a JSON string to a <see cref="MetricsCollector"/> instance
     /// </summary>
     /// <param name="json">The JSON string to deserialize</param>
-    /// <returns>A MetricsCollector instance, or null if the JSON is empty or whitespace</returns>
-    /// <exception cref="JsonException">Thrown when the JSON is invalid or cannot be deserialized</exception>
+    /// <returns>A <see cref="MetricsCollector"/> instance, or null if the JSON is empty or whitespace</returns>
+    /// <exception cref="JsonException">Thrown when <paramref name="json"/> is invalid or cannot be deserialized</exception>
     public static MetricsCollector? FromJson(string json)
     {
         if (string.IsNullOrWhiteSpace(json))
@@ -59,22 +59,11 @@ public static class MetricsCollectorJsonExtensions
     }
 
     /// <summary>
-    /// Attempts to deserialize a JSON string to a MetricsCollector instance
+    /// Attempts to deserialize a JSON string to a <see cref="MetricsCollector"/> instance
     /// </summary>
     /// <param name="json">The JSON string to deserialize</param>
-    /// <param name="value">Receives the deserialized MetricsCollector, or null if deserialization fails</param>
+    /// <param name="value">Receives the deserialized <see cref="MetricsCollector"/>, or null if deserialization fails</param>
     /// <returns>True if deserialization succeeded; otherwise, false</returns>
-    public static bool TryFromJson(string json, out MetricsCollector? value)
-    {
-        try
-        {
-            value = FromJson(json);
-            return true;
-        }
-        catch (JsonException)
-        {
-            value = null;
-            return false;
-        }
-    }
+    public static bool TryFromJson(string json, out MetricsCollector? value) =>
+        (value = FromJson(json)) is not null;
 }
