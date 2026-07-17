@@ -1,7 +1,7 @@
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
-// =============================================================================
+// =====================================================================
 
 using System.Globalization;
 using HealthDataExportTools.Domain.Models;
@@ -10,7 +10,7 @@ using HealthDataExportTools.Services;
 namespace HealthDataExportTools.Benchmarks;
 
 /// <summary>
-/// Validation helpers for <see cref="MockValidationService"/> to enable comprehensive
+/// Provides validation extensions for <see cref="MockValidationService"/> to enable comprehensive
 /// validation of mock validation service instances in benchmark scenarios.
 /// </summary>
 public static class MockValidationServiceValidation
@@ -72,10 +72,7 @@ public static class MockValidationServiceValidation
     /// <param name="value">The mock validation service to check.</param>
     /// <returns>True if the service is valid; otherwise, false.</returns>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
-    public static bool IsValid(this MockValidationService? value)
-    {
-        return value?.Validate() is { Count: 0 };
-    }
+    public static bool IsValid(this MockValidationService? value) => value?.Validate() is { Count: 0 };
 
     /// <summary>
     /// Ensures that a <see cref="MockValidationService"/> instance is valid,
@@ -93,8 +90,7 @@ public static class MockValidationServiceValidation
         if (errors.Count > 0)
         {
             throw new ArgumentException(
-                $"MockValidationService is invalid. Validation found {errors.Count} error(s):{Environment.NewLine}" +
-                string.Join(Environment.NewLine, errors.Select((e, i) => $"  {i + 1}. {e}")));
+                $"MockValidationService is invalid. Validation found {errors.Count} error(s):{Environment.NewLine}{string.Join(Environment.NewLine, errors.Select((e, i) => $" {i + 1}. {e}"))}");
         }
     }
 
@@ -120,6 +116,10 @@ public static class MockValidationServiceValidation
         {
             errors.Add("SleepData.RecordDate must be set (cannot be default)");
         }
+        else if (value.RecordDate.Kind != DateTimeKind.Utc)
+        {
+            errors.Add("SleepData.RecordDate must be in UTC format");
+        }
 
         // Time range validation
         if (value.SleepStart >= value.SleepEnd)
@@ -131,10 +131,18 @@ public static class MockValidationServiceValidation
         {
             errors.Add("SleepData.SleepStart must be set (cannot be default)");
         }
+        else if (value.SleepStart.Kind != DateTimeKind.Utc)
+        {
+            errors.Add("SleepData.SleepStart must be in UTC format");
+        }
 
         if (value.SleepEnd == default)
         {
             errors.Add("SleepData.SleepEnd must be set (cannot be default)");
+        }
+        else if (value.SleepEnd.Kind != DateTimeKind.Utc)
+        {
+            errors.Add("SleepData.SleepEnd must be in UTC format");
         }
 
         // Duration validation
@@ -214,6 +222,10 @@ public static class MockValidationServiceValidation
         {
             errors.Add("HeartRateData.RecordDate must be set (cannot be default)");
         }
+        else if (value.RecordDate.Kind != DateTimeKind.Utc)
+        {
+            errors.Add("HeartRateData.RecordDate must be in UTC format");
+        }
 
         // Heart rate range validation
         if (value.MinimumBpm < 30 || value.MinimumBpm > 200)
@@ -282,6 +294,10 @@ public static class MockValidationServiceValidation
         {
             errors.Add("SpO2Data.RecordDate must be set (cannot be default)");
         }
+        else if (value.RecordDate.Kind != DateTimeKind.Utc)
+        {
+            errors.Add("SpO2Data.RecordDate must be in UTC format");
+        }
 
         // SpO2 percentage validation (0-100 range)
         if (value.MinimumPercentage < 0 || value.MinimumPercentage > 100)
@@ -349,6 +365,10 @@ public static class MockValidationServiceValidation
         if (value.RecordDate == default)
         {
             errors.Add("StepsData.RecordDate must be set (cannot be default)");
+        }
+        else if (value.RecordDate.Kind != DateTimeKind.Utc)
+        {
+            errors.Add("StepsData.RecordDate must be in UTC format");
         }
 
         // Steps validation
@@ -420,6 +440,10 @@ public static class MockValidationServiceValidation
         {
             errors.Add("ActivityData.RecordDate must be set (cannot be default)");
         }
+        else if (value.RecordDate.Kind != DateTimeKind.Utc)
+        {
+            errors.Add("ActivityData.RecordDate must be in UTC format");
+        }
 
         // Activity type validation
         if (string.IsNullOrWhiteSpace(value.ActivityType))
@@ -437,10 +461,18 @@ public static class MockValidationServiceValidation
         {
             errors.Add("ActivityData.StartTime must be set (cannot be default)");
         }
+        else if (value.StartTime.Kind != DateTimeKind.Utc)
+        {
+            errors.Add("ActivityData.StartTime must be in UTC format");
+        }
 
         if (value.EndTime == default)
         {
             errors.Add("ActivityData.EndTime must be set (cannot be default)");
+        }
+        else if (value.EndTime.Kind != DateTimeKind.Utc)
+        {
+            errors.Add("ActivityData.EndTime must be in UTC format");
         }
 
         // Duration validation
@@ -517,6 +549,10 @@ public static class MockValidationServiceValidation
         if (value.RecordDate == default)
         {
             errors.Add("HealthMetric.RecordDate must be set (cannot be default)");
+        }
+        else if (value.RecordDate.Kind != DateTimeKind.Utc)
+        {
+            errors.Add("HealthMetric.RecordDate must be in UTC format");
         }
 
         // Metric name validation
