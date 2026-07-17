@@ -11,7 +11,7 @@ using System.Text.Json.Serialization;
 namespace HealthDataExportTools.Tests;
 
 /// <summary>
-/// Provides JSON serialization and deserialization extensions for <see cref="ExportServiceTests"/>.
+/// Provides JSON serialization and deserialization extensions for test data models used with <see cref="ExportServiceTests"/>.
 /// </summary>
 public static class ExportServiceTestsJsonExtensions
 {
@@ -35,10 +35,7 @@ public static class ExportServiceTestsJsonExtensions
         ArgumentNullException.ThrowIfNull(value);
 
         var options = indented
-            ? new JsonSerializerOptions(_jsonSerializerOptions)
-            {
-                WriteIndented = true
-            }
+            ? new JsonSerializerOptions(_jsonSerializerOptions) { WriteIndented = true }
             : _jsonSerializerOptions;
 
         return JsonSerializer.Serialize(value, options);
