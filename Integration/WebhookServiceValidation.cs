@@ -1,8 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 
-namespace healthdata_export_tools.Integration
+namespace HealthDataExportTools.Integration
 {
     /// <summary>
     /// Provides validation helpers for <see cref="WebhookService"/> instances.
@@ -85,10 +84,8 @@ namespace healthdata_export_tools.Integration
         /// <param name="value">The webhook service to check.</param>
         /// <returns><see langword="true"/> if the service is valid; otherwise, <see langword="false"/>.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
-        public static bool IsValid(this WebhookService value)
-        {
-            return Validate(value).Count == 0;
-        }
+        public static bool IsValid(this WebhookService value) =>
+            value is not null && Validate(value).Count == 0;
 
         /// <summary>
         /// Ensures that a <see cref="WebhookService"/> instance is valid, throwing an <see cref="ArgumentException"/>
@@ -105,8 +102,8 @@ namespace healthdata_export_tools.Integration
             if (problems.Count > 0)
             {
                 throw new ArgumentException(
-                    $"WebhookService validation failed with {problems.Count} problem(s):{Environment.NewLine}-
-                    {string.Join($"{Environment.NewLine}- ", problems)}",
+                    $"WebhookService validation failed with {problems.Count} problem(s):{Environment.NewLine}- " +
+                    string.Join($"{Environment.NewLine}- ", problems),
                     nameof(value));
             }
         }
