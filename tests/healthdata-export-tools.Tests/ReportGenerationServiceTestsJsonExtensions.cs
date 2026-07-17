@@ -67,7 +67,7 @@ public static class ReportGenerationServiceTestsJsonExtensions
         try
         {
             value = JsonSerializer.Deserialize<ReportGenerationServiceTests>(json, _jsonOptions);
-            return true;
+            return value is not null;
         }
         catch (JsonException)
         {
