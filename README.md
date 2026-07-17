@@ -2481,6 +2481,73 @@ var repository = serviceProvider.GetRequiredService<IHealthDataRepository>();
 Console.WriteLine("SQLite repository configured!");
 ```
 
+## FormatterFactory
+
+The `FormatterFactory` class serves as a centralized registry and factory for managing data formatters in HealthData Export Tools. It provides methods to register formatters, retrieve formatters by name or file extension, check supported formats, and format data collections to all supported formats simultaneously. The factory simplifies working with multiple output formats and enables easy extension of the system with new formatter types.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Formatters;
+using HealthDataExportTools.Domain.Models;
+using Microsoft.Extensions.Logging;
+
+// Create logger factory
+var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+var logger = loggerFactory.CreateLogger<FormatterFactory>();
+
+// Create formatter factory with default formatters
+var formatterFactory = FormatterFactory.CreateDefault(logger, loggerFactory);
+
+// Register a custom formatter
+formatterFactory.RegisterFormatter("yaml", new YamlFormatter(loggerFactory.CreateLogger<YamlFormatter>()));
+
+// Check if format is supported
+bool supportsJson = formatterFactory.IsSupportedFormat("json");
+Console.WriteLine($"JSON format supported: {supportsJson}");
+
+// Get list of all supported formats
+var supportedFormats = formatterFactory.GetSupportedFormats();
+Console.WriteLine($"Supported formats: {string.Join(", ", supportedFormats)}");
+
+// Get formatter by name
+var jsonFormatter = formatterFactory.GetFormatter("json");
+if (jsonFormatter != null)
+{
+    // Format health data to JSON
+    var healthRecords = new List<HealthDataRecord> { /* your health data */ };
+    string jsonOutput = await jsonFormatter.FormatCollectionAsync(healthRecords);
+    Console.WriteLine(jsonOutput);
+}
+
+// Get formatter by file extension
+var csvFormatter = formatterFactory.GetFormatterByExtension(".csv");
+if (csvFormatter != null)
+{
+    Console.WriteLine($"CSV formatter found: {csvFormatter.FormatName}");
+}
+
+// Format data to all supported formats simultaneously
+var allFormattedData = await formatterFactory.FormatToAllAsync(healthRecords);
+foreach (var formatOutput in allFormattedData)
+{
+    Console.WriteLine($"\n{formatOutput.Key} format ({formatOutput.Value.Length} bytes):");
+    Console.WriteLine(formatOutput.Value.Substring(0, Math.Min(100, formatOutput.Value.Length)) + "...");
+}
+
+// Get formatter information
+var formatterInfo = formatterFactory.GetFormatterInfo();
+Console.WriteLine("\nFormatter Information:");
+foreach (var info in formatterInfo)
+{
+    Console.WriteLine($" - {info.Name}: {info.Description} (Extension: {info.FileExtension}, Compressible: {info.IsCompressible})");
+}
+
+// Get all registered formatters
+var allFormatters = formatterFactory.GetAllFormatters();
+Console.WriteLine($"\nTotal formatters registered: {allFormatters.Count}");
+```
+
 ## CsvUtility
 
 The `CsvUtility` class provides comprehensive utilities for parsing, validating, transforming, and exporting CSV data in health data export scenarios. It includes methods for parsing CSV files and lines, escaping fields for CSV format, validating CSV structure, counting rows, merging multiple CSV files, converting CSV to JSON, and analyzing CSV statistics including file size, row count, and header information.
