@@ -72,6 +72,42 @@ if (validationErrors.Count > 0)
 }
 ```
 
+## RateLimiterExtensions
+
+The `RateLimiterExtensions` static class provides extension methods for the `RateLimiter` class to enhance rate limiting functionality. It offers synchronous and asynchronous methods for token acquisition with timeout, usage tracking, and rate limiter state management.
+
+### Usage Example
+
+```csharp
+using HealthData.Export.Interceptors;
+using System;
+using System.Threading.Tasks;
+
+// Create a rate limiter instance
+var rateLimiter = new RateLimiter(
+    maxTokens: 100,
+    refillRate: TimeSpan.FromSeconds(1),
+    maxBurst: 50);
+
+// Example 1: Try to acquire tokens synchronously with timeout
+bool acquired = rateLimiter.TryAcquire(10, TimeSpan.FromSeconds(5));
+Console.WriteLine($"Acquired tokens synchronously: {acquired}");
+
+// Example 2: Try to acquire tokens asynchronously with timeout
+bool acquiredAsync = await rateLimiter.TryAcquireAsync(15, TimeSpan.FromSeconds(2));
+Console.WriteLine($"Acquired tokens asynchronously: {acquiredAsync}");
+
+// Example 3: Get current usage percentage
+var usagePercentage = rateLimiter.GetUsagePercentage();
+Console.WriteLine($"Current usage: {usagePercentage:F2}%");
+
+// Example 4: Reset rate limiter for a specific identifier
+rateLimiter.Reset("user-123");
+
+// Example 5: Reset rate limiter completely
+rateLimiter.Reset(clearAll: true);
+```
+
 ## MockValidationServiceValidation
 
 The `MockValidationServiceValidation` static class provides a set of extension methods that enable comprehensive validation of a `MockValidationService` instance and the health‑data models it works with. It offers methods to retrieve validation errors, check validity, and enforce validity by throwing an exception when the service or a model is invalid.
