@@ -20,6 +20,13 @@ public static class AnalyticsBenchmarksJsonExtensions
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
 
+    private static readonly JsonSerializerOptions _jsonSerializerOptionsIndented = new(JsonSerializerDefaults.Web)
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        WriteIndented = true,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+    };
+
     /// <summary>
     /// Serializes the <see cref="AnalyticsBenchmarks"/> instance to a JSON string.
     /// </summary>
@@ -27,19 +34,8 @@ public static class AnalyticsBenchmarksJsonExtensions
     /// <param name="indented">Whether to format the JSON with indentation for readability.</param>
     /// <returns>A JSON string representation of the analytics benchmarks.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
-    public static string ToJson(this AnalyticsBenchmarks value, bool indented = false)
-    {
-        ArgumentNullException.ThrowIfNull(value);
-
-        var options = indented
-            ? new JsonSerializerOptions(_jsonSerializerOptions)
-            {
-                WriteIndented = true
-            }
-            : _jsonSerializerOptions;
-
-        return JsonSerializer.Serialize(value, options);
-    }
+    public static string ToJson(this AnalyticsBenchmarks value, bool indented = false) =>
+        JsonSerializer.Serialize(value, indented ? _jsonSerializerOptionsIndented : _jsonSerializerOptions);
 
     /// <summary>
     /// Deserializes a JSON string to an <see cref="AnalyticsBenchmarks"/> instance.
@@ -47,6 +43,7 @@ public static class AnalyticsBenchmarksJsonExtensions
     /// <param name="json">The JSON string to deserialize.</param>
     /// <returns>The deserialized analytics benchmarks instance, or null if the JSON is invalid.</returns>
     /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is null or empty.</exception>
+    /// <exception cref="JsonException">Thrown when the JSON is invalid and cannot be deserialized.</exception>
     public static AnalyticsBenchmarks? FromJson(string json)
     {
         ArgumentException.ThrowIfNullOrEmpty(json);
@@ -68,6 +65,7 @@ public static class AnalyticsBenchmarksJsonExtensions
     /// <param name="value">Receives the deserialized analytics benchmarks instance if successful.</param>
     /// <returns>True if deserialization succeeded; otherwise, false.</returns>
     /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is null or empty.</exception>
+    /// <exception cref="JsonException">Thrown when the JSON is invalid and cannot be deserialized.</exception>
     public static bool TryFromJson(string json, out AnalyticsBenchmarks? value)
     {
         ArgumentException.ThrowIfNullOrEmpty(json);
