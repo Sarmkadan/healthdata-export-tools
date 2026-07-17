@@ -1635,6 +1635,57 @@ Console.WriteLine($" 1536000 bytes -> {CompressionUtility.GetHumanReadableSize(1
 Console.WriteLine($" 2097152000 bytes -> {CompressionUtility.GetHumanReadableSize(2097152000)}");
 ```
 
+## DateTimeExtensions
+
+The `DateTimeExtensions` class provides a comprehensive set of extension methods for common DateTime operations, including date boundary calculations (start/end of day, week, month, year), temporal comparisons, age calculation, and formatted string conversion. These utilities simplify date manipulation and formatting throughout the HealthData Export Tools application.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Utilities;
+
+// Get the start and end of the current day
+var now = DateTime.UtcNow;
+var startOfDay = now.StartOfDay();  // 2024-01-15 00:00:00
+var endOfDay = now.EndOfDay();      // 2024-01-15 23:59:59
+
+// Calculate week boundaries (Monday to Sunday)
+var startOfWeek = now.StartOfWeek();  // Previous Monday at 00:00:00
+var endOfWeek = now.EndOfWeek();      // Current Sunday at 23:59:59
+
+// Calculate month and year boundaries
+var startOfMonth = now.StartOfMonth();  // 2024-01-01 00:00:00
+var endOfMonth = now.EndOfMonth();      // 2024-01-31 23:59:59
+var startOfYear = now.StartOfYear();    // 2024-01-01 00:00:00
+var endOfYear = now.EndOfYear();        // 2024-12-31 23:59:59
+
+// Check temporal relationships
+bool isPast = now.AddDays(-1).IsPast();     // true
+bool isFuture = now.AddDays(1).IsFuture();   // true
+bool isToday = now.IsToday();                 // true
+
+// Calculate age from birth date
+var birthDate = new DateTime(1990, 5, 15);
+int age = birthDate.GetAge();  // Age in years
+
+// Calculate days between two dates
+var date1 = new DateTime(2024, 1, 1);
+var date2 = new DateTime(2024, 1, 15);
+int daysBetween = date1.DaysBetween(date2);  // 14
+
+// Get human-readable time elapsed
+var pastDate = DateTime.UtcNow.AddHours(-2);
+string timeElapsed = pastDate.GetTimeElapsed();  // "2 hours ago"
+
+// Round to nearest time interval
+var roundedTime = now.RoundToNearest(TimeSpan.FromMinutes(15));
+
+// Format dates as strings
+string iso8601 = now.ToIso8601();        // "2024-01-15T10:30:45Z"
+string dateString = now.ToDateString();      // "2024-01-15"
+string dateTimeString = now.ToDateTimeString(); // "2024-01-15 10:30:45"
+```
+
 ## InMemoryHealthDataRepository
 
 The `InMemoryHealthDataRepository` provides an in-memory implementation of health data storage for testing and development scenarios. It implements all CRUD operations for sleep, heart rate, SpO2, and steps data with support for both individual record retrieval and range queries, making it ideal for unit testing, prototyping, and scenarios where persistent storage is not required.
