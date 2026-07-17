@@ -155,3 +155,77 @@ var heartRate = new HeartRateData
 
 var hrErrors = heartRate.Validate();
 ```
+
+## HealthDataExportOptionsExtensions
+
+The `HealthDataExportOptionsExtensions` static class provides extension methods for the `HealthDataExportOptions` class that simplify common operations like cloning, path resolution, date range extraction, and configuration validation. These methods help standardize how health data export options are manipulated throughout the application.
+
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Configuration;
+using System;
+
+// Create export options
+var options = new HealthDataExportOptions
+{
+    InputPath = "/data/health_records",
+    OutputPath = "/exports",
+    DatabasePath = "/data/health.db",
+    ExportFormat = ExportFormat.Csv,
+    ValidateData = true,
+    PerformAnalysis = true,
+    TrendAnalysisDays = 30,
+    MaxRecordAgeDays = 90,
+    CompressOutput = true,
+    TargetDeviceType = "Fitbit",
+    TargetDeviceId = "FB-12345",
+    StartDate = new DateTime(2024, 1, 1),
+    EndDate = new DateTime(2024, 12, 31),
+    NotificationEmail = "admin@example.com"
+};
+
+// Example 1: Clone options to create a modified configuration
+var clonedOptions = options.Clone();
+clonedOptions.MaxRecordAgeDays = 60; // Modify the clone
+
+// Example 2: Get effective input path (falls back to DatabasePath if InputPath is empty)
+var effectiveInputPath = options.GetEffectiveInputPath();
+Console.WriteLine($"Effective input path: {effectiveInputPath}");
+
+// Example 3: Ensure output directory exists
+var outputDir = options.EnsureOutputDirectoryExists();
+Console.WriteLine($"Output directory ensured: {outputDir}");
+
+// Example 4: Get date range as a tuple
+var dateRange = options.GetDateRange();
+Console.WriteLine($"Date range: {dateRange.StartDate?.ToShortDateString()} to {dateRange.EndDate?.ToShortDateString()}");
+
+// Example 5: Get file extension based on export format
+var fileExtension = options.GetFileExtension();
+Console.WriteLine($"File extension: {fileExtension}");
+
+// Example 6: Get device filter description for logging
+var deviceFilter = options.GetDeviceFilterDescription();
+Console.WriteLine($"Device filter: {deviceFilter}");
+
+// Example 7: Get analysis period as TimeSpan
+var analysisPeriod = options.GetAnalysisPeriod();
+Console.WriteLine($"Analysis period: {analysisPeriod.TotalDays} days");
+
+// Example 8: Get maximum record age as TimeSpan
+var maxRecordAge = options.GetMaxRecordAge();
+Console.WriteLine($"Max record age: {maxRecordAge.TotalDays} days");
+
+// Example 9: Generate output file path with timestamp
+var outputFile = options.GetOutputFilePath("health_export");
+Console.WriteLine($"Output file path: {outputFile}");
+
+// Example 10: Get all validation rules
+var validationRules = options.GetValidationRules();
+foreach (var rule in validationRules)
+{
+    Console.WriteLine($"Validation rule: {rule}");
+}
+```
