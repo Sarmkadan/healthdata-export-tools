@@ -10,6 +10,7 @@ public static class HealthDataExceptionExtensions
     /// </summary>
     /// <param name="exception">The <see cref="HealthDataException"/> instance.</param>
     /// <returns>A human-readable string representation of the exception.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="exception"/> is <see langword="null"/>.</exception>
     public static string ToDetailedString(this HealthDataException exception)
     {
         ArgumentNullException.ThrowIfNull(exception);
@@ -20,9 +21,14 @@ public static class HealthDataExceptionExtensions
             message += $" (Error Code: {exception.ErrorCode})";
         }
 
-        if (exception.ContextData != null)
+        if (exception.ContextData?.Count > 0)
         {
-            message += $" Context Data: {{{string.Join(", ", exception.ContextData.Select(kvp => $"{kvp.Key}: {kvp.Value}"))}}}";
+            var contextDataParts = new List<string>();
+            foreach (var kvp in exception.ContextData)
+            {
+                contextDataParts.Add($"{kvp.Key}: {kvp.Value}");
+            }
+            message += $" Context Data: {{{string.Join(", ", contextDataParts)}}}";
         }
 
         return message;
@@ -33,19 +39,22 @@ public static class HealthDataExceptionExtensions
     /// </summary>
     /// <param name="exception">The <see cref="HealthDataException"/> instance.</param>
     /// <param name="key">The key of the context data value.</param>
-    /// <param name="value">The value associated with the key, or default if not found.</param>
-    /// <returns>true if the key was found; otherwise, false.</returns>
+    /// <param name="value">The value associated with the key, or <see langword="null"/> if not found.</param>
+    /// <returns><see langword="true"/> if the key was found; otherwise, <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="exception"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="key"/> is <see langword="null"/> or empty.</exception>
     public static bool TryGetContextData(this HealthDataException exception, string key, out object? value)
     {
         ArgumentNullException.ThrowIfNull(exception);
         ArgumentException.ThrowIfNullOrEmpty(key);
 
-        if (exception.ContextData != null && exception.ContextData.TryGetValue(key, out value))
+        var contextData = exception.ContextData;
+        if (contextData != null && contextData.TryGetValue(key, out value))
         {
             return true;
         }
 
-        value = default;
+        value = null;
         return false;
     }
 }
