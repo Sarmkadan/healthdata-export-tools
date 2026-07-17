@@ -11,7 +11,7 @@ using System.Text.Json.Serialization.Metadata;
 namespace HealthDataExportTools.Exceptions;
 
 /// <summary>
-/// Provides System.Text.Json serialization and deserialization extensions for HealthDataException and derived types
+/// Provides System.Text.Json serialization and deserialization extensions for HealthDataException and derived types.
 /// </summary>
 public static class HealthDataExceptionJsonExtensions
 {
@@ -61,13 +61,15 @@ public static class HealthDataExceptionJsonExtensions
     }
 
     /// <summary>
-    /// Attempts to deserialize a JSON string to a HealthDataException instance
+    /// Attempts to deserialize a JSON string to a HealthDataException instance.
     /// </summary>
-    /// <param name="json">The JSON string to deserialize</param>
-    /// <param name="value">Receives the deserialized exception if successful</param>
-    /// <returns>True if deserialization succeeded; otherwise false</returns>
+    /// <param name="json">The JSON string to deserialize.</param>
+    /// <param name="value">Receives the deserialized exception if successful; otherwise null.</param>
+    /// <returns>True if deserialization succeeded; otherwise false.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is null.</exception>
     public static bool TryFromJson(string json, out HealthDataException? value)
     {
+        ArgumentNullException.ThrowIfNull(json);
         value = null;
 
         if (string.IsNullOrWhiteSpace(json))
