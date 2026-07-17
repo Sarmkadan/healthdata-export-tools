@@ -2150,6 +2150,114 @@ var insights = await correlationEngine.GetInsightsAsync(healthData, windowDays: 
 Console.WriteLine($"\nGenerated {insights.Count} insights for 90-day window");
 ```
 
+## DataTransformationUtility
+
+The `DataTransformationUtility` class provides comprehensive data transformation and normalization capabilities for health data processing. It includes methods for aggregating sleep, heart rate, and steps data by time periods, filtering records by date ranges, normalizing values, interpolating missing data points, removing outliers, and calculating moving averages. These utilities are essential for preparing health data for analysis, visualization, and export operations.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Utilities;
+using HealthDataExportTools.Domain.Models;
+using HealthDataExportTools.Domain.Enums;
+
+// Sample health data records
+var sleepRecords = new List<SleepData>
+{
+    new SleepData { RecordDate = DateTime.UtcNow.AddDays(-1), DurationMinutes = 480, 
+        DeepSleepMinutes = 120, LightSleepMinutes = 240, RemSleepMinutes = 90, 
+        Quality = SleepQuality.Good, AverageHeartRate = 68 },
+    new SleepData { RecordDate = DateTime.UtcNow.AddDays(-1), DurationMinutes = 510, 
+        DeepSleepMinutes = 135, LightSleepMinutes = 270, RemSleepMinutes = 105, 
+        Quality = SleepQuality.Excellent, AverageHeartRate = 65 },
+    new SleepData { RecordDate = DateTime.UtcNow.AddDays(-2), DurationMinutes = 450, 
+        DeepSleepMinutes = 105, LightSleepMinutes = 255, RemSleepMinutes = 90, 
+        Quality = SleepQuality.Good, AverageHeartRate = 70 }
+};
+
+var heartRateRecords = new List<HeartRateData>
+{
+    new HeartRateData { RecordDate = DateTime.UtcNow.AddDays(-1).AddHours(12), 
+        AverageBpm = 68, MinimumBpm = 50, MaximumBpm = 120 },
+    new HeartRateData { RecordDate = DateTime.UtcNow.AddDays(-1).AddHours(18), 
+        AverageBpm = 72, MinimumBpm = 55, MaximumBpm = 125 },
+    new HeartRateData { RecordDate = DateTime.UtcNow.AddDays(-2).AddHours(12), 
+        AverageBpm = 70, MinimumBpm = 52, MaximumBpm = 118 }
+};
+
+var stepsRecords = new List<StepsData>
+{
+    new StepsData { RecordDate = DateTime.UtcNow.AddDays(-1), TotalSteps = 8500, 
+        DistanceKm = 6.2, CaloriesBurned = 320 },
+    new StepsData { RecordDate = DateTime.UtcNow.AddDays(-2), TotalSteps = 9200, 
+        DistanceKm = 6.7, CaloriesBurned = 345 }
+};
+
+// Aggregate sleep data by date
+var sleepByDate = DataTransformationUtility.AggregateSleepByDate(sleepRecords);
+Console.WriteLine($"Sleep aggregated by date:");
+foreach (var kvp in sleepByDate)
+{
+    Console.WriteLine($"  {kvp.Key:yyyy-MM-dd}: {kvp.Value.TotalDurationMinutes} minutes total, " +
+                     $"{kvp.Value.AverageQuality} avg quality, {kvp.Value.Count} records");
+}
+
+// Aggregate heart rate data by hour (rounds to nearest hour)
+var heartRateByHour = DataTransformationUtility.AggregateHeartRateByHour(heartRateRecords);
+Console.WriteLine($"\nHeart rate aggregated by hour:");
+foreach (var kvp in heartRateByHour)
+{
+    Console.WriteLine($"  {kvp.Key:yyyy-MM-dd HH:mm}: {kvp.Value.AverageHeartRate} BPM " +
+                     $"(Min: {kvp.Value.MinHeartRate}, Max: {kvp.Value.MaxHeartRate})");
+}
+
+// Aggregate steps data by day
+var stepsByDay = DataTransformationUtility.AggregateStepsByDay(stepsRecords);
+Console.WriteLine($"\nSteps aggregated by day:");
+foreach (var kvp in stepsByDay)
+{
+    Console.WriteLine($"  {kvp.Key:yyyy-MM-dd}: {kvp.Value.TotalSteps} steps, " +
+                     $"{kvp.Value.TotalDistance} km, {kvp.Value.Count} records");
+}
+
+// Filter records by date range
+var filteredRecords = DataTransformationUtility.FilterByDateRange(
+    sleepRecords.Cast<HealthDataRecord>().ToList(),
+    DateTime.UtcNow.AddDays(-2),
+    DateTime.UtcNow.AddDays(-1)
+);
+Console.WriteLine($"\nFiltered records: {filteredRecords.Count} records between " +
+                $"{filteredRecords.Min(r => r.RecordDate):yyyy-MM-dd} and " +
+                $"{filteredRecords.Max(r => r.RecordDate):yyyy-MM-dd}");
+
+// Normalize sleep quality values to 0-100 scale
+var normalizedSleep = DataTransformationUtility.NormalizeValues(
+    sleepRecords,
+    getValue: r => (double)r.Quality,
+    setValue: (r, v) => r.Quality = (SleepQuality)Math.Round(v)
+);
+Console.WriteLine($"\nNormalized sleep quality values (0-100 scale)");
+
+// Interpolate missing data points (fill gaps larger than 2 hours)
+var sleepWithGaps = new List<SleepData>();
+// Add a record, then skip some time, then add another record
+sleepWithGaps.Add(new SleepData { RecordDate = DateTime.UtcNow.AddHours(-5), DurationMinutes = 480 });
+sleepWithGaps.Add(new SleepData { RecordDate = DateTime.UtcNow.AddHours(-1), DurationMinutes = 510 });
+
+var interpolatedSleep = DataTransformationUtility.InterpolateMissingData(sleepWithGaps, TimeSpan.FromHours(2));
+Console.WriteLine($"\nInterpolated data: {interpolatedSleep.Count} records (was {sleepWithGaps.Count})");
+
+// Remove outliers from a list of heart rate values
+var heartRateValues = new List<double> { 60, 62, 65, 68, 70, 72, 75, 78, 80, 150 };
+var cleanedHeartRates = DataTransformationUtility.RemoveOutliers(heartRateValues);
+Console.WriteLine($"\nHeart rate values before outlier removal: {heartRateValues.Count}");
+Console.WriteLine($"Heart rate values after outlier removal: {cleanedHeartRates.Count}");
+
+// Calculate moving average with window size of 3
+var movingAvg = DataTransformationUtility.CalculateMovingAverage(heartRateValues, windowSize: 3);
+Console.WriteLine($"\nMoving averages (window=3): [{string.Join(", ", movingAvg.Select(v => v.ToString("F1"))}]");
+```
+
 ## ServiceCollectionExtensions
 
 The `ServiceCollectionExtensions` class provides extension methods for configuring health data services in the dependency injection container. It includes methods for adding core services, configuring repositories (in-memory or SQLite), and creating test service providers with fluent configuration API support.
