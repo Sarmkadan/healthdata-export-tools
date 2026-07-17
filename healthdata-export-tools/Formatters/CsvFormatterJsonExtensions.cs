@@ -11,7 +11,8 @@ using System.Text.Json.Serialization;
 namespace HealthDataExportTools.Formatters;
 
 /// <summary>
-/// Provides System.Text.Json serialization extensions for CsvFormatter
+/// Provides System.Text.Json serialization extensions for <see cref="CsvFormatter"/>.
+/// Enables serialization and deserialization of CSV formatter configuration and state.
 /// </summary>
 public static class CsvFormatterJsonExtensions
 {
@@ -23,12 +24,12 @@ public static class CsvFormatterJsonExtensions
     };
 
     /// <summary>
-    /// Serializes the CsvFormatter to a JSON string
+    /// Serializes the <see cref="CsvFormatter"/> to a JSON string.
     /// </summary>
-    /// <param name="value">The CSV formatter to serialize</param>
-    /// <param name="indented">Whether to format the JSON with indentation</param>
-    /// <returns>JSON representation of the CSV formatter</returns>
-    /// <exception cref="ArgumentNullException">Thrown when value is null</exception>
+    /// <param name="value">The CSV formatter to serialize. Cannot be null.</param>
+    /// <param name="indented">Whether to format the JSON with indentation.</param>
+    /// <returns>JSON representation of the CSV formatter.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
     public static string ToJson(this CsvFormatter value, bool indented = false)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -44,12 +45,12 @@ public static class CsvFormatterJsonExtensions
     }
 
     /// <summary>
-    /// Deserializes a CsvFormatter from JSON string
+    /// Deserializes a <see cref="CsvFormatter"/> from a JSON string.
     /// </summary>
-    /// <param name="json">JSON string to deserialize</param>
-    /// <returns>The deserialized CsvFormatter instance, or null if JSON is invalid</returns>
-    /// <exception cref="ArgumentNullException">Thrown when json is null</exception>
-    /// <exception cref="ArgumentException">Thrown when json is empty or whitespace</exception>
+    /// <param name="json">JSON string to deserialize. Cannot be null or empty.</param>
+    /// <returns>The deserialized <see cref="CsvFormatter"/> instance, or null if JSON is invalid.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is null.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is empty or whitespace.</exception>
     public static CsvFormatter? FromJson(string json)
     {
         ArgumentNullException.ThrowIfNull(json);
@@ -59,12 +60,12 @@ public static class CsvFormatterJsonExtensions
     }
 
     /// <summary>
-    /// Attempts to deserialize a CsvFormatter from JSON string
+    /// Attempts to deserialize a <see cref="CsvFormatter"/> from a JSON string.
     /// </summary>
-    /// <param name="json">JSON string to deserialize</param>
-    /// <param name="value">Receives the deserialized CsvFormatter if successful</param>
-    /// <returns>True if deserialization succeeded; otherwise, false</returns>
-    /// <exception cref="ArgumentNullException">Thrown when json is null</exception>
+    /// <param name="json">JSON string to deserialize. Cannot be null.</param>
+    /// <param name="value">Receives the deserialized <see cref="CsvFormatter"/> if successful.</param>
+    /// <returns>True if deserialization succeeded; otherwise, false.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is null.</exception>
     public static bool TryFromJson(string json, out CsvFormatter? value)
     {
         ArgumentNullException.ThrowIfNull(json);
