@@ -31,11 +31,12 @@ public static class SleepDataValidation
         {
             errors.Add("SleepStart must be set to a valid date and time");
         }
-        else if (value.SleepEnd == default)
+
+        if (value.SleepEnd == default)
         {
             errors.Add("SleepEnd must be set to a valid date and time");
         }
-        else if (value.SleepStart >= value.SleepEnd)
+        else if (value.SleepStart != default && value.SleepStart >= value.SleepEnd)
         {
             errors.Add("SleepStart must be before SleepEnd");
         }
@@ -67,38 +68,29 @@ public static class SleepDataValidation
             errors.Add("AwakeMinutes cannot be negative");
         }
 
-        // Validate that sleep stages don't exceed total duration
+        // Validate that sleep stages don't exceed total duration (allow small floating point tolerance)
         var totalSleepStages = value.DeepSleepMinutes + value.LightSleepMinutes + value.RemSleepMinutes + value.AwakeMinutes;
-        if (totalSleepStages > value.DurationMinutes)
+        if (totalSleepStages > value.DurationMinutes + 0.01)
         {
             errors.Add("Sum of sleep stage durations (Deep + Light + REM + Awake) cannot exceed DurationMinutes");
         }
 
         // Validate Score range (0-100)
-        if (value.Score.HasValue)
+        if (value.Score is < 0 or > 100)
         {
-            if (value.Score < 0 || value.Score > 100)
-            {
-                errors.Add("Score must be between 0 and 100 when set");
-            }
+            errors.Add("Score must be between 0 and 100 when set");
         }
 
         // Validate CycleCount (reasonable range for sleep cycles)
-        if (value.CycleCount.HasValue)
+        if (value.CycleCount is <= 0 or > 10)
         {
-            if (value.CycleCount <= 0 || value.CycleCount > 10)
-            {
-                errors.Add("CycleCount must be between 1 and 10 when set");
-            }
+            errors.Add("CycleCount must be between 1 and 10 when set");
         }
 
         // Validate AverageHeartRate
-        if (value.AverageHeartRate.HasValue)
+        if (value.AverageHeartRate is < 30 or > 200)
         {
-            if (value.AverageHeartRate < 30 || value.AverageHeartRate > 200)
-            {
-                errors.Add("AverageHeartRate must be between 30 and 200 when set");
-            }
+            errors.Add("AverageHeartRate must be between 30 and 200 when set");
         }
 
         // Validate Quality enum value
