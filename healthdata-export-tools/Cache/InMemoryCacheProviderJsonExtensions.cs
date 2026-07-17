@@ -20,7 +20,10 @@ public static class InMemoryCacheProviderJsonExtensions
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         WriteIndented = false,
         TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
-        ReferenceHandler = ReferenceHandler.IgnoreCycles
+        ReferenceHandler = ReferenceHandler.IgnoreCycles,
+        PropertyNameCaseInsensitive = true,
+        // Ensure culture-invariant serialization for deterministic JSON output
+        Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
     };
 
     /// <summary>
@@ -29,7 +32,7 @@ public static class InMemoryCacheProviderJsonExtensions
     /// <param name="value">The cache provider instance to serialize</param>
     /// <param name="indented">Whether to format the JSON with indentation for readability</param>
     /// <returns>A JSON string representation of the cache provider</returns>
-    /// <exception cref="ArgumentNullException">Thrown when value is null</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null</exception>
     public static string ToJson(this InMemoryCacheProvider value, bool indented = false)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -45,16 +48,16 @@ public static class InMemoryCacheProviderJsonExtensions
     /// Deserializes a JSON string back into an InMemoryCacheProvider instance
     /// </summary>
     /// <param name="json">The JSON string to deserialize</param>
-    /// <returns>An InMemoryCacheProvider instance, or null if the JSON is null or empty</returns>
-    /// <exception cref="JsonException">Thrown when the JSON is malformed or cannot be deserialized</exception>
+    /// <returns>An InMemoryCacheProvider instance, or null if the JSON is null, empty, or whitespace-only</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is null</exception>
+    /// <exception cref="JsonException">Thrown when the JSON is malformed or cannot be deserialized into an InMemoryCacheProvider</exception>
     public static InMemoryCacheProvider? FromJson(string json)
     {
-        if (string.IsNullOrEmpty(json))
-        {
-            return null;
-        }
+        ArgumentNullException.ThrowIfNull(json);
 
-        return JsonSerializer.Deserialize<InMemoryCacheProvider>(json, _jsonOptions);
+        return string.IsNullOrWhiteSpace(json)
+            ? null
+            : JsonSerializer.Deserialize<InMemoryCacheProvider>(json, _jsonOptions);
     }
 
     /// <summary>
@@ -63,11 +66,14 @@ public static class InMemoryCacheProviderJsonExtensions
     /// <param name="json">The JSON string to deserialize</param>
     /// <param name="value">Output parameter receiving the deserialized instance, or null on failure</param>
     /// <returns>True if deserialization succeeded; false otherwise</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is null</exception>
     public static bool TryFromJson(string json, out InMemoryCacheProvider? value)
     {
+        ArgumentNullException.ThrowIfNull(json);
+
         value = null;
 
-        if (string.IsNullOrEmpty(json))
+        if (string.IsNullOrWhiteSpace(json))
         {
             return false;
         }
