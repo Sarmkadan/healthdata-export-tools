@@ -24,23 +24,15 @@ public static class ExportResultDtoValidation
 
         // Validate ExportId
         if (string.IsNullOrWhiteSpace(value.ExportId))
-        {
             errors.Add("ExportId cannot be null or whitespace.");
-        }
         else if (!Guid.TryParse(value.ExportId, out _))
-        {
             errors.Add("ExportId must be a valid GUID.");
-        }
 
         // Validate Status
         if (string.IsNullOrWhiteSpace(value.Status))
-        {
             errors.Add("Status cannot be null or whitespace.");
-        }
         else if (value.Status.Length > 50)
-        {
             errors.Add("Status cannot exceed 50 characters.");
-        }
 
         // Validate RecordsExported
         if (value.RecordsExported < 0)
@@ -56,13 +48,9 @@ public static class ExportResultDtoValidation
 
         // Validate OutputPath
         if (string.IsNullOrWhiteSpace(value.OutputPath))
-        {
             errors.Add("OutputPath cannot be null or whitespace.");
-        }
         else if (value.OutputPath.Length > 1024)
-        {
             errors.Add("OutputPath cannot exceed 1024 characters.");
-        }
 
         // Validate OutputSizeBytes
         if (value.OutputSizeBytes < 0)
@@ -86,46 +74,28 @@ public static class ExportResultDtoValidation
                 }
 
                 if (string.IsNullOrWhiteSpace(file.FileName))
-                {
                     errors.Add($"GeneratedFiles[{index}].FileName cannot be null or whitespace.");
-                }
                 else if (file.FileName.Length > 255)
-                {
                     errors.Add($"GeneratedFiles[{index}].FileName cannot exceed 255 characters.");
-                }
 
                 if (string.IsNullOrWhiteSpace(file.FilePath))
-                {
                     errors.Add($"GeneratedFiles[{index}].FilePath cannot be null or whitespace.");
-                }
                 else if (file.FilePath.Length > 1024)
-                {
                     errors.Add($"GeneratedFiles[{index}].FilePath cannot exceed 1024 characters.");
-                }
 
                 if (string.IsNullOrWhiteSpace(file.Format))
-                {
                     errors.Add($"GeneratedFiles[{index}].Format cannot be null or whitespace.");
-                }
                 else if (file.Format.Length > 50)
-                {
                     errors.Add($"GeneratedFiles[{index}].Format cannot exceed 50 characters.");
-                }
 
                 if (file.RecordCount < 0)
-                {
                     errors.Add($"GeneratedFiles[{index}].RecordCount cannot be negative.");
-                }
 
                 if (file.FileSizeBytes < 0)
-                {
                     errors.Add($"GeneratedFiles[{index}].FileSizeBytes cannot be negative.");
-                }
 
                 if (file.CreatedAt == default)
-                {
                     errors.Add($"GeneratedFiles[{index}].CreatedAt cannot be default DateTime.");
-                }
             }
         }
 
@@ -139,31 +109,21 @@ public static class ExportResultDtoValidation
             foreach (var (format, index) in value.ExportedFormats.Select((f, i) => (f, i)))
             {
                 if (string.IsNullOrWhiteSpace(format))
-                {
                     errors.Add($"ExportedFormats[{index}] cannot be null or whitespace.");
-                }
                 else if (format.Length > 50)
-                {
                     errors.Add($"ExportedFormats[{index}] cannot exceed 50 characters.");
-                }
             }
         }
 
         // Validate StartTime
         if (value.StartTime == default)
-        {
             errors.Add("StartTime cannot be default DateTime.");
-        }
 
         // Validate EndTime
         if (value.EndTime == default)
-        {
             errors.Add("EndTime cannot be default DateTime.");
-        }
         else if (value.EndTime < value.StartTime)
-        {
             errors.Add("EndTime cannot be earlier than StartTime.");
-        }
 
         // Validate DeviceTypes
         if (value.DeviceTypes is not null)
@@ -171,13 +131,9 @@ public static class ExportResultDtoValidation
             foreach (var (deviceType, index) in value.DeviceTypes.Select((d, i) => (d, i)))
             {
                 if (string.IsNullOrWhiteSpace(deviceType))
-                {
                     errors.Add($"DeviceTypes[{index}] cannot be null or whitespace.");
-                }
                 else if (deviceType.Length > 100)
-                {
                     errors.Add($"DeviceTypes[{index}] cannot exceed 100 characters.");
-                }
             }
         }
 
@@ -187,13 +143,9 @@ public static class ExportResultDtoValidation
             foreach (var (dataType, index) in value.DataTypes.Select((d, i) => (d, i)))
             {
                 if (string.IsNullOrWhiteSpace(dataType))
-                {
                     errors.Add($"DataTypes[{index}] cannot be null or whitespace.");
-                }
                 else if (dataType.Length > 100)
-                {
                     errors.Add($"DataTypes[{index}] cannot exceed 100 characters.");
-                }
             }
         }
 
@@ -203,13 +155,9 @@ public static class ExportResultDtoValidation
             foreach (var (warning, index) in value.Warnings.Select((w, i) => (w, i)))
             {
                 if (string.IsNullOrWhiteSpace(warning))
-                {
                     errors.Add($"Warnings[{index}] cannot be null or whitespace.");
-                }
                 else if (warning.Length > 500)
-                {
                     errors.Add($"Warnings[{index}] cannot exceed 500 characters.");
-                }
             }
         }
 
@@ -219,13 +167,9 @@ public static class ExportResultDtoValidation
             foreach (var (error, index) in value.Errors.Select((e, i) => (e, i)))
             {
                 if (string.IsNullOrWhiteSpace(error))
-                {
                     errors.Add($"Errors[{index}] cannot be null or whitespace.");
-                }
                 else if (error.Length > 500)
-                {
                     errors.Add($"Errors[{index}] cannot exceed 500 characters.");
-                }
             }
         }
 
@@ -233,13 +177,8 @@ public static class ExportResultDtoValidation
         // No validation needed - boolean can always be valid
 
         // Validate CompressionRatio
-        if (value.CompressionRatio.HasValue)
-        {
-            if (value.CompressionRatio < 0 || value.CompressionRatio > 100)
-            {
-                errors.Add("CompressionRatio must be between 0 and 100.");
-            }
-        }
+        if (value.CompressionRatio.HasValue && (value.CompressionRatio < 0 || value.CompressionRatio > 100))
+            errors.Add("CompressionRatio must be between 0 and 100.");
 
         return errors.AsReadOnly();
     }
