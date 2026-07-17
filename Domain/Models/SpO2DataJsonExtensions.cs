@@ -6,7 +6,7 @@ namespace healthdata_export_tools.Domain.Models;
 /// <summary>
 /// Provides JSON serialization and deserialization extensions for <see cref="SpO2Data"/>.
 /// </summary>
-public static class SpO2DataJsonExtensions
+public sealed class SpO2DataJsonExtensions
 {
     private static readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web)
     {
@@ -34,6 +34,7 @@ public static class SpO2DataJsonExtensions
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
     /// <returns>The deserialized <see cref="SpO2Data"/> instance, or <see langword="null"/> if the JSON is empty or whitespace.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is <see langword="null"/>.</exception>
     /// <exception cref="JsonException">Thrown when the JSON is invalid or cannot be deserialized.</exception>
     public static SpO2Data? FromJson(string json)
     {
@@ -51,8 +52,11 @@ public static class SpO2DataJsonExtensions
     /// <param name="json">The JSON string to deserialize.</param>
     /// <param name="value">Receives the deserialized value if successful.</param>
     /// <returns><see langword="true"/> if deserialization succeeded; otherwise, <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is <see langword="null"/>.</exception>
     public static bool TryFromJson(string json, out SpO2Data? value)
     {
+        ArgumentNullException.ThrowIfNull(json);
+
         value = null;
 
         if (string.IsNullOrWhiteSpace(json))
