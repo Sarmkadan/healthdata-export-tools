@@ -20,7 +20,7 @@ public static class TrendAnomalyDetectionServiceTestsJsonExtensions
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         WriteIndented = false,
-        TypeInfoResolver = new DefaultJsonTypeInfoResolver { Modifiers = { MakeInternalTypesPublic } }
+        TypeInfoResolver = new DefaultJsonTypeInfoResolver { Modifiers = { static ti => MakeInternalTypesPublic(ti) } }
     };
 
     /// <summary>
@@ -61,6 +61,7 @@ public static class TrendAnomalyDetectionServiceTestsJsonExtensions
     /// <param name="json">The JSON string to deserialize.</param>
     /// <param name="value">Receives the deserialized instance if successful; otherwise, <see langword="null"/>.</param>
     /// <returns><see langword="true"/> if deserialization succeeded; otherwise, <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is <see langword="null"/>.</exception>
     public static bool TryFromJson(string json, out TrendAnomalyDetectionServiceTests? value)
     {
         ArgumentNullException.ThrowIfNull(json);
@@ -81,6 +82,7 @@ public static class TrendAnomalyDetectionServiceTestsJsonExtensions
     /// JsonTypeInfo modifier to make internal types public during serialization/deserialization.
     /// This allows System.Text.Json to access internal members of types in this assembly.
     /// </summary>
+    /// <param name="jsonTypeInfo">The type information to modify.</param>
     private static void MakeInternalTypesPublic(JsonTypeInfo jsonTypeInfo)
     {
         if (jsonTypeInfo.Type.Assembly == typeof(TrendAnomalyDetectionServiceTests).Assembly)
