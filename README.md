@@ -1166,6 +1166,117 @@ var dateRangeResult = await comparisonService.CompareByDateRangeAsync(
 );
 ```
 
+## ValidationHelper
+
+The `ValidationHelper` class provides comprehensive validation utilities for health data metrics and file operations. It includes methods for validating health measurements (heart rate, SpO2, sleep duration, activity duration), data ranges (GPS coordinates, distance, elevation, temperature), file system paths, email addresses, and date values. The class also provides validation exception helpers to ensure data integrity.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Utilities;
+using HealthDataExportTools.Exceptions;
+
+// Validate health measurements
+bool isValidHeartRate = ValidationHelper.IsValidHeartRate(75);
+Console.WriteLine($"Valid heart rate: {isValidHeartRate}");
+
+bool isValidSpO2 = ValidationHelper.IsValidSpO2(98);
+Console.WriteLine($"Valid SpO2: {isValidSpO2}");
+
+bool isValidSleepDuration = ValidationHelper.IsValidSleepDuration(480);
+Console.WriteLine($"Valid sleep duration: {isValidSleepDuration}");
+
+bool isValidActivityDuration = ValidationHelper.IsValidActivityDuration(60);
+Console.WriteLine($"Valid activity duration: {isValidActivityDuration}");
+
+// Validate date and email
+bool isValidDate = ValidationHelper.IsValidRecordDate(DateTime.UtcNow.AddDays(-1));
+Console.WriteLine($"Valid record date: {isValidDate}");
+
+bool isValidEmail = ValidationHelper.IsValidEmail("patient@example.com");
+Console.WriteLine($"Valid email: {isValidEmail}");
+
+// Validate file system paths
+bool isValidFilePath = ValidationHelper.IsValidFilePath("/data/health_records.json");
+Console.WriteLine($"Valid file path: {isValidFilePath}");
+
+bool isValidDirectoryPath = ValidationHelper.IsValidDirectoryPath("/exports");
+Console.WriteLine($"Valid directory path: {isValidDirectoryPath}");
+
+// Validate GPS coordinates
+bool isValidGps = ValidationHelper.IsValidGpsCoordinates(40.7128, -74.0060);
+Console.WriteLine($"Valid GPS coordinates: {isValidGps}");
+
+// Validate distance and elevation
+bool isValidDistance = ValidationHelper.IsValidDistance(5.5);
+Console.WriteLine($"Valid distance: {isValidDistance}");
+
+bool isValidElevation = ValidationHelper.IsValidElevation(150);
+Console.WriteLine($"Valid elevation: {isValidElevation}");
+
+// Validate temperature
+bool isValidTemperature = ValidationHelper.IsValidTemperature(36.6);
+Console.WriteLine($"Valid temperature: {isValidTemperature}");
+
+// Validate calories
+bool isValidCalories = ValidationHelper.IsValidCalories(320);
+Console.WriteLine($"Valid calories: {isValidCalories}");
+
+// Validate percentage values
+bool isValidPercentage = ValidationHelper.IsValidPercentage(85);
+Console.WriteLine($"Valid percentage: {isValidPercentage}");
+
+bool isValidPercentageExtended = ValidationHelper.IsValidPercentageExtended(150);
+Console.WriteLine($"Valid extended percentage: {isValidPercentageExtended}");
+
+// Use validation exception helpers
+try
+{
+    ValidationHelper.EnsureInRange(75, 0, 200, "HeartRate");
+    Console.WriteLine("Heart rate is within valid range");
+}
+catch (ValidationException ex)
+{
+    Console.WriteLine($"Validation failed: {ex.Message}");
+}
+
+try
+{
+    ValidationHelper.EnsureNotNull(sleepData, "SleepData");
+    Console.WriteLine("Sleep data is not null");
+}
+catch (ValidationException ex)
+{
+    Console.WriteLine($"Validation failed: {ex.Message}");
+}
+
+try
+{
+    ValidationHelper.EnsureNotEmpty(deviceId, "DeviceId");
+    Console.WriteLine("Device ID is not empty");
+}
+catch (ValidationException ex)
+{
+    Console.WriteLine($"Validation failed: {ex.Message}");
+}
+
+// Validate heart rate data with detailed errors
+var heartRateErrors = ValidationHelper.ValidateHeartRateData(
+    min: 50,
+    max: 180,
+    avg: 75
+);
+
+if (heartRateErrors.Any())
+{
+    Console.WriteLine("Heart rate validation errors:");
+    foreach (var error in heartRateErrors)
+    {
+        Console.WriteLine($" - {error}");
+    }
+}
+```
+
 ## BatchProcessingService
 
 The `BatchProcessingService` provides efficient batch processing capabilities for large datasets of health records, enabling parallel and sequential processing with progress tracking and comprehensive statistics. It handles large volumes of health data efficiently with configurable batch sizes and supports both synchronous and asynchronous batch processing patterns.
