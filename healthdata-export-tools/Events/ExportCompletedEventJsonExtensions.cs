@@ -27,7 +27,8 @@ public static class ExportCompletedEventJsonExtensions
     /// <param name="value">The event to serialize</param>
     /// <param name="indented">Whether to format the JSON with indentation</param>
     /// <returns>JSON string representation</returns>
-    /// <exception cref="ArgumentNullException">Thrown when value is null</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null</exception>
+/// <exception cref="JsonException">Thrown when serialization fails</exception>
     public static string ToJson(this ExportCompletedEvent value, bool indented = false)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -46,12 +47,13 @@ public static class ExportCompletedEventJsonExtensions
     /// Deserializes ExportCompletedEvent from JSON string
     /// </summary>
     /// <param name="json">JSON string to deserialize</param>
-    /// <returns>Deserialized event or null if JSON is invalid</returns>
-    /// <exception cref="ArgumentNullException">Thrown when json is null</exception>
-    /// <exception cref="ArgumentException">Thrown when json is empty or whitespace</exception>
+    /// <returns>Deserialized event or null if JSON is invalid or deserialization fails</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is null</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is empty or consists only of whitespace</exception>
     public static ExportCompletedEvent? FromJson(string json)
     {
         ArgumentException.ThrowIfNullOrEmpty(json);
+ArgumentException.ThrowIfNullOrWhiteSpace(json);
 
         try
         {
@@ -67,13 +69,14 @@ public static class ExportCompletedEventJsonExtensions
     /// Attempts to deserialize ExportCompletedEvent from JSON string
     /// </summary>
     /// <param name="json">JSON string to deserialize</param>
-    /// <param name="value">Deserialized event, or null if deserialization fails</param>
+    /// <param name="value">When this method returns, contains the deserialized event if successful, or null if deserialization fails</param>
     /// <returns>True if deserialization succeeds; false otherwise</returns>
-    /// <exception cref="ArgumentNullException">Thrown when json is null</exception>
-    /// <exception cref="ArgumentException">Thrown when json is empty or whitespace</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is null</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is empty or consists only of whitespace</exception>
     public static bool TryFromJson(string json, out ExportCompletedEvent? value)
     {
         ArgumentException.ThrowIfNullOrEmpty(json);
+ArgumentException.ThrowIfNullOrWhiteSpace(json);
 
         try
         {
