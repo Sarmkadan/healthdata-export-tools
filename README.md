@@ -2370,6 +2370,82 @@ var repository = serviceProvider.GetRequiredService<IHealthDataRepository>();
 Console.WriteLine("SQLite repository configured!");
 ```
 
+## CsvUtility
+
+The `CsvUtility` class provides comprehensive utilities for parsing, validating, transforming, and exporting CSV data in health data export scenarios. It includes methods for parsing CSV files and lines, escaping fields for CSV format, validating CSV structure, counting rows, merging multiple CSV files, converting CSV to JSON, and analyzing CSV statistics including file size, row count, and header information.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Utilities;
+using System.Text.Json;
+
+// Parse a CSV file asynchronously
+var csvRecords = await CsvUtility.ParseCsvFileAsync("/data/patient_records.csv");
+Console.WriteLine($"Parsed {csvRecords.Count} CSV records");
+
+// Parse a single CSV line
+var line = "John Doe,45,123 Main St,New York,10001";
+var parsedLine = CsvUtility.ParseCsvLine(line);
+Console.WriteLine($"Parsed line with {parsedLine.Count} fields: {string.Join(" | ", parsedLine)}");
+
+// Escape a CSV field containing commas and quotes
+a string fieldWithCommas = "Smith, John";
+string escapedField = CsvUtility.EscapeCsvField(fieldWithCommas);
+Console.WriteLine($"Escaped field: {escapedField}");
+
+// Validate CSV structure
+var validationErrors = CsvUtility.ValidateCsvStructure(
+    "/data/patient_records.csv",
+    new[] {"Name", "Age", "Address", "City", "ZipCode"}
+);
+if (validationErrors.Count > 0)
+{
+    Console.WriteLine("CSV validation errors:");
+    foreach (var error in validationErrors)
+    {
+        Console.WriteLine($" - {error}");
+    }
+}
+
+// Count rows in a CSV file
+int rowCount = await CsvUtility.CountRowsAsync("/data/patient_records.csv");
+Console.WriteLine($"CSV file contains {rowCount} rows");
+
+// Merge multiple CSV files into one
+var mergedFile = await CsvUtility.MergeCsvFilesAsync(
+    new[] {
+        "/data/patients_2024_q1.csv",
+        "/data/patients_2024_q2.csv",
+        "/data/patients_2024_q3.csv"
+    },
+    "/data/patients_2024_merged.csv"
+);
+Console.WriteLine($"Merged CSV files into: {mergedFile}");
+
+// Convert CSV to JSON
+var jsonOutput = await CsvUtility.CsvToJsonAsync(
+    "/data/patient_records.csv",
+    "/data/patient_records.json"
+);
+Console.WriteLine($"Converted CSV to JSON: {jsonOutput}");
+
+// Get CSV statistics
+var stats = await CsvUtility.GetCsvStatisticsAsync("/data/patient_records.csv");
+Console.WriteLine($"CSV Statistics:");
+Console.WriteLine($" - Row Count: {stats.RowCount}");
+Console.WriteLine($" - Header Count: {stats.HeaderCount}");
+Console.WriteLine($" - File Size: {stats.FileSizeBytes} bytes ({stats.FileSizeBytes / 1024.0:F2} KB)");
+Console.WriteLine($" - Last Modified: {stats.LastModified:yyyy-MM-dd HH:mm:ss}");
+
+// Access statistics properties
+Console.WriteLine($"\nAdditional properties:");
+Console.WriteLine($" - Total data rows: {stats.RowCount}");
+Console.WriteLine($" - Headers found: {stats.HeaderCount}");
+Console.WriteLine($" - File size in KB: {stats.FileSizeBytes / 1024.0:F2}");
+Console.WriteLine($" - Last modified: {stats.LastModified:yyyy-MM-dd HH:mm:ss}");
+```
+
 ## FileUtility
 
 The `FileUtility` class provides a comprehensive set of utilities for file operations including reading, writing, copying, hashing, and management. It offers safe file handling with built-in error handling, backup creation, and integrity verification through SHA256 hashing. The utility supports both synchronous and asynchronous operations, making it ideal for file-based health data processing workflows.
