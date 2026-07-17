@@ -44,19 +44,16 @@ public static class HealthDataExportOptionsJsonExtensions
     /// Deserializes a JSON string to a <see cref="HealthDataExportOptions"/> instance.
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
+    /// <returns>The deserialized options instance, or null if the JSON is empty or whitespace.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="json"/> is null.</exception>
     /// <exception cref="JsonException">The JSON is invalid or cannot be deserialized.</exception>
-    /// <returns>The deserialized options instance, or null if the JSON is empty.</returns>
     public static HealthDataExportOptions? FromJson(string json)
     {
         ArgumentNullException.ThrowIfNull(json);
 
-        if (string.IsNullOrWhiteSpace(json))
-        {
-            return null;
-        }
-
-        return JsonSerializer.Deserialize<HealthDataExportOptions>(json, _jsonOptions);
+        return string.IsNullOrWhiteSpace(json)
+            ? null
+            : JsonSerializer.Deserialize<HealthDataExportOptions>(json, _jsonOptions);
     }
 
     /// <summary>
@@ -65,6 +62,7 @@ public static class HealthDataExportOptionsJsonExtensions
     /// <param name="json">The JSON string to deserialize.</param>
     /// <param name="value">Receives the deserialized options instance if successful.</param>
     /// <returns>True if deserialization succeeded; otherwise, false.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="json"/> is null.</exception>
     public static bool TryFromJson(string json, out HealthDataExportOptions? value)
     {
         ArgumentNullException.ThrowIfNull(json);
