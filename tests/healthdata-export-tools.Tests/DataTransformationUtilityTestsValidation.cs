@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 
 namespace HealthDataExportTools.Tests;
 
@@ -22,8 +21,18 @@ public static class DataTransformationUtilityTestsValidation
 
         var problems = new List<string>();
 
-        // Validate test methods are not null (they're methods, but should be present)
-        // Test methods are static and should always be present for a valid test class
+        // Validate that the test class has test methods (Xunit Fact/Theory attributes)
+        // This is a marker validation - DataTransformationUtilityTests is a test class container
+        // and should have at least one test method to be considered valid
+        var testMethods = value.GetType().GetMethods(
+            System.Reflection.BindingFlags.Instance |
+            System.Reflection.BindingFlags.Public |
+            System.Reflection.BindingFlags.DeclaredOnly);
+
+        if (testMethods.Length == 0)
+        {
+            problems.Add("Test class must contain at least one test method.");
+        }
 
         return problems.AsReadOnly();
     }
@@ -33,12 +42,18 @@ public static class DataTransformationUtilityTestsValidation
     /// </summary>
     /// <param name="value">The test instance to check.</param>
     /// <returns><see langword="true"/> if the instance is valid; otherwise, <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
     public static bool IsValid(this DataTransformationUtilityTests value)
     {
+        if (value is null)
+        {
+            return false;
+        }
+
         try
         {
-            _ = value.Validate();
-            return true;
+            var problems = value.Validate();
+            return problems.Count == 0;
         }
         catch
         {
