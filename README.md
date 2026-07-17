@@ -71,3 +71,51 @@ if (validationErrors.Count > 0)
     }
 }
 ```
+
+## MockValidationServiceValidation
+
+The `MockValidationServiceValidation` static class provides a set of extension methods that enable comprehensive validation of a `MockValidationService` instance and the health‑data models it works with. It offers methods to retrieve validation errors, check validity, and enforce validity by throwing an exception when the service or a model is invalid.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Benchmarks;
+using HealthDataExportTools.Domain.Models;
+
+// Create a mock validation service (assume it has a parameterless constructor)
+var mockService = new MockValidationService();
+
+// Validate the whole service
+var serviceErrors = mockService.Validate();
+if (!mockService.IsValid())
+{
+    // Throws an ArgumentException with detailed errors
+    mockService.EnsureValid();
+}
+
+// Validate individual health data records
+var sleep = new SleepData
+{
+    RecordDate = DateTime.UtcNow,
+    SleepStart = DateTime.UtcNow.AddHours(-8),
+    SleepEnd = DateTime.UtcNow,
+    DurationMinutes = 480,
+    DeepSleepMinutes = 120,
+    LightSleepMinutes = 200,
+    RemSleepMinutes = 80,
+    AwakeMinutes = 80
+};
+
+var sleepErrors = sleep.Validate();
+
+var heartRate = new HeartRateData
+{
+    RecordDate = DateTime.UtcNow,
+    MinimumBpm = 55,
+    MaximumBpm = 150,
+    AverageBpm = 80,
+    MeasurementCount = 30
+};
+
+var hrErrors = heartRate.Validate();
+```
