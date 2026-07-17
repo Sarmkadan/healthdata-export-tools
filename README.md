@@ -2370,3 +2370,73 @@ var repository = serviceProvider.GetRequiredService<IHealthDataRepository>();
 Console.WriteLine("SQLite repository configured!");
 ```
 
+## FileUtility
+
+The `FileUtility` class provides a comprehensive set of utilities for file operations including reading, writing, copying, hashing, and management. It offers safe file handling with built-in error handling, backup creation, and integrity verification through SHA256 hashing. The utility supports both synchronous and asynchronous operations, making it ideal for file-based health data processing workflows.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Utilities;
+
+// Read file content safely
+string fileContent = await FileUtility.ReadFileAsync("/data/health_records/patient_123.json");
+Console.WriteLine($"File content length: {fileContent.Length} characters");
+
+// Write content to file with automatic directory creation
+await FileUtility.WriteFileAsync(
+    "/data/exports/patient_123_processed.json",
+    fileContent,
+    createBackup: true  // Creates backup if file exists
+);
+
+// Get all files recursively in a directory
+var allFiles = FileUtility.GetFilesRecursive("/data/health_records");
+Console.WriteLine($"Found {allFiles.Count} files in directory");
+
+// Delete a file safely (returns false if file doesn't exist)
+bool deleted = FileUtility.DeleteFile("/data/temp/old_file.json");
+Console.WriteLine($"File deleted: {deleted}");
+
+// Get file size in bytes
+long fileSize = FileUtility.GetFileSize("/data/health_records/patient_123.json");
+Console.WriteLine($"File size: {fileSize} bytes");
+
+// Check if file is readable
+bool isReadable = FileUtility.IsFileReadable("/data/health_records/patient_123.json");
+Console.WriteLine($"File is readable: {isReadable}");
+
+// Generate unique filename if file exists
+string uniquePath = FileUtility.GenerateUniqueFilePath("/data/exports/output.json");
+Console.WriteLine($"Unique path: {uniquePath}");
+
+// Copy directory recursively
+await FileUtility.CopyDirectoryAsync(
+    "/data/health_records/backup",
+    "/data/health_records/backup_copy"
+);
+
+// Get SHA256 hash for integrity verification
+string fileHash = await FileUtility.GetFileSha256HashAsync("/data/health_records/patient_123.json");
+Console.WriteLine($"File SHA256 hash: {fileHash}");
+
+// Read file lines asynchronously
+var lines = await FileUtility.ReadLinesAsync("/data/health_records/patient_123.csv");
+Console.WriteLine($"Read {lines.Count} lines from file");
+
+// Write lines to file
+await FileUtility.WriteLinesAsync(
+    "/data/exports/patient_123_summary.csv",
+    new[] { "Date,Records,Size", "2024-01-15,1500,2.4MB" }
+);
+
+// Get most recently modified files
+var recentFiles = FileUtility.GetRecentFiles("/data/health_records", count: 5);
+Console.WriteLine($"Most recent files:");
+foreach (var file in recentFiles)
+{
+    var fileInfo = new FileInfo(file);
+    Console.WriteLine($" - {fileInfo.Name} (Modified: {fileInfo.LastWriteTimeUtc:yyyy-MM-dd HH:mm:ss})");
+}
+```
+
