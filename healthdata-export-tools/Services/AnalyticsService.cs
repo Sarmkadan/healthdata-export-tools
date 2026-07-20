@@ -4,6 +4,9 @@
 // CTO & Software Architect
 // =============================================================================
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using HealthDataExportTools.Domain.Models;
 
 namespace HealthDataExportTools.Services;
@@ -329,6 +332,58 @@ public sealed class AnalyticsService
         }
 
         return Math.Min(score, 100);
+    }
+
+    /// <summary>
+    /// Compute specified percentiles of a numeric data set using linear interpolation.
+    /// </summary>
+    /// <param name="values">The collection of numeric values.</param>
+    /// <param name="percentiles">Percentile values to compute (0‑100 inclusive).</param>
+    /// <returns>A read‑only dictionary mapping each requested percentile to its computed value.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="values"/> or <paramref name="percentiles"/> is null.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="values"/> is empty.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when any percentile is outside the 0‑100 range.</exception>
+    public IReadOnlyDictionary<double, double> ComputePercentiles(IEnumerable<double> values, params double[] percentiles)
+    {
+        if (values == null) throw new ArgumentNullException(nameof(values));
+        if (percentiles == null) throw new ArgumentNullException(nameof(percentiles));
+
+        var valueList = values.ToList();
+        if (!valueList.Any())
+            throw new ArgumentException("Values collection cannot be empty.", nameof(values));
+
+        foreach (var p in percentiles)
+        {
+            if (p < 0.0 || p > 100.0)
+                throw new ArgumentOutOfRangeException(nameof(percentiles), "Percentile values must be between 0 and 100 inclusive.");
+        }
+
+        var sorted = valueList.OrderBy(v => v).ToArray();
+        int n = sorted.Length;
+        var result = new Dictionary<double, double>(percentiles.Length);
+
+        foreach (var p in percentiles)
+        {
+            // Position using the linear interpolation method (R6)
+            double rank = p / 100.0 * (n - 1);
+            int lower = (int)Math.Floor(rank);
+            int upper = (int)Math.Ceiling(rank);
+
+            double interpolated;
+            if (lower == upper)
+            {
+                interpolated = sorted[lower];
+            }
+            else
+            {
+                double weight = rank - lower;
+                interpolated = sorted[lower] + weight * (sorted[upper] - sorted[lower]);
+            }
+
+            result[p] = interpolated;
+        }
+
+        return result;
     }
 }
 
