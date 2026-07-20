@@ -160,6 +160,37 @@ public sealed class DataComparisonService
         await File.WriteAllTextAsync(outputPath, json, Encoding.UTF8).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Renders a plain-text diff summary.
+    /// </summary>
+    /// <param name="result">The comparison result to render.</param>
+    /// <returns>A formatted plain-text diff summary.</returns>
+    public string GenerateTextReport(DataComparisonResult result)
+    {
+        ArgumentNullException.ThrowIfNull(result);
+
+        var sb = new StringBuilder();
+        sb.AppendLine("Diff Summary:");
+        sb.AppendLine($"Added: {result.AddedCount}");
+        sb.AppendLine($"Removed: {result.RemovedCount}");
+        sb.AppendLine($"Changed: {result.ChangedCount}");
+        sb.AppendLine();
+        sb.AppendLine("Top 10 Changed Entries:");
+        
+        if (result.TopChangedEntries.Count == 0)
+        {
+            sb.AppendLine("None.");
+        }
+        else
+        {
+            foreach (var entry in result.TopChangedEntries.Take(10))
+            {
+                sb.AppendLine($"- {entry}");
+            }
+        }
+        return sb.ToString();
+    }
+
     // ── Helpers ────────────────────────────────────────────────────────────────
 
     private static double CalculatePercentageChange(double oldVal, double newVal)
@@ -212,6 +243,12 @@ public sealed class DataComparisonResult
     public int Period1RecordCount { get; set; }
     /// <summary>Total record count in Period 2.</summary>
     public int Period2RecordCount { get; set; }
+
+    // Diff metrics
+    public int AddedCount { get; set; }
+    public int RemovedCount { get; set; }
+    public int ChangedCount { get; set; }
+    public List<string> TopChangedEntries { get; set; } = [];
 
     // Sleep
     /// <summary>Average nightly sleep duration in Period 1 (minutes).</summary>
