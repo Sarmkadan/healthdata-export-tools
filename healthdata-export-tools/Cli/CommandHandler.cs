@@ -139,7 +139,7 @@ public sealed class CommandHandler
     private async Task ExportToFormats(List<HealthDataRecord> records, CliOptions options)
     {
         var formats = options.Format.Equals("all", StringComparison.OrdinalIgnoreCase)
-            ? new[] { "json", "csv", "sqlite", "html" }
+            ? new[] { "json", "csv", "sqlite", "html", "jsonl" }
             : new[] { options.Format.ToLower() };
 
         // Build a typed collection from the flat record list for use by ExportService
@@ -175,6 +175,12 @@ public sealed class CommandHandler
                         await _chartExportService.ExportToHtmlChartsAsync(collection, htmlPath).ConfigureAwait(false);
                         _logger.LogInformation("HTML Chart export complete: {HtmlPath}", htmlPath);
                         break;
+
+            case "jsonl":
+                await _exportService.ExportCompleteAsync(collection, options.OutputPath, Domain.Enums.ExportFormat.JsonLines)
+                    .ConfigureAwait(false);
+                _logger.LogInformation("JSON Lines export complete: {OutputPath}", options.OutputPath);
+                break;
                 }
             }
             catch (Exception ex)

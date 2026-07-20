@@ -24,5 +24,8 @@ public enum ExportFormat
     Html,
 
     /// <summary>All formats combined</summary>
-    All
+    All,
+
+    /// <summary>JSON Lines format - one JSON object per line</summary>
+    JsonLines
 }

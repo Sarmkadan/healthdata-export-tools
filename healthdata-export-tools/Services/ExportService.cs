@@ -354,6 +354,79 @@ public sealed class ExportService
                 await ExportCompleteAsync(collection, outputDirectory, ExportFormat.Json).ConfigureAwait(false);
                 await ExportCompleteAsync(collection, outputDirectory, ExportFormat.Csv).ConfigureAwait(false);
                 break;
+
+            case ExportFormat.JsonLines:
+                var jsonLinesPath = Path.Combine(outputDirectory, "health_data.jsonl");
+                await ExportToJsonLinesAsync(collection, jsonLinesPath).ConfigureAwait(false);
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Export health data collection to JSON Lines format (one JSON object per line)
+    /// </summary>
+    public async Task ExportToJsonLinesAsync(HealthDataCollection collection, string outputPath)
+    {
+        if (collection.GetTotalRecordCount() == 0)
+        {
+            return;
+        }
+
+        try
+        {
+            using var fs = File.Create(outputPath);
+            using var writer = new StreamWriter(fs, Encoding.UTF8);
+            var options = new JsonSerializerOptions
+            {
+                WriteIndented = false,
+                DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
+                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+            };
+
+            // Export sleep records
+            foreach (var record in collection.SleepRecords)
+            {
+                var json = JsonSerializer.Serialize(record, options);
+                await writer.WriteLineAsync(json).ConfigureAwait(false);
+            }
+
+            // Export heart rate records
+            foreach (var record in collection.HeartRateRecords)
+            {
+                var json = JsonSerializer.Serialize(record, options);
+                await writer.WriteLineAsync(json).ConfigureAwait(false);
+            }
+
+            // Export SpO2 records
+            foreach (var record in collection.SpO2Records)
+            {
+                var json = JsonSerializer.Serialize(record, options);
+                await writer.WriteLineAsync(json).ConfigureAwait(false);
+            }
+
+            // Export steps records
+            foreach (var record in collection.StepsRecords)
+            {
+                var json = JsonSerializer.Serialize(record, options);
+                await writer.WriteLineAsync(json).ConfigureAwait(false);
+            }
+
+            // Export activity records
+            foreach (var record in collection.ActivityRecords)
+            {
+                var json = JsonSerializer.Serialize(record, options);
+                await writer.WriteLineAsync(json).ConfigureAwait(false);
+            }
+
+            await writer.FlushAsync().ConfigureAwait(false);
+        }
+        catch (IOException ex)
+        {
+            throw new ExportException("Failed to write JSON Lines file", outputPath, "JSONL", ex);
+        }
+        catch (Exception ex)
+        {
+            throw new ExportException("Failed to export to JSON Lines", outputPath, "JSONL", ex);
         }
     }
 }
