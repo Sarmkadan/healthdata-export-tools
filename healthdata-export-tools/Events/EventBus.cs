@@ -26,7 +26,35 @@ public sealed class EventBus : IEventPublisher
     /// <summary>
     /// Subscribe to a specific event type
     /// </summary>
-    public void Subscribe<TEvent>(Func<TEvent, Task> handler) where TEvent : class, IEvent
+    public void Subscribe<TEvent>(Action<TEvent> handler) where TEvent : class, IEvent
+    {
+        if (handler is null)
+            throw new ArgumentNullException(nameof(handler));
+
+        _handlersLock.EnterWriteLock();
+        try
+        {
+            var eventType = typeof(TEvent);
+
+            if (!_handlers.ContainsKey(eventType))
+            {
+                _handlers[eventType] = new List<Delegate>();
+            }
+
+            _handlers[eventType].Add(handler);
+
+            _logger.LogInformation("Subscribed to event: {EventType}", eventType.Name);
+        }
+        finally
+        {
+            _handlersLock.ExitWriteLock();
+        }
+    }
+
+    /// <summary>
+    /// Subscribe to a specific event type with async handler
+    /// </summary>
+    public void SubscribeAsync<TEvent>(Func<TEvent, Task> handler) where TEvent : class, IEvent
     {
         if (handler is null)
             throw new ArgumentNullException(nameof(handler));
@@ -54,7 +82,38 @@ public sealed class EventBus : IEventPublisher
     /// <summary>
     /// Unsubscribe from a specific event type
     /// </summary>
-    public void Unsubscribe<TEvent>(Func<TEvent, Task> handler) where TEvent : class, IEvent
+    public void Unsubscribe<TEvent>(Action<TEvent> handler) where TEvent : class, IEvent
+    {
+        if (handler is null)
+            return;
+
+        _handlersLock.EnterWriteLock();
+        try
+        {
+            var eventType = typeof(TEvent);
+
+            if (_handlers.TryGetValue(eventType, out var eventHandlers))
+            {
+                eventHandlers.Remove(handler);
+
+                if (eventHandlers.Count == 0)
+                {
+                    _handlers.Remove(eventType);
+                }
+
+                _logger.LogInformation("Unsubscribed from event: {EventType}", eventType.Name);
+            }
+        }
+        finally
+        {
+            _handlersLock.ExitWriteLock();
+        }
+    }
+
+    /// <summary>
+    /// Unsubscribe from a specific event type with async handler
+    /// </summary>
+    public void UnsubscribeAsync<TEvent>(Func<TEvent, Task> handler) where TEvent : class, IEvent
     {
         if (handler is null)
             return;
@@ -85,6 +144,47 @@ public sealed class EventBus : IEventPublisher
     /// <summary>
     /// Publish an event to all registered subscribers
     /// </summary>
+    public void Publish<TEvent>(TEvent @event) where TEvent : class, IEvent
+    {
+        if (@event is null)
+            throw new ArgumentNullException(nameof(@event));
+
+        _handlersLock.EnterReadLock();
+        try
+        {
+            var eventType = typeof(TEvent);
+
+            if (!_handlers.TryGetValue(eventType, out var eventHandlers) || eventHandlers.Count == 0)
+            {
+                _logger.LogWarning("No handlers found for event: {EventType}", eventType.Name);
+                return;
+            }
+
+            _logger.LogInformation(
+                "Publishing event: {EventType} (ID: {EventId}) to {HandlerCount} handlers",
+                @event.EventType, @event.EventId, eventHandlers.Count);
+
+            foreach (var handler in eventHandlers.Cast<Action<TEvent>>())
+            {
+                try
+                {
+                    handler(@event);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error executing event handler for: {EventType}", eventType.Name);
+                }
+            }
+        }
+        finally
+        {
+            _handlersLock.ExitReadLock();
+        }
+    }
+
+    /// <summary>
+    /// Publish an event to all registered subscribers with async handlers
+    /// </summary>
     public async Task PublishAsync<TEvent>(TEvent @event) where TEvent : class, IEvent
     {
         if (@event is null)
@@ -107,19 +207,39 @@ public sealed class EventBus : IEventPublisher
 
             var tasks = new List<Task>();
 
-            foreach (var handler in eventHandlers.Cast<Func<TEvent, Task>>())
+            foreach (var handler in eventHandlers)
             {
-                try
+                if (handler is Action<TEvent> syncHandler)
                 {
-                    tasks.Add(handler(@event));
+                    try
+                    {
+                        syncHandler(@event);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error executing event handler for: {EventType}", eventType.Name);
+                    }
                 }
-                catch (Exception ex)
+                else if (handler is Func<TEvent, Task> asyncHandler)
                 {
-                    _logger.LogError(ex, "Error executing event handler for: {EventType}", eventType.Name);
+                    tasks.Add(asyncHandler(@event));
                 }
             }
 
-            await Task.WhenAll(tasks).ConfigureAwait(false);
+            if (tasks.Count > 0)
+            {
+                try
+                {
+                    await Task.WhenAll(tasks).ConfigureAwait(false);
+                }
+                catch (AggregateException ex)
+                {
+                    foreach (var innerException in ex.InnerExceptions)
+                    {
+                        _logger.LogError(innerException, "Error executing async event handler for: {EventType}", eventType.Name);
+                    }
+                }
+            }
         }
         finally
         {
