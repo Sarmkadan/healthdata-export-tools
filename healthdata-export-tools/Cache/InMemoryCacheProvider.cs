@@ -4,17 +4,20 @@
 // CTO & Software Architect
 // =============================================================================
 
+using System.Collections.Concurrent;
+
 namespace HealthDataExportTools.Cache;
 
 /// <summary>
 /// In-memory cache provider with expiration and statistics tracking
-/// Thread-safe implementation using ReaderWriterLockSlim
+/// Thread-safe implementation using ReaderWriterLockSlim and per-key SemaphoreSlim locking
 /// </summary>
 public sealed class InMemoryCacheProvider : ICacheProvider
 {
     private readonly Dictionary<string, (object? Value, DateTime? ExpiresAt, int AccessCount, DateTime? LastAccess)> _cache;
     private readonly ReaderWriterLockSlim _lock;
     private readonly ILogger<InMemoryCacheProvider> _logger;
+	private readonly ConcurrentDictionary<string, SemaphoreSlim> _keyLocks;
     private int _hitCount;
     private int _missCount;
 
@@ -22,6 +25,7 @@ public sealed class InMemoryCacheProvider : ICacheProvider
     {
         _cache = new Dictionary<string, (object?, DateTime?, int, DateTime?)>();
         _lock = new ReaderWriterLockSlim();
+		_keyLocks = new ConcurrentDictionary<string, SemaphoreSlim>();
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -82,6 +86,41 @@ public sealed class InMemoryCacheProvider : ICacheProvider
                 _lock.ExitReadLock();
         }
     }
+
+	public async Task<T> GetOrCreateAsync<T>(string key, Func<Task<T>> factory, TimeSpan? expiration = null)
+	{
+		if (string.IsNullOrEmpty(key))
+			throw new ArgumentException("Cache key cannot be empty", nameof(key));
+
+		// Get or create the semaphore for this key
+		var keyLock = _keyLocks.GetOrAdd(key, _ => new SemaphoreSlim(1, 1));
+
+		try
+		{
+			// Wait for the lock to ensure only one thread computes the value
+			await keyLock.WaitAsync();
+
+			// Try to get from cache first
+			var cachedValue = await GetAsync<T>(key);
+			if (cachedValue is not null)
+			{
+				return cachedValue;
+			}
+
+			// Cache miss - compute the value
+			var value = await factory();
+
+			// Store in cache
+			await SetAsync(key, value, expiration);
+
+			return value;
+		}
+		finally
+		{
+			// Release the lock - keep the semaphore in dictionary for other waiting threads
+			keyLock.Release();
+		}
+	}
 
     /// <summary>
     /// Store value in cache with optional expiration

@@ -46,6 +46,17 @@ public interface ICacheProvider
     /// Get cache statistics
     /// </summary>
     Task<CacheStats> GetStatsAsync();
+
+    /// <summary>
+    /// Get value from cache, or create and store it if it doesn't exist
+    /// Uses per-key locking to ensure only one thread computes the value for concurrent misses
+    /// </summary>
+    /// <typeparam name="T">The type of value to get or create</typeparam>
+    /// <param name="key">The cache key</param>
+    /// <param name="factory">The factory function to create the value if it doesn't exist</param>
+    /// <param name="expiration">Optional expiration time span</param>
+    /// <returns>The cached or newly created value</returns>
+    Task<T> GetOrCreateAsync<T>(string key, Func<Task<T>> factory, TimeSpan? expiration = null);
 }
 
 /// <summary>
