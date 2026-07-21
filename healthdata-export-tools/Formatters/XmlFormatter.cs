@@ -2,7 +2,9 @@
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
-// =============================================================================
+// =====================================================================
+
+using System.Xml;
 
 namespace HealthDataExportTools.Formatters;
 
@@ -103,7 +105,7 @@ public sealed class XmlFormatter : IDataFormatter
             var xmlSettings = new XmlWriterSettings
             {
                 Indent = true,
-                IndentChars = "  ",
+                IndentChars = " ",
                 Encoding = Encoding.UTF8
             };
 
@@ -170,7 +172,7 @@ public sealed class XmlFormatter : IDataFormatter
         var xmlSettings = new XmlWriterSettings
         {
             Indent = true,
-            IndentChars = "  "
+            IndentChars = " "
         };
 
         using (var writer = XmlWriter.Create(sb, xmlSettings))

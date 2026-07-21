@@ -2,10 +2,11 @@
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
-// =============================================================================
+// =====================================================================
 
 using CsvHelper;
 using CsvHelper.Configuration;
+using HealthDataExportTools.Domain.Models;
 
 namespace HealthDataExportTools.Formatters;
 
@@ -76,30 +77,28 @@ public sealed class CsvFormatter : IDataFormatter
             return string.Empty;
         }
 
-        var sb = new StringBuilder();
-        using (var writer = new StringWriter(sb))
-        using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
-        {
-            // Write headers
-            csv.WriteField("RecordDate");
-            csv.WriteField("MetricType");
-            csv.WriteField("DeviceType");
-            csv.WriteField("Value");
-            csv.NextRecord();
+        using var writer = new StringWriter();
+        using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
 
-            // Write all records
-            foreach (var record in records)
-            {
-                csv.WriteField(record.RecordDate);
-                csv.WriteField(record.GetType().Name);
-                csv.WriteField(record.DeviceId);
-                csv.WriteField(string.Empty);
-                csv.NextRecord();
-            }
+        // Write headers
+        csv.WriteField("RecordDate");
+        csv.WriteField("MetricType");
+        csv.WriteField("DeviceType");
+        csv.WriteField("Value");
+        await csv.NextRecordAsync().ConfigureAwait(false);
+
+        // Write all records
+        foreach (var record in records)
+        {
+            csv.WriteField(record.RecordDate);
+            csv.WriteField(record.GetType().Name);
+            csv.WriteField(record.DeviceId);
+            csv.WriteField(string.Empty);
+            await csv.NextRecordAsync().ConfigureAwait(false);
         }
 
         _logger.LogInformation("Formatted {Count} records to CSV", records.Count);
-        return await Task.FromResult(sb.ToString()).ConfigureAwait(false);
+        return writer.ToString();
     }
 
     /// <summary>
@@ -110,36 +109,34 @@ public sealed class CsvFormatter : IDataFormatter
         if (sleepRecords is null || sleepRecords.Count == 0)
             return string.Empty;
 
-        var sb = new StringBuilder();
-        using (var writer = new StringWriter(sb))
-        using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
-        {
-            // Write headers
-            csv.WriteField("Date");
-            csv.WriteField("DurationMinutes");
-            csv.WriteField("Quality");
-            csv.WriteField("DeepSleepMinutes");
-            csv.WriteField("RemoSleepMinutes");
-            csv.WriteField("AwakeMinutes");
-            csv.WriteField("DeviceType");
-            csv.NextRecord();
+        using var writer = new StringWriter();
+        using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
 
-            // Write sleep records
-            foreach (var record in sleepRecords)
-            {
-                csv.WriteField(record.RecordDate);
-                csv.WriteField(record.DurationMinutes);
-                csv.WriteField(record.Quality);
-                csv.WriteField(record.DeepSleepMinutes);
-                csv.WriteField(record.RemSleepMinutes);
-                csv.WriteField(record.AwakeMinutes);
-                csv.WriteField(record.DeviceId);
-                csv.NextRecord();
-            }
+        // Write headers
+        csv.WriteField("Date");
+        csv.WriteField("DurationMinutes");
+        csv.WriteField("Quality");
+        csv.WriteField("DeepSleepMinutes");
+        csv.WriteField("RemoSleepMinutes");
+        csv.WriteField("AwakeMinutes");
+        csv.WriteField("DeviceType");
+        await csv.NextRecordAsync().ConfigureAwait(false);
+
+        // Write sleep records
+        foreach (var record in sleepRecords)
+        {
+            csv.WriteField(record.RecordDate);
+            csv.WriteField(record.DurationMinutes);
+            csv.WriteField(record.Quality);
+            csv.WriteField(record.DeepSleepMinutes);
+            csv.WriteField(record.RemSleepMinutes);
+            csv.WriteField(record.AwakeMinutes);
+            csv.WriteField(record.DeviceId);
+            await csv.NextRecordAsync().ConfigureAwait(false);
         }
 
         _logger.LogInformation("Formatted {Count} sleep records to CSV", sleepRecords.Count);
-        return await Task.FromResult(sb.ToString()).ConfigureAwait(false);
+        return writer.ToString();
     }
 
     /// <summary>
@@ -150,30 +147,28 @@ public sealed class CsvFormatter : IDataFormatter
         if (heartRateRecords is null || heartRateRecords.Count == 0)
             return string.Empty;
 
-        var sb = new StringBuilder();
-        using (var writer = new StringWriter(sb))
-        using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
-        {
-            // Write headers
-            csv.WriteField("Timestamp");
-            csv.WriteField("HeartRate");
-            csv.WriteField("HeartRateZone");
-            csv.WriteField("DeviceType");
-            csv.NextRecord();
+        using var writer = new StringWriter();
+        using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
 
-            // Write heart rate records
-            foreach (var record in heartRateRecords)
-            {
-                csv.WriteField(record.RecordDate);
-                csv.WriteField(record.AverageBpm);
-                csv.WriteField(string.Empty);
-                csv.WriteField(record.DeviceId);
-                csv.NextRecord();
-            }
+        // Write headers
+        csv.WriteField("Timestamp");
+        csv.WriteField("HeartRate");
+        csv.WriteField("HeartRateZone");
+        csv.WriteField("DeviceType");
+        await csv.NextRecordAsync().ConfigureAwait(false);
+
+        // Write heart rate records
+        foreach (var record in heartRateRecords)
+        {
+            csv.WriteField(record.RecordDate);
+            csv.WriteField(record.AverageBpm);
+            csv.WriteField(string.Empty);
+            csv.WriteField(record.DeviceId);
+            await csv.NextRecordAsync().ConfigureAwait(false);
         }
 
         _logger.LogInformation("Formatted {Count} heart rate records to CSV", heartRateRecords.Count);
-        return await Task.FromResult(sb.ToString()).ConfigureAwait(false);
+        return writer.ToString();
     }
 
     /// <summary>
@@ -184,28 +179,26 @@ public sealed class CsvFormatter : IDataFormatter
         if (spo2Records is null || spo2Records.Count == 0)
             return string.Empty;
 
-        var sb = new StringBuilder();
-        using (var writer = new StringWriter(sb))
-        using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
-        {
-            csv.WriteField("Timestamp");
-            csv.WriteField("SpO2");
-            csv.WriteField("IsLowOxygen");
-            csv.WriteField("DeviceType");
-            csv.NextRecord();
+        using var writer = new StringWriter();
+        using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
 
-            foreach (var record in spo2Records)
-            {
-                csv.WriteField(record.RecordDate);
-                csv.WriteField(record.AveragePercentage);
-                csv.WriteField(record.HasConcerningLevels());
-                csv.WriteField(record.DeviceId);
-                csv.NextRecord();
-            }
+        csv.WriteField("Timestamp");
+        csv.WriteField("SpO2");
+        csv.WriteField("IsLowOxygen");
+        csv.WriteField("DeviceType");
+        await csv.NextRecordAsync().ConfigureAwait(false);
+
+        foreach (var record in spo2Records)
+        {
+            csv.WriteField(record.RecordDate);
+            csv.WriteField(record.AveragePercentage);
+            csv.WriteField(record.HasConcerningLevels());
+            csv.WriteField(record.DeviceId);
+            await csv.NextRecordAsync().ConfigureAwait(false);
         }
 
         _logger.LogInformation("Formatted {Count} SpO2 records to CSV", spo2Records.Count);
-        return await Task.FromResult(sb.ToString()).ConfigureAwait(false);
+        return writer.ToString();
     }
 
     /// <summary>
@@ -216,30 +209,28 @@ public sealed class CsvFormatter : IDataFormatter
         if (stepsRecords is null || stepsRecords.Count == 0)
             return string.Empty;
 
-        var sb = new StringBuilder();
-        using (var writer = new StringWriter(sb))
-        using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
-        {
-            csv.WriteField("Date");
-            csv.WriteField("StepCount");
-            csv.WriteField("Distance");
-            csv.WriteField("Calories");
-            csv.WriteField("DeviceType");
-            csv.NextRecord();
+        using var writer = new StringWriter();
+        using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
 
-            foreach (var record in stepsRecords)
-            {
-                csv.WriteField(record.RecordDate);
-                csv.WriteField(record.TotalSteps);
-                csv.WriteField(record.DistanceKm);
-                csv.WriteField(record.CaloriesBurned);
-                csv.WriteField(record.DeviceId);
-                csv.NextRecord();
-            }
+        csv.WriteField("Date");
+        csv.WriteField("StepCount");
+        csv.WriteField("Distance");
+        csv.WriteField("Calories");
+        csv.WriteField("DeviceType");
+        await csv.NextRecordAsync().ConfigureAwait(false);
+
+        foreach (var record in stepsRecords)
+        {
+            csv.WriteField(record.RecordDate);
+            csv.WriteField(record.TotalSteps);
+            csv.WriteField(record.DistanceKm);
+            csv.WriteField(record.CaloriesBurned);
+            csv.WriteField(record.DeviceId);
+            await csv.NextRecordAsync().ConfigureAwait(false);
         }
 
         _logger.LogInformation("Formatted {Count} steps records to CSV", stepsRecords.Count);
-        return await Task.FromResult(sb.ToString()).ConfigureAwait(false);
+        return writer.ToString();
     }
 
     /// <summary>
