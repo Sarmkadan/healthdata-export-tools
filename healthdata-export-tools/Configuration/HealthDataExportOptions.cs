@@ -88,6 +88,23 @@ public sealed class HealthDataExportOptions
     /// </summary>
     public bool VerboseLogging { get; set; } = false;
 
+    // ------------------------------------------------------------------------
+    // Anomaly detection thresholds
+    // ------------------------------------------------------------------------
+
+    /// <summary>
+    /// Threshold (0‑1) for anomaly detection. Records with an anomaly score above
+    /// this value are considered anomalies. Default preserves current behavior (no
+    /// anomalies are flagged).
+    /// </summary>
+    public double AnomalyDetectionThreshold { get; set; } = 0.0;
+
+    /// <summary>
+    /// Minimum number of consecutive anomalous records required to trigger an
+    /// alert. Default preserves current behavior (no alerting).
+    /// </summary>
+    public int AnomalyConsecutiveCountThreshold { get; set; } = 0;
+
     /// <summary>
     /// Validate the configuration options
     /// </summary>
@@ -122,6 +139,13 @@ public sealed class HealthDataExportOptions
 
         if (!string.IsNullOrWhiteSpace(NotificationEmail) && !IsValidEmail(NotificationEmail))
             errors.Add($"NotificationEmail '{NotificationEmail}' is not valid");
+
+        // Anomaly detection thresholds validation
+        if (AnomalyDetectionThreshold < 0.0 || AnomalyDetectionThreshold > 1.0)
+            errors.Add("AnomalyDetectionThreshold must be between 0 and 1");
+
+        if (AnomalyConsecutiveCountThreshold < 0)
+            errors.Add("AnomalyConsecutiveCountThreshold must be non-negative");
 
         return errors;
     }
