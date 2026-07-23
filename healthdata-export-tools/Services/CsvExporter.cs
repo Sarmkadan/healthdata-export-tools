@@ -4,6 +4,8 @@
 // CTO & Software Architect
 // =============================================================================
 
+using System.Globalization;
+using System.IO;
 using System.Text;
 using CsvHelper;
 using HealthDataExportTools.Domain.Models;
@@ -16,7 +18,7 @@ namespace HealthDataExportTools.Services;
 /// Supports column selection via <see cref="CsvExportOptions"/> and consistent
 /// ISO 8601 date formatting.
 /// </summary>
-public sealed class CsvExporter : IHealthDataExporter
+public sealed partial class CsvExporter : IHealthDataExporter
 {
     private readonly ILogger<CsvExporter> _logger;
 

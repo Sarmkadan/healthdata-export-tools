@@ -12,7 +12,7 @@ namespace HealthDataExportTools.Formatters;
 /// Formats health data into XML (Extensible Markup Language) format
 /// Generates well-formed, indented XML with proper document structure
 /// </summary>
-public sealed class XmlFormatter : IDataFormatter
+public sealed partial class XmlFormatter : IDataFormatter
 {
     private readonly ILogger<XmlFormatter> _logger;
 
