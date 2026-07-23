@@ -1,8 +1,9 @@
 #nullable enable
+
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
-// =============================================================================
+// =====================================================================
 
 using System.Globalization;
 using System.IO;
@@ -18,7 +19,7 @@ namespace HealthDataExportTools.Services;
 /// Supports column selection via <see cref="CsvExportOptions"/> and consistent
 /// ISO 8601 date formatting.
 /// </summary>
-public sealed partial class CsvExporter : IHealthDataExporter
+public sealed partial class CsvExporter : IHealthDataExporter, IDataExporter
 {
     private readonly ILogger<CsvExporter> _logger;
 
@@ -74,6 +75,45 @@ public sealed partial class CsvExporter : IHealthDataExporter
             tasks.Count, outputDirectory);
     }
 
+    /// <inheritdoc />
+    public async Task ExportAsync(
+        HealthDataCollection collection,
+        string destination,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(collection);
+        ArgumentException.ThrowIfNullOrWhiteSpace(destination);
+
+        // For backward compatibility, treat destination as a directory when implementing IDataExporter
+        // This maintains existing behavior while providing the unified interface
+        if (File.Exists(destination))
+        {
+            throw new ExportException(
+                "Destination path already exists and is a file",
+                destination,
+                "CSV",
+                new IOException("File already exists"));
+        }
+
+        if (!Directory.Exists(destination))
+        {
+            Directory.CreateDirectory(destination);
+        }
+
+        var options = new CsvExportOptions();
+        await ExportToCsvAsync(collection, destination, options).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Gets the file extension for CSV format.
+    /// </summary>
+    public string FileExtension => ".csv";
+
+    /// <summary>
+    /// Gets a human-readable description of the CSV export format.
+    /// </summary>
+    public string FormatDescription => "Comma-Separated Values (CSV) format with per-data-type files";
+
     private async Task ExportSleepAsync(
         List<SleepData> records,
         string outputPath,
@@ -89,29 +129,29 @@ public sealed partial class CsvExporter : IHealthDataExporter
         {
             using var fs = File.Create(outputPath);
             using var writer = new StreamWriter(fs, Encoding.UTF8);
-            using var csv = new CsvWriter(writer, System.Globalization.CultureInfo.InvariantCulture);
+            using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
 
-            WriteFieldIf(csv, all || columns.Contains("Date"),         "Date");
-            WriteFieldIf(csv, all || columns.Contains("Duration"),     "Duration");
-            WriteFieldIf(csv, all || columns.Contains("DeepSleep"),    "DeepSleep");
-            WriteFieldIf(csv, all || columns.Contains("LightSleep"),   "LightSleep");
-            WriteFieldIf(csv, all || columns.Contains("REM"),          "REM");
-            WriteFieldIf(csv, all || columns.Contains("Awake"),        "Awake");
-            WriteFieldIf(csv, all || columns.Contains("Quality"),      "Quality");
-            WriteFieldIf(csv, all || columns.Contains("Score"),        "Score");
+            WriteFieldIf(csv, all || columns.Contains("Date"), "Date");
+            WriteFieldIf(csv, all || columns.Contains("Duration"), "Duration");
+            WriteFieldIf(csv, all || columns.Contains("DeepSleep"), "DeepSleep");
+            WriteFieldIf(csv, all || columns.Contains("LightSleep"), "LightSleep");
+            WriteFieldIf(csv, all || columns.Contains("REM"), "REM");
+            WriteFieldIf(csv, all || columns.Contains("Awake"), "Awake");
+            WriteFieldIf(csv, all || columns.Contains("Quality"), "Quality");
+            WriteFieldIf(csv, all || columns.Contains("Score"), "Score");
             WriteFieldIf(csv, all || columns.Contains("AvgHeartRate"), "AvgHeartRate");
             await csv.NextRecordAsync().ConfigureAwait(false);
 
             foreach (var r in records)
             {
-                WriteFieldIf(csv, all || columns.Contains("Date"),         r.RecordDate.ToString(options.DateFormat, CultureInfo.InvariantCulture));
-                WriteFieldIf(csv, all || columns.Contains("Duration"),     r.DurationMinutes);
-                WriteFieldIf(csv, all || columns.Contains("DeepSleep"),    r.DeepSleepMinutes);
-                WriteFieldIf(csv, all || columns.Contains("LightSleep"),   r.LightSleepMinutes);
-                WriteFieldIf(csv, all || columns.Contains("REM"),          r.RemSleepMinutes);
-                WriteFieldIf(csv, all || columns.Contains("Awake"),        r.AwakeMinutes);
-                WriteFieldIf(csv, all || columns.Contains("Quality"),      r.Quality.ToString());
-                WriteFieldIf(csv, all || columns.Contains("Score"),        r.Score.HasValue ? (object)r.Score.Value : null);
+                WriteFieldIf(csv, all || columns.Contains("Date"), r.RecordDate.ToString(options.DateFormat, CultureInfo.InvariantCulture));
+                WriteFieldIf(csv, all || columns.Contains("Duration"), r.DurationMinutes);
+                WriteFieldIf(csv, all || columns.Contains("DeepSleep"), r.DeepSleepMinutes);
+                WriteFieldIf(csv, all || columns.Contains("LightSleep"), r.LightSleepMinutes);
+                WriteFieldIf(csv, all || columns.Contains("REM"), r.RemSleepMinutes);
+                WriteFieldIf(csv, all || columns.Contains("Awake"), r.AwakeMinutes);
+                WriteFieldIf(csv, all || columns.Contains("Quality"), r.Quality.ToString());
+                WriteFieldIf(csv, all || columns.Contains("Score"), r.Score.HasValue ? (object)r.Score.Value : null);
                 WriteFieldIf(csv, all || columns.Contains("AvgHeartRate"), r.AverageHeartRate.HasValue ? (object)r.AverageHeartRate.Value : null);
                 await csv.NextRecordAsync().ConfigureAwait(false);
             }
@@ -137,16 +177,16 @@ public sealed partial class CsvExporter : IHealthDataExporter
         {
             using var fs = File.Create(outputPath);
             using var writer = new StreamWriter(fs, Encoding.UTF8);
-            using var csv = new CsvWriter(writer, System.Globalization.CultureInfo.InvariantCulture);
+            using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
 
-            WriteFieldIf(csv, all || columns.Contains("Date"),         "Date");
-            WriteFieldIf(csv, all || columns.Contains("MinBpm"),       "MinBpm");
-            WriteFieldIf(csv, all || columns.Contains("MaxBpm"),       "MaxBpm");
-            WriteFieldIf(csv, all || columns.Contains("AvgBpm"),       "AvgBpm");
-            WriteFieldIf(csv, all || columns.Contains("RestingBpm"),   "RestingBpm");
+            WriteFieldIf(csv, all || columns.Contains("Date"), "Date");
+            WriteFieldIf(csv, all || columns.Contains("MinBpm"), "MinBpm");
+            WriteFieldIf(csv, all || columns.Contains("MaxBpm"), "MaxBpm");
+            WriteFieldIf(csv, all || columns.Contains("AvgBpm"), "AvgBpm");
+            WriteFieldIf(csv, all || columns.Contains("RestingBpm"), "RestingBpm");
             WriteFieldIf(csv, all || columns.Contains("Measurements"), "Measurements");
-            WriteFieldIf(csv, all || columns.Contains("StressLevel"),  "StressLevel");
-            WriteFieldIf(csv, all || columns.Contains("CardioZone"),   "CardioZone");
+            WriteFieldIf(csv, all || columns.Contains("StressLevel"), "StressLevel");
+            WriteFieldIf(csv, all || columns.Contains("CardioZone"), "CardioZone");
             WriteFieldIf(csv, all || columns.Contains("Zone1Minutes"), "Zone1Minutes");
             WriteFieldIf(csv, all || columns.Contains("Zone2Minutes"), "Zone2Minutes");
             WriteFieldIf(csv, all || columns.Contains("Zone3Minutes"), "Zone3Minutes");
@@ -156,14 +196,14 @@ public sealed partial class CsvExporter : IHealthDataExporter
 
             foreach (var r in records)
             {
-                WriteFieldIf(csv, all || columns.Contains("Date"),         r.RecordDate.ToString(options.DateFormat, CultureInfo.InvariantCulture));
-                WriteFieldIf(csv, all || columns.Contains("MinBpm"),       r.MinimumBpm);
-                WriteFieldIf(csv, all || columns.Contains("MaxBpm"),       r.MaximumBpm);
-                WriteFieldIf(csv, all || columns.Contains("AvgBpm"),       r.AverageBpm);
-                WriteFieldIf(csv, all || columns.Contains("RestingBpm"),   r.RestingBpm.HasValue ? (object)r.RestingBpm.Value : null);
+                WriteFieldIf(csv, all || columns.Contains("Date"), r.RecordDate.ToString(options.DateFormat, CultureInfo.InvariantCulture));
+                WriteFieldIf(csv, all || columns.Contains("MinBpm"), r.MinimumBpm);
+                WriteFieldIf(csv, all || columns.Contains("MaxBpm"), r.MaximumBpm);
+                WriteFieldIf(csv, all || columns.Contains("AvgBpm"), r.AverageBpm);
+                WriteFieldIf(csv, all || columns.Contains("RestingBpm"), r.RestingBpm.HasValue ? (object)r.RestingBpm.Value : null);
                 WriteFieldIf(csv, all || columns.Contains("Measurements"), r.MeasurementCount);
-                WriteFieldIf(csv, all || columns.Contains("StressLevel"),  r.StressLevel.HasValue ? (object)r.StressLevel.Value : null);
-                WriteFieldIf(csv, all || columns.Contains("CardioZone"),   r.CardioZoneMinutes);
+                WriteFieldIf(csv, all || columns.Contains("StressLevel"), r.StressLevel.HasValue ? (object)r.StressLevel.Value : null);
+                WriteFieldIf(csv, all || columns.Contains("CardioZone"), r.CardioZoneMinutes);
                 WriteFieldIf(csv, all || columns.Contains("Zone1Minutes"), r.ZoneMinutes[0]);
                 WriteFieldIf(csv, all || columns.Contains("Zone2Minutes"), r.ZoneMinutes[1]);
                 WriteFieldIf(csv, all || columns.Contains("Zone3Minutes"), r.ZoneMinutes[2]);
@@ -193,22 +233,22 @@ public sealed partial class CsvExporter : IHealthDataExporter
         {
             using var fs = File.Create(outputPath);
             using var writer = new StreamWriter(fs, Encoding.UTF8);
-            using var csv = new CsvWriter(writer, System.Globalization.CultureInfo.InvariantCulture);
+            using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
 
-            WriteFieldIf(csv, all || columns.Contains("Date"),           "Date");
-            WriteFieldIf(csv, all || columns.Contains("MinPercentage"),  "MinPercentage");
-            WriteFieldIf(csv, all || columns.Contains("MaxPercentage"),  "MaxPercentage");
-            WriteFieldIf(csv, all || columns.Contains("AvgPercentage"),  "AvgPercentage");
-            WriteFieldIf(csv, all || columns.Contains("Measurements"),   "Measurements");
+            WriteFieldIf(csv, all || columns.Contains("Date"), "Date");
+            WriteFieldIf(csv, all || columns.Contains("MinPercentage"), "MinPercentage");
+            WriteFieldIf(csv, all || columns.Contains("MaxPercentage"), "MaxPercentage");
+            WriteFieldIf(csv, all || columns.Contains("AvgPercentage"), "AvgPercentage");
+            WriteFieldIf(csv, all || columns.Contains("Measurements"), "Measurements");
             await csv.NextRecordAsync().ConfigureAwait(false);
 
             foreach (var r in records)
             {
-                WriteFieldIf(csv, all || columns.Contains("Date"),           r.RecordDate.ToString(options.DateFormat, CultureInfo.InvariantCulture));
-                WriteFieldIf(csv, all || columns.Contains("MinPercentage"),  r.MinimumPercentage);
-                WriteFieldIf(csv, all || columns.Contains("MaxPercentage"),  r.MaximumPercentage);
-                WriteFieldIf(csv, all || columns.Contains("AvgPercentage"),  r.AveragePercentage);
-                WriteFieldIf(csv, all || columns.Contains("Measurements"),   r.MeasurementCount);
+                WriteFieldIf(csv, all || columns.Contains("Date"), r.RecordDate.ToString(options.DateFormat, CultureInfo.InvariantCulture));
+                WriteFieldIf(csv, all || columns.Contains("MinPercentage"), r.MinimumPercentage);
+                WriteFieldIf(csv, all || columns.Contains("MaxPercentage"), r.MaximumPercentage);
+                WriteFieldIf(csv, all || columns.Contains("AvgPercentage"), r.AveragePercentage);
+                WriteFieldIf(csv, all || columns.Contains("Measurements"), r.MeasurementCount);
                 await csv.NextRecordAsync().ConfigureAwait(false);
             }
         }
@@ -233,28 +273,28 @@ public sealed partial class CsvExporter : IHealthDataExporter
         {
             using var fs = File.Create(outputPath);
             using var writer = new StreamWriter(fs, Encoding.UTF8);
-            using var csv = new CsvWriter(writer, System.Globalization.CultureInfo.InvariantCulture);
+            using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
 
-            WriteFieldIf(csv, all || columns.Contains("Date"),            "Date");
-            WriteFieldIf(csv, all || columns.Contains("Steps"),           "Steps");
-            WriteFieldIf(csv, all || columns.Contains("DistanceKm"),      "DistanceKm");
-            WriteFieldIf(csv, all || columns.Contains("Calories"),        "Calories");
+            WriteFieldIf(csv, all || columns.Contains("Date"), "Date");
+            WriteFieldIf(csv, all || columns.Contains("Steps"), "Steps");
+            WriteFieldIf(csv, all || columns.Contains("DistanceKm"), "DistanceKm");
+            WriteFieldIf(csv, all || columns.Contains("Calories"), "Calories");
             WriteFieldIf(csv, all || columns.Contains("GoalAchievement"), "GoalAchievement");
-            WriteFieldIf(csv, all || columns.Contains("ActiveMinutes"),   "ActiveMinutes");
-            WriteFieldIf(csv, all || columns.Contains("Walking"),         "Walking");
-            WriteFieldIf(csv, all || columns.Contains("Running"),         "Running");
+            WriteFieldIf(csv, all || columns.Contains("ActiveMinutes"), "ActiveMinutes");
+            WriteFieldIf(csv, all || columns.Contains("Walking"), "Walking");
+            WriteFieldIf(csv, all || columns.Contains("Running"), "Running");
             await csv.NextRecordAsync().ConfigureAwait(false);
 
             foreach (var r in records)
             {
-                WriteFieldIf(csv, all || columns.Contains("Date"),            r.RecordDate.ToString(options.DateFormat, CultureInfo.InvariantCulture));
-                WriteFieldIf(csv, all || columns.Contains("Steps"),           r.TotalSteps);
-                WriteFieldIf(csv, all || columns.Contains("DistanceKm"),      r.DistanceKm);
-                WriteFieldIf(csv, all || columns.Contains("Calories"),        r.CaloriesBurned);
+                WriteFieldIf(csv, all || columns.Contains("Date"), r.RecordDate.ToString(options.DateFormat, CultureInfo.InvariantCulture));
+                WriteFieldIf(csv, all || columns.Contains("Steps"), r.TotalSteps);
+                WriteFieldIf(csv, all || columns.Contains("DistanceKm"), r.DistanceKm);
+                WriteFieldIf(csv, all || columns.Contains("Calories"), r.CaloriesBurned);
                 WriteFieldIf(csv, all || columns.Contains("GoalAchievement"), r.GoalAchievementPercentage);
-                WriteFieldIf(csv, all || columns.Contains("ActiveMinutes"),   r.ActiveMinutes);
-                WriteFieldIf(csv, all || columns.Contains("Walking"),         r.WalkingMinutes);
-                WriteFieldIf(csv, all || columns.Contains("Running"),         r.RunningMinutes);
+                WriteFieldIf(csv, all || columns.Contains("ActiveMinutes"), r.ActiveMinutes);
+                WriteFieldIf(csv, all || columns.Contains("Walking"), r.WalkingMinutes);
+                WriteFieldIf(csv, all || columns.Contains("Running"), r.RunningMinutes);
                 await csv.NextRecordAsync().ConfigureAwait(false);
             }
         }
