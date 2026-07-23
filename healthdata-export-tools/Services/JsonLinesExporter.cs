@@ -16,7 +16,7 @@ namespace HealthDataExportTools.Services;
 /// Each record is written as a separate line in the output file, enabling
 /// efficient streaming and processing of large datasets.
 /// </summary>
-public sealed class JsonLinesExporter
+public sealed class JsonLinesExporter : IDataExporter
 {
     private readonly ILogger<JsonLinesExporter> _logger;
 
@@ -31,7 +31,11 @@ public sealed class JsonLinesExporter
     /// </summary>
     /// <param name="collection">The health data to export.</param>
     /// <param name="outputPath">Path to the output JSON Lines file.</param>
-    public async Task ExportToJsonLinesAsync(HealthDataCollection collection, string outputPath)
+    /// <param name="cancellationToken">Cancellation token for the operation.</param>
+    public async Task ExportToJsonLinesAsync(
+        HealthDataCollection collection,
+        string outputPath,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(collection);
         ArgumentException.ThrowIfNullOrWhiteSpace(outputPath);
@@ -98,4 +102,26 @@ public sealed class JsonLinesExporter
             throw new ExportException("Access denied when writing JSON Lines file", outputPath, "JSONL", ex);
         }
     }
+
+    /// <inheritdoc />
+    public async Task ExportAsync(
+        HealthDataCollection collection,
+        string destination,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(collection);
+        ArgumentException.ThrowIfNullOrWhiteSpace(destination);
+
+        await ExportToJsonLinesAsync(collection, destination, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Gets the file extension for JSON Lines format.
+    /// </summary>
+    public string FileExtension => ".jsonl";
+
+    /// <summary>
+    /// Gets a human-readable description of the JSON Lines export format.
+    /// </summary>
+    public string FormatDescription => "JSON Lines format (one JSON object per line)";
 }
