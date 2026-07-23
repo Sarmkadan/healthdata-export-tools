@@ -71,18 +71,3 @@ public sealed class CacheStats
     public double HitRate => TotalRequests > 0 ? (double)HitCount / TotalRequests : 0;
     public int TotalRequests => HitCount + MissCount;
 }
-
-/// <summary>
-/// Cache entry with metadata
-/// </summary>
-public sealed class CacheEntry<T>
-{
-    public string Key { get; set; } = string.Empty;
-    public T? Value { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public DateTime? ExpiresAt { get; set; }
-    public int AccessCount { get; set; }
-    public DateTime? LastAccessAt { get; set; }
-
-    public bool IsExpired => ExpiresAt is not null && DateTime.UtcNow > ExpiresAt;
-}
