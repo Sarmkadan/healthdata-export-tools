@@ -61,56 +61,124 @@
             Cache statistics for monitoring
             </summary>
         </member>
-        <member name="T:HealthDataExportTools.Cache.CacheEntry`1">
-            <summary>
-            Cache entry with metadata
-            </summary>
-        </member>
         <member name="T:HealthDataExportTools.Cache.InMemoryCacheProvider">
             <summary>
-            In-memory cache provider with expiration and statistics tracking
-            Thread-safe implementation using ReaderWriterLockSlim and per-key SemaphoreSlim locking
+            In-memory cache provider with expiration, size limits, and statistics tracking
+            Thread-safe implementation using ConcurrentDictionary with per-key SemaphoreSlim locking
+            Implements single-flight pattern to prevent cache stampede on concurrent misses
             </summary>
+        </member>
+        <member name="F:HealthDataExportTools.Cache.InMemoryCacheProvider.MaxCacheSize">
+            <summary>
+            Maximum number of entries allowed in cache before eviction begins
+            </summary>
+        </member>
+        <member name="F:HealthDataExportTools.Cache.InMemoryCacheProvider.DefaultExpiration">
+            <summary>
+            Default expiration time for cache entries (24 hours)
+            </summary>
+        </member>
+        <member name="F:HealthDataExportTools.Cache.InMemoryCacheProvider._cache">
+            <summary>
+            Cache storage using ConcurrentDictionary for built-in thread-safety
+            </summary>
+        </member>
+        <member name="M:HealthDataExportTools.Cache.InMemoryCacheProvider.#ctor(Microsoft.Extensions.Logging.ILogger{HealthDataExportTools.Cache.InMemoryCacheProvider})">
+            <summary>
+            Initializes a new instance of the InMemoryCacheProvider
+            </summary>
+            <param name="logger">Logger instance</param>
+            <exception cref="T:System.ArgumentNullException">Thrown when logger is null</exception>
         </member>
         <member name="M:HealthDataExportTools.Cache.InMemoryCacheProvider.GetAsync``1(System.String)">
             <summary>
             Retrieve value from cache, updating access statistics
+            Performs lazy expiration check on read
             </summary>
+            <typeparam name="T">Type of value to retrieve</typeparam>
+            <param name="key">Cache key</param>
+            <returns>Cached value or null if not found or expired</returns>
+            <exception cref="T:System.ArgumentException">Thrown when key is null or empty</exception>
+        </member>
+        <member name="M:HealthDataExportTools.Cache.InMemoryCacheProvider.GetOrCreateAsync``1(System.String,System.Func{System.Threading.Tasks.Task{``0}},System.Nullable{System.TimeSpan})">
+            <summary>
+            Get value from cache, or create and store it if it doesn't exist
+            Uses single-flight pattern to prevent cache stampede on concurrent misses
+            </summary>
+            <typeparam name="T">The type of value to get or create</typeparam>
+            <param name="key">The cache key</param>
+            <param name="factory">The factory function to create the value if it doesn't exist</param>
+            <param name="expiration">Optional expiration time span</param>
+            <returns>The cached or newly created value</returns>
+            <exception cref="T:System.ArgumentException">Thrown when key is null or empty</exception>
+            <exception cref="T:System.ArgumentNullException">Thrown when factory is null</exception>
         </member>
         <member name="M:HealthDataExportTools.Cache.InMemoryCacheProvider.SetAsync``1(System.String,``0,System.Nullable{System.TimeSpan})">
             <summary>
             Store value in cache with optional expiration
+            Enforces size limits and performs LRU-based eviction when necessary
             </summary>
+            <typeparam name="T">Type of value to store</typeparam>
+            <param name="key">Cache key</param>
+            <param name="value">Value to store</param>
+            <param name="expiration">Optional expiration time span</param>
+            <returns>Task representing the async operation</returns>
+            <exception cref="T:System.ArgumentException">Thrown when key is null or empty</exception>
         </member>
         <member name="M:HealthDataExportTools.Cache.InMemoryCacheProvider.RemoveAsync(System.String)">
             <summary>
             Remove entry from cache
             </summary>
+            <param name="key">Cache key to remove</param>
+            <returns>Task representing the async operation</returns>
         </member>
         <member name="M:HealthDataExportTools.Cache.InMemoryCacheProvider.ExistsAsync(System.String)">
             <summary>
             Check if key exists and is not expired
             </summary>
+            <param name="key">Cache key to check</param>
+            <returns>True if key exists and is not expired, false otherwise</returns>
+            <exception cref="T:System.ArgumentException">Thrown when key is null or empty</exception>
         </member>
         <member name="M:HealthDataExportTools.Cache.InMemoryCacheProvider.ClearAsync">
             <summary>
             Clear all cache entries
             </summary>
+            <returns>Task representing the async operation</returns>
         </member>
         <member name="M:HealthDataExportTools.Cache.InMemoryCacheProvider.GetKeysAsync">
             <summary>
             Get all cache keys, removing expired entries in the process
             </summary>
+            <returns>List of valid cache keys</returns>
         </member>
         <member name="M:HealthDataExportTools.Cache.InMemoryCacheProvider.GetStatsAsync">
             <summary>
             Get cache statistics for monitoring
             </summary>
+            <returns>Cache statistics</returns>
         </member>
         <member name="M:HealthDataExportTools.Cache.InMemoryCacheProvider.EstimateCacheSize">
             <summary>
             Estimate cache size in bytes
             </summary>
+            <returns>Approximate size in bytes</returns>
+        </member>
+        <member name="M:HealthDataExportTools.Cache.InMemoryCacheProvider.EnforceSizeLimit">
+            <summary>
+            Enforce maximum cache size by removing least recently used entries
+            </summary>
+        </member>
+        <member name="M:HealthDataExportTools.Cache.InMemoryCacheProvider.Dispose">
+            <summary>
+            Dispose resources
+            </summary>
+        </member>
+        <member name="T:HealthDataExportTools.Cache.InMemoryCacheProvider.CacheEntry">
+            <summary>
+            Internal cache entry structure
+            </summary>
+            <typeparam name="T">Type of cached value</typeparam>
         </member>
         <member name="T:HealthDataExportTools.Cache.InMemoryCacheProviderJsonExtensions">
             <summary>
@@ -149,9 +217,32 @@
             Parses command-line arguments into structured options
             </summary>
         </member>
+        <member name="M:HealthDataExportTools.Cli.CliArgumentParser.LevenshteinDistance(System.String,System.String)">
+            <summary>
+            Calculate Levenshtein distance between two strings
+            </summary>
+            <param name="a">First string</param>
+            <param name="b">Second string</param>
+            <returns>Levenshtein distance</returns>
+        </member>
+        <member name="M:HealthDataExportTools.Cli.CliArgumentParser.GetSuggestion(System.String)">
+            <summary>
+            Get suggestion for unknown flag using Levenshtein distance
+            </summary>
+            <param name="unknownFlag">Unknown flag to find suggestion for</param>
+            <returns>Suggested known flag or null if no good match found</returns>
+        </member>
         <member name="M:HealthDataExportTools.Cli.CliArgumentParser.Parse(System.String[])">
             <summary>
-            Parse command-line arguments and return options object
+            Parse command-line arguments and return parse result
+            </summary>
+            <param name="args">Command-line arguments to parse</param>
+            <returns>Parse result containing options or errors</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="args"/> is null.</exception>
+        </member>
+        <member name="M:HealthDataExportTools.Cli.CliArgumentParser.ValidateAtParseTime">
+            <summary>
+            Validate parsed options for correctness and consistency at parse time
             </summary>
         </member>
         <member name="M:HealthDataExportTools.Cli.CliArgumentParser.Validate">
@@ -175,10 +266,9 @@
             </summary>
             <param name="parser">The parser instance. Cannot be null.</param>
             <param name="args">Command-line arguments. Cannot be null.</param>
-            <returns>Parsed options</returns>
+            <returns>Parse result</returns>
             <exception cref="T:System.ArgumentNullException"><paramref name="parser"/> is null.</exception>
             <exception cref="T:System.ArgumentNullException"><paramref name="args"/> is null.</exception>
-            <exception cref="T:System.ArgumentException">Thrown if validation fails.</exception>
         </member>
         <member name="M:HealthDataExportTools.Cli.CliArgumentParserExtensions.TryParse(HealthDataExportTools.Cli.CliArgumentParser,System.String[],HealthDataExportTools.Cli.CliOptions@)">
             <summary>
@@ -347,6 +437,55 @@
             <summary>
             Log validation results to console and logger
             </summary>
+        </member>
+        <member name="T:HealthDataExportTools.Cli.ParseResult`1">
+            <summary>
+            Represents the result of command-line argument parsing
+            </summary>
+            <typeparam name="T">The type of options parsed</typeparam>
+        </member>
+        <member name="P:HealthDataExportTools.Cli.ParseResult`1.Success">
+            <summary>
+            Gets a value indicating whether parsing was successful
+            </summary>
+        </member>
+        <member name="P:HealthDataExportTools.Cli.ParseResult`1.Options">
+            <summary>
+            Gets the parsed options if successful; otherwise null
+            </summary>
+        </member>
+        <member name="P:HealthDataExportTools.Cli.ParseResult`1.Errors">
+            <summary>
+            Gets the list of validation errors if parsing failed
+            </summary>
+        </member>
+        <member name="P:HealthDataExportTools.Cli.ParseResult`1.HelpText">
+            <summary>
+            Gets the help text to display when parsing fails or help is requested
+            </summary>
+        </member>
+        <member name="M:HealthDataExportTools.Cli.ParseResult`1.#ctor(System.Boolean,`0,System.Collections.Generic.List{System.String},System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:HealthDataExportTools.Cli.ParseResult`1"/> class
+            </summary>
+            <param name="success">Whether parsing was successful</param>
+            <param name="options">The parsed options if successful</param>
+            <param name="errors">List of validation errors</param>
+            <param name="helpText">Help text to display</param>
+        </member>
+        <member name="M:HealthDataExportTools.Cli.ParseResult`1.SuccessResult(`0,System.String)">
+            <summary>
+            Creates a successful parse result
+            </summary>
+            <param name="options">The parsed options</param>
+            <param name="helpText">Help text to display</param>
+        </member>
+        <member name="M:HealthDataExportTools.Cli.ParseResult`1.FailureResult(System.Collections.Generic.List{System.String},System.String)">
+            <summary>
+            Creates a failed parse result with validation errors
+            </summary>
+            <param name="errors">List of validation errors</param>
+            <param name="helpText">Help text to display</param>
         </member>
         <member name="T:HealthDataExportTools.Configuration.CorrelationEngineOptions">
             <summary>
@@ -4672,6 +4811,19 @@
         <member name="M:HealthDataExportTools.Services.CsvExporter.ExportToCsvAsync(HealthDataExportTools.Services.HealthDataCollection,System.String,HealthDataExportTools.Services.CsvExportOptions)">
             <inheritdoc />
         </member>
+        <member name="M:HealthDataExportTools.Services.CsvExporter.ExportAsync(HealthDataExportTools.Services.HealthDataCollection,System.String,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="P:HealthDataExportTools.Services.CsvExporter.FileExtension">
+            <summary>
+            Gets the file extension for CSV format.
+            </summary>
+        </member>
+        <member name="P:HealthDataExportTools.Services.CsvExporter.FormatDescription">
+            <summary>
+            Gets a human-readable description of the CSV export format.
+            </summary>
+        </member>
         <member name="M:HealthDataExportTools.Services.CsvExporter.ExportToCsvStreamAsync(HealthDataExportTools.Services.HealthDataCollection,System.IO.TextWriter,HealthDataExportTools.Services.CsvExportOptions,System.Threading.CancellationToken)">
             <summary>
             Export all enabled data types from <paramref name="collection"/> to a single CSV stream asynchronously.
@@ -5177,6 +5329,33 @@
             <returns>True if deserialization succeeded; otherwise false</returns>
             <exception cref="T:System.ArgumentNullException">Thrown when json is null or empty</exception>
         </member>
+        <member name="T:HealthDataExportTools.Services.IDataExporter">
+            <summary>
+            Defines the contract for exporting health data to files.
+            Implementations should handle file operations including atomic writes via temporary files.
+            </summary>
+        </member>
+        <member name="M:HealthDataExportTools.Services.IDataExporter.ExportAsync(HealthDataExportTools.Services.HealthDataCollection,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Export health data records to the specified destination file.
+            </summary>
+            <param name="collection">The health data collection to export. Must not be null.</param>
+            <param name="destination">The output file path. Must not be null or whitespace.</param>
+            <param name="cancellationToken">Cancellation token for the operation.</param>
+            <returns>A task representing the asynchronous operation.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="collection"/> or <paramref name="destination"/> is null.</exception>
+            <exception cref="T:System.ArgumentException">Thrown when <paramref name="destination"/> is empty or whitespace.</exception>
+        </member>
+        <member name="P:HealthDataExportTools.Services.IDataExporter.FileExtension">
+            <summary>
+            Gets the file extension for this exporter's output format.
+            </summary>
+        </member>
+        <member name="P:HealthDataExportTools.Services.IDataExporter.FormatDescription">
+            <summary>
+            Gets a human-readable description of the export format.
+            </summary>
+        </member>
         <member name="T:HealthDataExportTools.Services.IHealthDataExporter">
             <summary>
             Defines the contract for exporting a <see cref="T:HealthDataExportTools.Services.HealthDataCollection"/> to CSV files.
@@ -5218,13 +5397,27 @@
             efficient streaming and processing of large datasets.
             </summary>
         </member>
-        <member name="M:HealthDataExportTools.Services.JsonLinesExporter.ExportToJsonLinesAsync(HealthDataExportTools.Services.HealthDataCollection,System.String)">
+        <member name="M:HealthDataExportTools.Services.JsonLinesExporter.ExportToJsonLinesAsync(HealthDataExportTools.Services.HealthDataCollection,System.String,System.Threading.CancellationToken)">
             <summary>
             Export all enabled data types from <paramref name="collection"/> to a single JSON Lines file
             at <paramref name="outputPath"/>.
             </summary>
             <param name="collection">The health data to export.</param>
             <param name="outputPath">Path to the output JSON Lines file.</param>
+            <param name="cancellationToken">Cancellation token for the operation.</param>
+        </member>
+        <member name="M:HealthDataExportTools.Services.JsonLinesExporter.ExportAsync(HealthDataExportTools.Services.HealthDataCollection,System.String,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="P:HealthDataExportTools.Services.JsonLinesExporter.FileExtension">
+            <summary>
+            Gets the file extension for JSON Lines format.
+            </summary>
+        </member>
+        <member name="P:HealthDataExportTools.Services.JsonLinesExporter.FormatDescription">
+            <summary>
+            Gets a human-readable description of the JSON Lines export format.
+            </summary>
         </member>
         <member name="T:HealthDataExportTools.Services.NotificationService">
             <summary>

@@ -1,9 +1,8 @@
 #nullable enable
-
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
-// =====================================================================
+// ====================================================================
 
 namespace HealthDataExportTools.Cli;
 
@@ -17,25 +16,15 @@ public static class CliArgumentParserExtensions
     /// </summary>
     /// <param name="parser">The parser instance. Cannot be null.</param>
     /// <param name="args">Command-line arguments. Cannot be null.</param>
-    /// <returns>Parsed options</returns>
+    /// <returns>Parse result</returns>
     /// <exception cref="ArgumentNullException"><paramref name="parser"/> is null.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="args"/> is null.</exception>
-    /// <exception cref="ArgumentException">Thrown if validation fails.</exception>
-    public static CliOptions ParseWithValidation(this CliArgumentParser parser, string[] args)
+    public static ParseResult<CliOptions> ParseWithValidation(this CliArgumentParser parser, string[] args)
     {
         ArgumentNullException.ThrowIfNull(parser);
         ArgumentNullException.ThrowIfNull(args);
 
-        var options = parser.Parse(args);
-        var errors = parser.Validate();
-
-        if (errors.Count > 0)
-        {
-            throw new ArgumentException(
-                $"Validation failed:\n{string.Join("\n", errors)}");
-        }
-
-        return options;
+        return parser.Parse(args);
     }
 
     /// <summary>
@@ -54,16 +43,9 @@ public static class CliArgumentParserExtensions
 
         try
         {
-            options = parser.Parse(args);
-            var errors = parser.Validate();
-
-            if (errors.Count > 0)
-            {
-                options = null;
-                return false;
-            }
-
-            return true;
+            var result = parser.Parse(args);
+            options = result.Success ? result.Options : null;
+            return result.Success;
         }
         catch
         {
