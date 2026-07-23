@@ -12,19 +12,86 @@ namespace HealthDataExportTools.Cli;
 public sealed class CliArgumentParser
 {
     private readonly Dictionary<string, Action<string>> _argumentMap;
+    private readonly HashSet<string> _knownFlags;
     private readonly CliOptions _options;
+    private readonly List<string> _validationErrors;
 
     public CliArgumentParser()
     {
         _options = new CliOptions();
+        _validationErrors = [];
         _argumentMap = InitializeArgumentMap();
+        _knownFlags = new HashSet<string>(_argumentMap.Keys, StringComparer.OrdinalIgnoreCase);
     }
 
     /// <summary>
-    /// Parse command-line arguments and return options object
+    /// Calculate Levenshtein distance between two strings
     /// </summary>
-    public CliOptions Parse(string[] args)
+    /// <param name="a">First string</param>
+    /// <param name="b">Second string</param>
+    /// <returns>Levenshtein distance</returns>
+    private static int LevenshteinDistance(string? a, string? b)
     {
+        if (string.IsNullOrEmpty(a)) return string.IsNullOrEmpty(b) ? 0 : b!.Length;
+        if (string.IsNullOrEmpty(b)) return a!.Length;
+
+        int[,] distance = new int[a.Length + 1, b.Length + 1];
+
+        for (int i = 0; i <= a.Length; i++)
+            distance[i, 0] = i;
+        for (int j = 0; j <= b.Length; j++)
+            distance[0, j] = j;
+
+        for (int i = 1; i <= a.Length; i++)
+        {
+            for (int j = 1; j <= b.Length; j++)
+            {
+                int cost = (a[i - 1] == b[j - 1]) ? 0 : 1;
+                distance[i, j] = Math.Min(
+                    Math.Min(distance[i - 1, j] + 1, distance[i, j - 1] + 1),
+                    distance[i - 1, j - 1] + cost);
+            }
+        }
+
+        return distance[a.Length, b.Length];
+    }
+
+    /// <summary>
+    /// Get suggestion for unknown flag using Levenshtein distance
+    /// </summary>
+    /// <param name="unknownFlag">Unknown flag to find suggestion for</param>
+    /// <returns>Suggested known flag or null if no good match found</returns>
+    private string? GetSuggestion(string unknownFlag)
+    {
+        const int maxDistance = 2;
+        string? bestMatch = null;
+        int minDistance = int.MaxValue;
+
+        foreach (var knownFlag in _knownFlags)
+        {
+            int distance = LevenshteinDistance(unknownFlag, knownFlag);
+            if (distance < minDistance && distance <= maxDistance)
+            {
+                minDistance = distance;
+                bestMatch = knownFlag;
+            }
+        }
+
+        return bestMatch;
+    }
+
+    /// <summary>
+    /// Parse command-line arguments and return parse result
+    /// </summary>
+    /// <param name="args">Command-line arguments to parse</param>
+    /// <returns>Parse result containing options or errors</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="args"/> is null.</exception>
+    public ParseResult<CliOptions> Parse(string[] args)
+    {
+        ArgumentNullException.ThrowIfNull(args);
+
+        _validationErrors.Clear();
+
         // Process each argument as key-value pairs
         for (int i = 0; i < args.Length; i++)
         {
@@ -34,16 +101,39 @@ public sealed class CliArgumentParser
             if (arg.StartsWith("--"))
             {
                 string key = arg[2..];
+
+                if (!_knownFlags.Contains(key))
+                {
+                    // Unknown flag - suggest similar known flags
+                    string? suggestion = GetSuggestion(key);
+                    _validationErrors.Add(suggestion != null
+                        ? $"Unknown option '--{key}'. Did you mean '--{suggestion}'?"
+                        : $"Unknown option '--{key}'");
+                    continue;
+                }
+
                 if (_argumentMap.TryGetValue(key, out var handler))
                 {
                     // Check if this flag expects a value
                     if (RequiresValue(key) && i + 1 < args.Length)
                     {
-                        handler(args[++i]);
+                        string value = args[++i];
+                        try
+                        {
+                            handler(value);
+                        }
+                        catch (Exception ex)
+                        {
+                            _validationErrors.Add($"Invalid value for '--{key}': {ex.Message}");
+                        }
                     }
                     else if (!RequiresValue(key))
                     {
                         handler("");
+                    }
+                    else
+                    {
+                        _validationErrors.Add($"Option '--{key}' requires a value but none was provided");
                     }
                 }
             }
@@ -53,9 +143,84 @@ public sealed class CliArgumentParser
                 string shortFlag = arg[1].ToString();
                 ProcessShortFlag(shortFlag, args, ref i);
             }
+            else
+            {
+                // Positional argument - treat as input path
+                _options.InputPath = arg;
+            }
         }
 
-        return _options;
+        // Validate at parse time
+        ValidateAtParseTime();
+
+        if (_validationErrors.Count > 0)
+        {
+            return ParseResult<CliOptions>.FailureResult(_validationErrors, GetHelpText());
+        }
+
+        return ParseResult<CliOptions>.SuccessResult(_options, GetHelpText());
+    }
+
+    /// <summary>
+    /// Validate parsed options for correctness and consistency at parse time
+    /// </summary>
+    private void ValidateAtParseTime()
+    {
+        // Validate input path exists
+        if (!string.IsNullOrEmpty(_options.InputPath) && !Directory.Exists(_options.InputPath))
+        {
+            _validationErrors.Add($"Input path does not exist: {_options.InputPath}");
+        }
+
+        // Validate date format if provided (using invariant culture for consistent parsing)
+        // Accept various date formats but ensure they parse correctly
+        if (!string.IsNullOrEmpty(_options.StartDate))
+        {
+            if (!DateTime.TryParse(_options.StartDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out _))
+            {
+                _validationErrors.Add($"Invalid start date format: {_options.StartDate}. Expected format: yyyy-MM-dd");
+            }
+        }
+
+        if (!string.IsNullOrEmpty(_options.EndDate))
+        {
+            if (!DateTime.TryParse(_options.EndDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out _))
+            {
+                _validationErrors.Add($"Invalid end date format: {_options.EndDate}. Expected format: yyyy-MM-dd");
+            }
+        }
+
+        // Validate date range
+        if (!string.IsNullOrEmpty(_options.StartDate) && !string.IsNullOrEmpty(_options.EndDate))
+        {
+            if (DateTime.TryParse(_options.StartDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out var start) &&
+                DateTime.TryParse(_options.EndDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out var end))
+            {
+                if (start > end)
+                {
+                    _validationErrors.Add("Start date cannot be after end date");
+                }
+            }
+        }
+
+        // Validate format option - use formats from CliOptions
+        var validFormats = new[] { "json", "csv", "sqlite", "xml", "all" };
+        if (!validFormats.Contains(_options.Format.ToLower()))
+        {
+            _validationErrors.Add($"Invalid format: {_options.Format}. Valid options: {string.Join(", ", validFormats)}");
+        }
+
+        // Validate parallelism
+        if (_options.MaxParallelism < 1 || _options.MaxParallelism > Environment.ProcessorCount)
+        {
+            _validationErrors.Add($"Max parallelism must be between 1 and {Environment.ProcessorCount}");
+        }
+
+        // Validate cache duration
+        if (_options.CacheDurationMinutes < 0)
+        {
+            _validationErrors.Add("Cache duration cannot be negative");
+        }
     }
 
     /// <summary>
