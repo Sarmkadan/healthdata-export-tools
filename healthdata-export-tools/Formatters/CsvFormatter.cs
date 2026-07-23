@@ -26,7 +26,7 @@ namespace HealthDataExportTools.Formatters;
 /// start with '=', '+', '-', or '@' are prefixed with a single quote to prevent
 /// Excel formula injection. RFC 4180 quoting rules are delegated to <c>CsvHelper</c>.
 /// </summary>
-public sealed class CsvFormatter : IDataFormatter
+public sealed partial class CsvFormatter : IDataFormatter
 {
     private readonly ILogger<CsvFormatter> _logger;
     private static readonly CsvConfiguration InvariantConfig = new(CultureInfo.InvariantCulture);

@@ -60,6 +60,56 @@ public interface IDataFormatter
     /// Validate data before formatting
     /// </summary>
     Task<List<string>> ValidateAsync(List<HealthDataRecord> records);
+
+    /// <summary>
+    /// Write a collection of health data records to a stream asynchronously
+    /// </summary>
+    /// <param name="records">The records to format; must not be <c>null</c>.</param>
+    /// <param name="writer">The text writer to write to; must not be <c>null</c>.</param>
+    /// <param name="cancellationToken">Cancellation token for the operation.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="records"/> or <paramref name="writer"/> is <c>null</c>.</exception>
+    Task WriteAsync(IEnumerable<HealthDataRecord> records, TextWriter writer, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Write sleep data to a stream asynchronously
+    /// </summary>
+    /// <param name="sleepRecords">The sleep records to format; must not be <c>null</c>.</param>
+    /// <param name="writer">The text writer to write to; must not be <c>null</c>.</param>
+    /// <param name="cancellationToken">Cancellation token for the operation.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="sleepRecords"/> or <paramref name="writer"/> is <c>null</c>.</exception>
+    Task WriteSleepDataAsync(IEnumerable<SleepData> sleepRecords, TextWriter writer, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Write heart rate data to a stream asynchronously
+    /// </summary>
+    /// <param name="heartRateRecords">The heart-rate records to format; must not be <c>null</c>.</param>
+    /// <param name="writer">The text writer to write to; must not be <c>null</c>.</param>
+    /// <param name="cancellationToken">Cancellation token for the operation.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="heartRateRecords"/> or <paramref name="writer"/> is <c>null</c>.</exception>
+    Task WriteHeartRateDataAsync(IEnumerable<HeartRateData> heartRateRecords, TextWriter writer, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Write SpO2 data to a stream asynchronously
+    /// </summary>
+    /// <param name="spo2Records">The SpO2 records to format; must not be <c>null</c>.</param>
+    /// <param name="writer">The text writer to write to; must not be <c>null</c>.</param>
+    /// <param name="cancellationToken">Cancellation token for the operation.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="spo2Records"/> or <paramref name="writer"/> is <c>null</c>.</exception>
+    Task WriteSpO2DataAsync(IEnumerable<SpO2Data> spo2Records, TextWriter writer, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Write steps data to a stream asynchronously
+    /// </summary>
+    /// <param name="stepsRecords">The steps records to format; must not be <c>null</c>.</param>
+    /// <param name="writer">The text writer to write to; must not be <c>null</c>.</param>
+    /// <param name="cancellationToken">Cancellation token for the operation.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="stepsRecords"/> or <paramref name="writer"/> is <c>null</c>.</exception>
+    Task WriteStepsDataAsync(IEnumerable<StepsData> stepsRecords, TextWriter writer, CancellationToken cancellationToken = default);
 }
 
 /// <summary>

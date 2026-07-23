@@ -10,7 +10,7 @@ namespace HealthDataExportTools.Formatters;
 /// Formats health data into JSON format with proper serialization
 /// Supports pretty-printing and compact modes
 /// </summary>
-public sealed class JsonFormatter : IDataFormatter
+public sealed partial class JsonFormatter : IDataFormatter
 {
     private readonly ILogger<JsonFormatter> _logger;
     private readonly JsonSerializerOptions _jsonOptions;
