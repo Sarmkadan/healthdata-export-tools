@@ -191,6 +191,156 @@ public sealed class DataComparisonService
         return sb.ToString();
     }
 
+    /// <summary>
+    /// Compares two record sets with tolerance-aware numeric matching and time-alignment,
+    /// producing a structured added/removed/changed diff instead of a boolean verdict.
+    /// </summary>
+    /// <typeparam name="T">The health record type being compared.</typeparam>
+    /// <param name="baseline">The reference (older / source) record set.</param>
+    /// <param name="candidate">The record set being compared against the baseline.</param>
+    /// <param name="options">
+    /// Tolerance and alignment options. When <c>null</c>, <see cref="ComparisonOptions.Default"/> is used.
+    /// </param>
+    /// <returns>A <see cref="RecordSetDiff{T}"/> describing added, removed, and changed records.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="baseline"/> or <paramref name="candidate"/> is <c>null</c>.</exception>
+    public RecordSetDiff<T> CompareRecordSet<T>(
+        IEnumerable<T> baseline,
+        IEnumerable<T> candidate,
+        ComparisonOptions? options = null)
+        where T : HealthDataRecord
+    {
+        ArgumentNullException.ThrowIfNull(baseline);
+        ArgumentNullException.ThrowIfNull(candidate);
+
+        var opts = options ?? ComparisonOptions.Default;
+        string KeySelector(T record) => opts.KeySelector(record);
+
+        var baselineByKey = baseline.ToLookup(KeySelector);
+        var candidateByKey = candidate.ToLookup(KeySelector);
+
+        var diff = new RecordSetDiff<T>();
+
+        foreach (var group in baselineByKey)
+        {
+            var baseRecord = group.First();
+            var matchGroup = candidateByKey[group.Key];
+            var candidateRecord = matchGroup.FirstOrDefault();
+
+            if (candidateRecord is null)
+            {
+                diff.Removed.Add(baseRecord);
+                continue;
+            }
+
+            var fieldDeltas = ComputeFieldDeltas(baseRecord, candidateRecord, opts);
+            if (fieldDeltas.Count > 0)
+            {
+                diff.Changed.Add(new RecordChange<T>(group.Key, baseRecord, candidateRecord, fieldDeltas));
+            }
+        }
+
+        var baselineKeys = new HashSet<string>(baselineByKey.Select(g => g.Key));
+        foreach (var group in candidateByKey)
+        {
+            if (!baselineKeys.Contains(group.Key))
+            {
+                diff.Added.Add(group.First());
+            }
+        }
+
+        return diff;
+    }
+
+    /// <summary>
+    /// Compares the field-level summary of two same-key records, reporting only fields whose
+    /// values differ beyond the configured tolerance.
+    /// </summary>
+    /// <param name="baseRecord">The baseline record.</param>
+    /// <param name="candidateRecord">The candidate record matched to the baseline by key.</param>
+    /// <param name="options">Tolerance and alignment options driving the comparison.</param>
+    /// <returns>A list of field-level deltas; empty when the records are equivalent within tolerance.</returns>
+    private static List<FieldDelta> ComputeFieldDeltas(
+        HealthDataRecord baseRecord,
+        HealthDataRecord candidateRecord,
+        ComparisonOptions options)
+    {
+        var baseFields = baseRecord.GetSummary();
+        var candidateFields = candidateRecord.GetSummary();
+        var fieldNames = new SortedSet<string>(baseFields.Keys, StringComparer.Ordinal);
+        fieldNames.UnionWith(candidateFields.Keys);
+
+        var deltas = new List<FieldDelta>();
+
+        foreach (var fieldName in fieldNames)
+        {
+            var hasBase = baseFields.TryGetValue(fieldName, out var baseValue);
+            var hasCandidate = candidateFields.TryGetValue(fieldName, out var candidateValue);
+
+            if (!hasBase || !hasCandidate)
+            {
+                deltas.Add(new FieldDelta(fieldName, baseValue, candidateValue));
+                continue;
+            }
+
+            if (!ValuesAreEquivalent(fieldName, baseValue, candidateValue, options))
+            {
+                deltas.Add(new FieldDelta(fieldName, baseValue, candidateValue));
+            }
+        }
+
+        return deltas;
+    }
+
+    /// <summary>
+    /// Determines whether two summary field values are equivalent, applying per-metric epsilon
+    /// tolerance to numeric values and time-granularity normalization to <see cref="DateTime"/> values.
+    /// </summary>
+    /// <param name="fieldName">The summary field name, used to look up a per-metric epsilon.</param>
+    /// <param name="baseValue">The baseline field value.</param>
+    /// <param name="candidateValue">The candidate field value.</param>
+    /// <param name="options">Tolerance and alignment options driving the comparison.</param>
+    /// <returns><c>true</c> when the values are equivalent within tolerance; otherwise <c>false</c>.</returns>
+    private static bool ValuesAreEquivalent(string fieldName, object? baseValue, object? candidateValue, ComparisonOptions options)
+    {
+        if (baseValue is null || candidateValue is null)
+        {
+            return baseValue is null && candidateValue is null;
+        }
+
+        if (baseValue is DateTime baseDate && candidateValue is DateTime candidateDate)
+        {
+            return options.NormalizeTimestamp(baseDate) == options.NormalizeTimestamp(candidateDate);
+        }
+
+        if (TryToDouble(baseValue, out var baseNum) && TryToDouble(candidateValue, out var candidateNum))
+        {
+            var epsilon = options.GetEpsilon(fieldName);
+            return Math.Abs(baseNum - candidateNum) <= epsilon;
+        }
+
+        return Equals(baseValue, candidateValue);
+    }
+
+    /// <summary>
+    /// Attempts to convert a boxed numeric value to <see cref="double"/> for tolerance comparison.
+    /// </summary>
+    /// <param name="value">The boxed value to convert.</param>
+    /// <param name="result">The converted value when successful; otherwise zero.</param>
+    /// <returns><c>true</c> when <paramref name="value"/> is a supported numeric type.</returns>
+    private static bool TryToDouble(object value, out double result)
+    {
+        switch (value)
+        {
+            case double d: result = d; return true;
+            case float f: result = f; return true;
+            case int i: result = i; return true;
+            case long l: result = l; return true;
+            case short s: result = s; return true;
+            case decimal m: result = (double)m; return true;
+            default: result = 0; return false;
+        }
+    }
+
     // ── Helpers ────────────────────────────────────────────────────────────────
 
     private static double CalculatePercentageChange(double oldVal, double newVal)
@@ -308,4 +458,127 @@ public sealed class DataComparisonResult
     /// Human-readable narrative summarising the key changes across all metrics.
     /// </summary>
     public string NarrativeSummary { get; set; } = string.Empty;
+}
+
+/// <summary>
+/// Configures tolerance and time-alignment semantics used by <see cref="DataComparisonService.CompareRecordSet{T}"/>.
+/// </summary>
+public sealed class ComparisonOptions
+{
+    /// <summary>
+    /// Default numeric tolerance applied to any summary field without a more specific entry
+    /// in <see cref="MetricEpsilons"/>.
+    /// </summary>
+    public double DefaultEpsilon { get; init; } = 0.001;
+
+    /// <summary>
+    /// Per-metric numeric tolerance overrides, keyed by the field name as reported by
+    /// <see cref="HealthDataRecord.GetSummary"/> (e.g. "AveragePercentage", "AverageBpm").
+    /// </summary>
+    public IReadOnlyDictionary<string, double> MetricEpsilons { get; init; } =
+        new Dictionary<string, double>(StringComparer.Ordinal);
+
+    /// <summary>
+    /// Granularity that timestamps are truncated to before being compared or used for keying.
+    /// Defaults to one second, so offset/precision-only differences do not register as mismatches.
+    /// </summary>
+    public TimeSpan TimeGranularity { get; init; } = TimeSpan.FromSeconds(1);
+
+    /// <summary>
+    /// Produces the matching key for a record. Defaults to the record's <see cref="HealthDataRecord.Id"/>
+    /// when set, falling back to a normalized-timestamp key derived from <see cref="HealthDataRecord.RecordDate"/>
+    /// and <see cref="HealthDataRecord.DeviceId"/>.
+    /// </summary>
+    public Func<HealthDataRecord, string> KeySelector { get; init; } = DefaultKeySelector;
+
+    /// <summary>
+    /// The default options instance: one-second time granularity, empty per-metric overrides,
+    /// and the default identity-or-timestamp key selector.
+    /// </summary>
+    public static ComparisonOptions Default { get; } = new();
+
+    /// <summary>
+    /// Resolves the numeric tolerance for a given summary field name, falling back to
+    /// <see cref="DefaultEpsilon"/> when no per-metric override is configured.
+    /// </summary>
+    /// <param name="fieldName">The summary field name.</param>
+    /// <returns>The epsilon to use when comparing that field's numeric values.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="fieldName"/> is null or empty.</exception>
+    public double GetEpsilon(string fieldName)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(fieldName);
+        return MetricEpsilons.TryGetValue(fieldName, out var epsilon) ? epsilon : DefaultEpsilon;
+    }
+
+    /// <summary>
+    /// Normalizes a timestamp to UTC and truncates it to <see cref="TimeGranularity"/>, so that
+    /// values differing only by offset or sub-granularity precision compare equal.
+    /// </summary>
+    /// <param name="value">The timestamp to normalize.</param>
+    /// <returns>The UTC timestamp truncated to the configured granularity.</returns>
+    public DateTime NormalizeTimestamp(DateTime value)
+    {
+        var utc = value.Kind switch
+        {
+            DateTimeKind.Utc => value,
+            DateTimeKind.Local => value.ToUniversalTime(),
+            _ => DateTime.SpecifyKind(value, DateTimeKind.Utc)
+        };
+
+        var granularity = TimeGranularity <= TimeSpan.Zero ? TimeSpan.FromTicks(1) : TimeGranularity;
+        var ticks = utc.Ticks - (utc.Ticks % granularity.Ticks);
+        return new DateTime(ticks, DateTimeKind.Utc);
+    }
+
+    /// <summary>
+    /// Default key selector: uses <see cref="HealthDataRecord.Id"/> when non-empty, otherwise
+    /// falls back to a key built from the normalized record date and device id.
+    /// </summary>
+    /// <param name="record">The record to key.</param>
+    /// <returns>A stable matching key for the record.</returns>
+    private static string DefaultKeySelector(HealthDataRecord record) =>
+        !string.IsNullOrEmpty(record.Id)
+            ? record.Id
+            : $"{Default.NormalizeTimestamp(record.RecordDate):O}|{record.DeviceId}";
+}
+
+/// <summary>
+/// A single field-level difference between a baseline and candidate record.
+/// </summary>
+/// <param name="FieldName">The summary field name that differs.</param>
+/// <param name="BaselineValue">The value from the baseline record, or <c>null</c> if absent.</param>
+/// <param name="CandidateValue">The value from the candidate record, or <c>null</c> if absent.</param>
+public sealed record FieldDelta(string FieldName, object? BaselineValue, object? CandidateValue);
+
+/// <summary>
+/// Represents a record present in both sets under the same key, but with one or more
+/// field-level differences beyond configured tolerance.
+/// </summary>
+/// <typeparam name="T">The health record type.</typeparam>
+/// <param name="Key">The matching key shared by both records.</param>
+/// <param name="Baseline">The baseline record.</param>
+/// <param name="Candidate">The candidate record.</param>
+/// <param name="FieldDeltas">The field-level differences that exceeded tolerance.</param>
+public sealed record RecordChange<T>(string Key, T Baseline, T Candidate, IReadOnlyList<FieldDelta> FieldDeltas)
+    where T : HealthDataRecord;
+
+/// <summary>
+/// Structured result of comparing two record sets: which records were added, removed,
+/// or changed, with field-level deltas for changes.
+/// </summary>
+/// <typeparam name="T">The health record type.</typeparam>
+public sealed class RecordSetDiff<T>
+    where T : HealthDataRecord
+{
+    /// <summary>Records present only in the candidate set (not matched to any baseline record).</summary>
+    public List<T> Added { get; } = [];
+
+    /// <summary>Records present only in the baseline set (not matched to any candidate record).</summary>
+    public List<T> Removed { get; } = [];
+
+    /// <summary>Records present in both sets whose field values differ beyond tolerance.</summary>
+    public List<RecordChange<T>> Changed { get; } = [];
+
+    /// <summary>Indicates whether the two sets are equivalent within tolerance (no additions, removals, or changes).</summary>
+    public bool AreEquivalent => Added.Count == 0 && Removed.Count == 0 && Changed.Count == 0;
 }
