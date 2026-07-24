@@ -8,15 +8,13 @@ using Xunit;
 
 namespace HealthDataExportTools.Tests
 {
-    public sealed class CliArgumentParserTests
+    public sealed partial class CliArgumentParserTests
     {
         private readonly CliArgumentParser _parser;
-        private readonly Mock<ILogger<CliArgumentParser>> _loggerMock;
 
         public CliArgumentParserTests()
         {
-            _loggerMock = new Mock<ILogger<CliArgumentParser>>();
-            _parser = new CliArgumentParser(_loggerMock.Object);
+            _parser = new CliArgumentParser();
         }
 
         [Fact]
