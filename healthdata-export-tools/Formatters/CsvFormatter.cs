@@ -29,6 +29,8 @@ namespace HealthDataExportTools.Formatters;
 public sealed partial class CsvFormatter : IDataFormatter
 {
     private readonly ILogger<CsvFormatter> _logger;
+    private readonly int _maxRecordCount;
+    private readonly int _maxFieldLength;
     private static readonly CsvConfiguration InvariantConfig = new(CultureInfo.InvariantCulture);
 
     /// <summary>
@@ -45,11 +47,29 @@ public sealed partial class CsvFormatter : IDataFormatter
     /// Initializes a new instance of <see cref="CsvFormatter"/>.
     /// </summary>
     /// <param name="logger">Logger instance; must not be <c>null</c>.</param>
+    /// <param name="maxRecordCount">
+    /// Maximum number of records that can be formatted in a single operation.
+    /// Defaults to <c>100_000</c>.
+    /// </param>
+    /// <param name="maxFieldLength">
+    /// Maximum length (in characters) allowed for any individual CSV field after sanitisation.
+    /// Defaults to <c>10_000</c>.
+    /// </param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="logger"/> is <c>null</c>.</exception>
-    public CsvFormatter(ILogger<CsvFormatter> logger)
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when <paramref name="maxRecordCount"/> or <paramref name="maxFieldLength"/> is less than or equal to zero.
+    /// </exception>
+    public CsvFormatter(ILogger<CsvFormatter> logger, int maxRecordCount = 100_000, int maxFieldLength = 10_000)
     {
         ArgumentNullException.ThrowIfNull(logger);
+        if (maxRecordCount <= 0)
+            throw new ArgumentOutOfRangeException(nameof(maxRecordCount), "Maximum record count must be greater than zero.");
+        if (maxFieldLength <= 0)
+            throw new ArgumentOutOfRangeException(nameof(maxFieldLength), "Maximum field length must be greater than zero.");
+
         _logger = logger;
+        _maxRecordCount = maxRecordCount;
+        _maxFieldLength = maxFieldLength;
     }
 
     /// <summary>
@@ -97,8 +117,8 @@ public sealed partial class CsvFormatter : IDataFormatter
         // Data
         csv.WriteField(FormatDate(record.RecordDate));
         csv.WriteField(record.GetType().Name);
-        csv.WriteField(Sanitize(record.DeviceId));
-        csv.WriteField(Sanitize(record.Notes));
+        csv.WriteField(ValidateFieldLength(Sanitize(record.DeviceId), nameof(record.DeviceId)));
+        csv.WriteField(ValidateFieldLength(Sanitize(record.Notes), nameof(record.Notes)));
         await csv.NextRecordAsync().ConfigureAwait(false);
 
         return sb.ToString();
@@ -110,9 +130,14 @@ public sealed partial class CsvFormatter : IDataFormatter
     /// <param name="records">The collection to format; must not be <c>null</c> or empty.</param>
     /// <returns>CSV representation of the collection.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="records"/> is <c>null</c>.</exception>
+    /// <exception cref="ArgumentException">
+    /// Thrown when the number of records exceeds the configured maximum.
+    /// </exception>
     public async Task<string> FormatCollectionAsync(List<HealthDataRecord> records)
     {
         ArgumentNullException.ThrowIfNull(records);
+        if (records.Count > _maxRecordCount)
+            throw new ArgumentException($"Record collection exceeds the maximum allowed count of {_maxRecordCount}.", nameof(records));
 
         if (records.Count == 0)
         {
@@ -135,8 +160,8 @@ public sealed partial class CsvFormatter : IDataFormatter
         {
             csv.WriteField(FormatDate(record.RecordDate));
             csv.WriteField(record.GetType().Name);
-            csv.WriteField(Sanitize(record.DeviceId));
-            csv.WriteField(Sanitize(record.Notes));
+            csv.WriteField(ValidateFieldLength(Sanitize(record.DeviceId), nameof(record.DeviceId)));
+            csv.WriteField(ValidateFieldLength(Sanitize(record.Notes), nameof(record.Notes)));
             await csv.NextRecordAsync().ConfigureAwait(false);
         }
 
@@ -150,9 +175,14 @@ public sealed partial class CsvFormatter : IDataFormatter
     /// <param name="sleepRecords">The sleep records to format; must not be <c>null</c> or empty.</param>
     /// <returns>CSV string for the supplied sleep data.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="sleepRecords"/> is <c>null</c>.</exception>
+    /// <exception cref="ArgumentException">
+    /// Thrown when the number of records exceeds the configured maximum.
+    /// </exception>
     public async Task<string> FormatSleepDataAsync(List<SleepData> sleepRecords)
     {
         ArgumentNullException.ThrowIfNull(sleepRecords);
+        if (sleepRecords.Count > _maxRecordCount)
+            throw new ArgumentException($"Sleep record collection exceeds the maximum allowed count of {_maxRecordCount}.", nameof(sleepRecords));
 
         if (sleepRecords.Count == 0)
             return string.Empty;
@@ -179,7 +209,7 @@ public sealed partial class CsvFormatter : IDataFormatter
             csv.WriteField(record.DeepSleepMinutes);
             csv.WriteField(record.RemSleepMinutes);
             csv.WriteField(record.AwakeMinutes);
-            csv.WriteField(Sanitize(record.DeviceId));
+            csv.WriteField(ValidateFieldLength(Sanitize(record.DeviceId), nameof(record.DeviceId)));
             await csv.NextRecordAsync().ConfigureAwait(false);
         }
 
@@ -193,9 +223,14 @@ public sealed partial class CsvFormatter : IDataFormatter
     /// <param name="heartRateRecords">The heart‑rate records to format; must not be <c>null</c> or empty.</param>
     /// <returns>CSV string for the supplied heart‑rate data.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="heartRateRecords"/> is <c>null</c>.</exception>
+    /// <exception cref="ArgumentException">
+    /// Thrown when the number of records exceeds the configured maximum.
+    /// </exception>
     public async Task<string> FormatHeartRateDataAsync(List<HeartRateData> heartRateRecords)
     {
         ArgumentNullException.ThrowIfNull(heartRateRecords);
+        if (heartRateRecords.Count > _maxRecordCount)
+            throw new ArgumentException($"Heart‑rate record collection exceeds the maximum allowed count of {_maxRecordCount}.", nameof(heartRateRecords));
 
         if (heartRateRecords.Count == 0)
             return string.Empty;
@@ -216,7 +251,7 @@ public sealed partial class CsvFormatter : IDataFormatter
             csv.WriteField(FormatDate(record.RecordDate));
             csv.WriteField(record.AverageBpm);
             csv.WriteField(string.Empty);
-            csv.WriteField(Sanitize(record.DeviceId));
+            csv.WriteField(ValidateFieldLength(Sanitize(record.DeviceId), nameof(record.DeviceId)));
             await csv.NextRecordAsync().ConfigureAwait(false);
         }
 
@@ -230,9 +265,14 @@ public sealed partial class CsvFormatter : IDataFormatter
     /// <param name="spo2Records">The SpO2 records to format; must not be <c>null</c> or empty.</param>
     /// <returns>CSV string for the supplied SpO2 data.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="spo2Records"/> is <c>null</c>.</exception>
+    /// <exception cref="ArgumentException">
+    /// Thrown when the number of records exceeds the configured maximum.
+    /// </exception>
     public async Task<string> FormatSpO2DataAsync(List<SpO2Data> spo2Records)
     {
         ArgumentNullException.ThrowIfNull(spo2Records);
+        if (spo2Records.Count > _maxRecordCount)
+            throw new ArgumentException($"SpO2 record collection exceeds the maximum allowed count of {_maxRecordCount}.", nameof(spo2Records));
 
         if (spo2Records.Count == 0)
             return string.Empty;
@@ -253,7 +293,7 @@ public sealed partial class CsvFormatter : IDataFormatter
             csv.WriteField(FormatDate(record.RecordDate));
             csv.WriteField(record.AveragePercentage);
             csv.WriteField(record.HasConcerningLevels());
-            csv.WriteField(Sanitize(record.DeviceId));
+            csv.WriteField(ValidateFieldLength(Sanitize(record.DeviceId), nameof(record.DeviceId)));
             await csv.NextRecordAsync().ConfigureAwait(false);
         }
 
@@ -267,9 +307,14 @@ public sealed partial class CsvFormatter : IDataFormatter
     /// <param name="stepsRecords">The steps records to format; must not be <c>null</c> or empty.</param>
     /// <returns>CSV string for the supplied steps data.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="stepsRecords"/> is <c>null</c>.</exception>
+    /// <exception cref="ArgumentException">
+    /// Thrown when the number of records exceeds the configured maximum.
+    /// </exception>
     public async Task<string> FormatStepsDataAsync(List<StepsData> stepsRecords)
     {
         ArgumentNullException.ThrowIfNull(stepsRecords);
+        if (stepsRecords.Count > _maxRecordCount)
+            throw new ArgumentException($"Steps record collection exceeds the maximum allowed count of {_maxRecordCount}.", nameof(stepsRecords));
 
         if (stepsRecords.Count == 0)
             return string.Empty;
@@ -292,7 +337,7 @@ public sealed partial class CsvFormatter : IDataFormatter
             csv.WriteField(record.TotalSteps);
             csv.WriteField(record.DistanceKm);
             csv.WriteField(record.CaloriesBurned);
-            csv.WriteField(Sanitize(record.DeviceId));
+            csv.WriteField(ValidateFieldLength(Sanitize(record.DeviceId), nameof(record.DeviceId)));
             await csv.NextRecordAsync().ConfigureAwait(false);
         }
 
@@ -315,6 +360,12 @@ public sealed partial class CsvFormatter : IDataFormatter
         if (records.Count == 0)
         {
             errors.Add("Record collection is empty");
+            return await Task.FromResult(errors).ConfigureAwait(false);
+        }
+
+        if (records.Count > _maxRecordCount)
+        {
+            errors.Add($"Record collection exceeds the maximum allowed count of {_maxRecordCount}");
             return await Task.FromResult(errors).ConfigureAwait(false);
         }
 
@@ -386,5 +437,21 @@ public sealed partial class CsvFormatter : IDataFormatter
 
         // Apply prefix if value starts with dangerous character
         return startsWithDangerousChar ? $"'{sanitized}" : sanitized;
+    }
+
+    /// <summary>
+    /// Ensures that a CSV field does not exceed the configured maximum length.
+    /// </summary>
+    /// <param name="field">The field value after sanitisation.</param>
+    /// <param name="fieldName">The name of the field (used for exception messages).</param>
+    /// <returns>The original <paramref name="field"/> if it is within limits.</returns>
+    /// <exception cref="ArgumentException">
+    /// Thrown when the field length exceeds <see cref="_maxFieldLength"/>.
+    /// </exception>
+    private string ValidateFieldLength(string field, string fieldName)
+    {
+        if (field.Length > _maxFieldLength)
+            throw new ArgumentException($"Field '{fieldName}' exceeds the maximum allowed length of {_maxFieldLength} characters.", fieldName);
+        return field;
     }
 }
