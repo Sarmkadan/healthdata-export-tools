@@ -5,6 +5,7 @@
 // CTO & Software Architect
 // =====================================================================
 
+using System;
 using System.Globalization;
 using System.IO;
 using System.Text;
@@ -26,6 +27,38 @@ public sealed partial class CsvExporter : IHealthDataExporter, IDataExporter
     public CsvExporter(ILogger<CsvExporter> logger)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
+
+    /// <summary>
+    /// Sanitises a string field to mitigate CSV injection attacks.
+    /// </summary>
+    /// <param name="value">The value to sanitize; can be null.</param>
+    /// <returns>The sanitized value safe for CSV export.</returns>
+    private static string Sanitize(string? value)
+    {
+        if (string.IsNullOrEmpty(value))
+            return string.Empty;
+
+        // Check if value starts with dangerous characters that could trigger formula execution
+        bool startsWithDangerousChar = value.StartsWith('=') ||
+                                      value.StartsWith('+') ||
+                                      value.StartsWith('-') ||
+                                      value.StartsWith('@') ||
+                                      value.StartsWith('\t') ||
+                                      value.StartsWith('\r');
+
+        // Replace embedded newlines with spaces to prevent row splitting
+        // Handle all common newline sequences: \r\n (Windows), \n (Unix), \r (old Mac)
+        string sanitized = value
+            .Replace("\r\n", " ")
+            .Replace('\n', ' ')
+            .Replace('\r', ' ');
+
+        // Escape embedded double quotes per RFC 4180
+        sanitized = sanitized.Replace("\"", "\"\"");
+
+        // Apply prefix if value starts with dangerous character
+        return startsWithDangerousChar ? $"'{sanitized}" : sanitized;
     }
 
     /// <inheritdoc />

@@ -52,7 +52,7 @@ public sealed partial class CsvFormatter
             csv.WriteField(FormatDate(record.RecordDate));
             csv.WriteField(record.GetType().Name);
             csv.WriteField(Sanitize(record.DeviceId));
-            csv.WriteField(string.Empty);
+            csv.WriteField(Sanitize(record.Notes));
             await csv.NextRecordAsync().ConfigureAwait(false);
         }
 
