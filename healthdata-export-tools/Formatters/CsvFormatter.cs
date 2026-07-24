@@ -23,8 +23,8 @@ namespace HealthDataExportTools.Formatters;
 /// This implementation hardens CSV output against locale‑dependent formatting and
 /// CSV injection attacks (OWASP). All numeric and date values are rendered using
 /// <see cref="CultureInfo.InvariantCulture"/> and ISO‑8601 date strings. Fields that
-/// start with '=', '+', '-', or '@' are prefixed with a single quote to prevent
-/// Excel formula injection. RFC 4180 quoting rules are delegated to <c>CsvHelper</c>.
+/// start with '=', '+', '-', '@', '\t', '\r' are prefixed with a single quote to prevent
+/// Excel formula injection. RFC 4180 quoting rules are delegated to <c>CsvHelper</c>.
 /// </summary>
 public sealed partial class CsvFormatter : IDataFormatter
 {
@@ -98,7 +98,7 @@ public sealed partial class CsvFormatter : IDataFormatter
         csv.WriteField(FormatDate(record.RecordDate));
         csv.WriteField(record.GetType().Name);
         csv.WriteField(Sanitize(record.DeviceId));
-        csv.WriteField(string.Empty);
+        csv.WriteField(Sanitize(record.Notes));
         await csv.NextRecordAsync().ConfigureAwait(false);
 
         return sb.ToString();
@@ -136,7 +136,7 @@ public sealed partial class CsvFormatter : IDataFormatter
             csv.WriteField(FormatDate(record.RecordDate));
             csv.WriteField(record.GetType().Name);
             csv.WriteField(Sanitize(record.DeviceId));
-            csv.WriteField(string.Empty);
+            csv.WriteField(Sanitize(record.Notes));
             await csv.NextRecordAsync().ConfigureAwait(false);
         }
 
@@ -303,7 +303,7 @@ public sealed partial class CsvFormatter : IDataFormatter
     /// <summary>
     /// Validates a collection of <see cref="HealthDataRecord"/> before CSV export.
     /// </summary>
-    /// <param name="records">The records to validate; must not be <c>null</c>.</param>
+    /// <param name="records">The records to format; must not be <c>null</c>.</param>
     /// <returns>A list of validation error messages; empty if no errors were found.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="records"/> is <c>null</c>.</exception>
     public async Task<List<string>> ValidateAsync(List<HealthDataRecord> records)
@@ -339,19 +339,52 @@ public sealed partial class CsvFormatter : IDataFormatter
     private static string FormatDate(DateTime date) => date.ToString("o", CultureInfo.InvariantCulture);
 
     /// <summary>
-    /// Sanitises a string field to mitigate CSV injection.
-    /// If the value starts with '=', '+', '-', or '@', a leading single quote is added.
+    /// Sanitises a string field to mitigate CSV injection attacks.
+    ///
+    /// <para>Protects against:</para>
+    /// <list type="bullet">
+    /// <item>Excel formula injection (values starting with =, +, -)</item>
+    /// <item>DDE injection (values starting with @)</item>
+    /// <item>Tab character injection (values starting with tab)</item>
+    /// <item>Carriage return injection (values starting with \r)</item>
+    /// <item>Row splitting via embedded newlines (\r\n, \n, \r)</item>
+    /// <item>Embedded double quotes that could break CSV quoting</item>
+    /// </list>
+    ///
+    /// <para>Sanitization rules:</para>
+    /// <list type="bullet">
+    /// <item>Values starting with =, +, -, @, or tab are prefixed with a single quote</item>
+    /// <item>Values containing embedded newlines (\r\n, \n, \r) have newlines replaced with spaces</item>
+    /// <item>Values containing embedded double quotes have them escaped per RFC 4180</item>
+    /// <item>Empty or null values return empty string</item>
+    /// </list>
     /// </summary>
+    /// <param name="value">The value to sanitize; can be null.</param>
+    /// <returns>The sanitized value safe for CSV export.</returns>
     private static string Sanitize(string? value)
     {
         if (string.IsNullOrEmpty(value))
             return string.Empty;
 
-        return value.StartsWith('=') ||
-               value.StartsWith('+') ||
-               value.StartsWith('-') ||
-               value.StartsWith('@')
-            ? $"'{value}"
-            : value;
+        // Check if value starts with dangerous characters that could trigger formula execution
+        bool startsWithDangerousChar = value.StartsWith('=') ||
+                                      value.StartsWith('+') ||
+                                      value.StartsWith('-') ||
+                                      value.StartsWith('@') ||
+                                      value.StartsWith('\t') ||
+                                      value.StartsWith('\r');
+
+        // Replace embedded newlines with spaces to prevent row splitting
+        // Handle all common newline sequences: \r\n (Windows), \n (Unix), \r (old Mac)
+        string sanitized = value
+            .Replace("\r\n", " ")
+            .Replace('\n', ' ')
+            .Replace('\r', ' ');
+
+        // Escape embedded double quotes per RFC 4180
+        sanitized = sanitized.Replace("\"", "\"\"");
+
+        // Apply prefix if value starts with dangerous character
+        return startsWithDangerousChar ? $"'{sanitized}" : sanitized;
     }
 }
