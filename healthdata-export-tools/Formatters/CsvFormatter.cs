@@ -127,7 +127,7 @@ public sealed partial class CsvFormatter : IDataFormatter
     /// <summary>
     /// Formats a collection of <see cref="HealthDataRecord"/> instances as CSV with a header row.
     /// </summary>
-    /// <param name="records">The collection to format; must not be <c>null</c> or empty.</param>
+    /// <param name="records">The collection to format; must not be <c>null</c>.</param>
     /// <returns>CSV representation of the collection.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="records"/> is <c>null</c>.</exception>
     /// <exception cref="ArgumentException">
@@ -172,7 +172,7 @@ public sealed partial class CsvFormatter : IDataFormatter
     /// <summary>
     /// Formats a list of <see cref="SleepData"/> records into CSV with sleep‑specific columns.
     /// </summary>
-    /// <param name="sleepRecords">The sleep records to format; must not be <c>null</c> or empty.</param>
+    /// <param name="sleepRecords">The sleep records to format; must not be <c>null</c>.</param>
     /// <returns>CSV string for the supplied sleep data.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="sleepRecords"/> is <c>null</c>.</exception>
     /// <exception cref="ArgumentException">
@@ -220,7 +220,7 @@ public sealed partial class CsvFormatter : IDataFormatter
     /// <summary>
     /// Formats a list of <see cref="HeartRateData"/> records into CSV with heart‑rate‑specific columns.
     /// </summary>
-    /// <param name="heartRateRecords">The heart‑rate records to format; must not be <c>null</c> or empty.</param>
+    /// <param name="heartRateRecords">The heart‑rate records to format; must not be <c>null</c>.</param>
     /// <returns>CSV string for the supplied heart‑rate data.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="heartRateRecords"/> is <c>null</c>.</exception>
     /// <exception cref="ArgumentException">
@@ -262,7 +262,7 @@ public sealed partial class CsvFormatter : IDataFormatter
     /// <summary>
     /// Formats a list of <see cref="SpO2Data"/> records into CSV with oxygen‑specific columns.
     /// </summary>
-    /// <param name="spo2Records">The SpO2 records to format; must not be <c>null</c> or empty.</param>
+    /// <param name="spo2Records">The SpO2 records to format; must not be <c>null</c>.</param>
     /// <returns>CSV string for the supplied SpO2 data.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="spo2Records"/> is <c>null</c>.</exception>
     /// <exception cref="ArgumentException">
@@ -304,7 +304,7 @@ public sealed partial class CsvFormatter : IDataFormatter
     /// <summary>
     /// Formats a list of <see cref="StepsData"/> records into CSV with activity‑specific columns.
     /// </summary>
-    /// <param name="stepsRecords">The steps records to format; must not be <c>null</c> or empty.</param>
+    /// <param name="stepsRecords">The steps records to format; must not be <c>null</c>.</param>
     /// <returns>CSV string for the supplied steps data.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="stepsRecords"/> is <c>null</c>.</exception>
     /// <exception cref="ArgumentException">

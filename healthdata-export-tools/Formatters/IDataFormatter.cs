@@ -7,7 +7,16 @@
 namespace HealthDataExportTools.Formatters;
 
 /// <summary>
-/// Defines the contract for formatting health data into specific output formats
+/// Defines the contract for formatting health data into specific output formats.
+///
+/// <para>Error Handling Contract:</para>
+/// <list type="bullet">
+/// <item><b>Null Collections:</b> All formatters must throw <see cref="ArgumentNullException"/> when null collections are passed to any method.</item>
+/// <item><b>Empty Collections:</b> Formatters should return empty string (not null) for empty collections in Format*Async methods.</item>
+/// <item><b>Record Limits:</b> All formatters must enforce a maximum record count and throw <see cref="ArgumentException"/> when exceeded.</item>
+/// <item><b>Null Parameters:</b> All public methods must validate their parameters with <see cref="ArgumentNullException.ThrowIfNull"/>.</item>
+/// <item><b>Stream Methods:</b> WriteAsync methods must validate both records and writer parameters.</item>
+/// </list>
 /// </summary>
 public interface IDataFormatter
 {
