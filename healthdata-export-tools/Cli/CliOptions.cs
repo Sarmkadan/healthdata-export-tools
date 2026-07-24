@@ -105,4 +105,14 @@ public sealed class CliOptions
     /// Cache duration in minutes
     /// </summary>
     public int CacheDurationMinutes { get; set; } = 60;
+
+    /// <summary>
+    /// CLI subcommand to run: "export" (default) or "verify".
+    /// </summary>
+    public string Command { get; set; } = "export";
+
+    /// <summary>
+    /// Path to the export manifest ("manifest.json") to check when running the "verify" subcommand.
+    /// </summary>
+    public string? ManifestPath { get; set; }
 }

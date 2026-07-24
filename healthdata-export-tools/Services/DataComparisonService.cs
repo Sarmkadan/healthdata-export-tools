@@ -379,6 +379,45 @@ public sealed class DataComparisonService
         var absStr    = Math.Abs(pct).ToString("F1");
         return $"{metric}: {direction} {absStr}% ({unit})";
     }
+
+    /// <summary>
+    /// Fast pre-check that compares two export manifests' record counts and time ranges
+    /// without reading or parsing the underlying export files. Intended to be run before
+    /// a deep, record-by-record comparison so that identical exports can be skipped cheaply.
+    /// </summary>
+    /// <param name="manifest1">Manifest of the first export. Must not be null.</param>
+    /// <param name="manifest2">Manifest of the second export. Must not be null.</param>
+    /// <returns>
+    /// True when both manifests report the same total record count, the same per-data-type
+    /// record counts, and the same covered time range, meaning a deep comparison is unlikely
+    /// to find differences. False otherwise.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="manifest1"/> or <paramref name="manifest2"/> is null.</exception>
+    public bool AreManifestsLikelyEquivalent(
+        Exporters.ExportManifest manifest1,
+        Exporters.ExportManifest manifest2)
+    {
+        ArgumentNullException.ThrowIfNull(manifest1);
+        ArgumentNullException.ThrowIfNull(manifest2);
+
+        if (manifest1.TotalRecordCount != manifest2.TotalRecordCount)
+            return false;
+
+        if (manifest1.TimeRangeStartUtc != manifest2.TimeRangeStartUtc ||
+            manifest1.TimeRangeEndUtc != manifest2.TimeRangeEndUtc)
+            return false;
+
+        if (manifest1.RecordCountsByDataType.Count != manifest2.RecordCountsByDataType.Count)
+            return false;
+
+        foreach (var (dataType, count) in manifest1.RecordCountsByDataType)
+        {
+            if (!manifest2.RecordCountsByDataType.TryGetValue(dataType, out var otherCount) || otherCount != count)
+                return false;
+        }
+
+        return true;
+    }
 }
 
 /// <summary>

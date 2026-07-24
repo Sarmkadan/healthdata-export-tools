@@ -5,9 +5,11 @@
 // =============================================================================
 
 using Microsoft.Extensions.DependencyInjection;
+using HealthDataExportTools.Cli;
 using HealthDataExportTools.Configuration;
 using HealthDataExportTools.Domain.Enums;
 using HealthDataExportTools.Domain.Models;
+using HealthDataExportTools.Exporters;
 using HealthDataExportTools.Services;
 
 namespace HealthDataExportTools;
@@ -16,6 +18,12 @@ class Program
 {
     static async Task Main(string[] args)
     {
+        if (args.Length > 0 && string.Equals(args[0], "verify", StringComparison.OrdinalIgnoreCase))
+        {
+            await RunVerifyAsync(args);
+            return;
+        }
+
         try
         {
             Console.WriteLine("╔════════════════════════════════════════════════════════════╗");
@@ -112,27 +120,38 @@ class Program
             // Export data
             Console.WriteLine("💾 Exporting data...");
             Directory.CreateDirectory(options.OutputPath);
+            var exportedFiles = new List<string>();
 
             switch (options.ExportFormat)
             {
                 case ExportFormat.Json:
-                    await exporter.ExportToJsonAsync(sampleData,
-                        Path.Combine(options.OutputPath, "health_data.json"));
+                    var jsonPath = Path.Combine(options.OutputPath, "health_data.json");
+                    await exporter.ExportToJsonAsync(sampleData, jsonPath);
+                    exportedFiles.Add(jsonPath);
                     Console.WriteLine("  ✓ Exported to JSON");
                     break;
 
                 case ExportFormat.Csv:
                     if (sampleData.SleepRecords.Any())
-                        await exporter.ExportSleepToCsvAsync(sampleData.SleepRecords,
-                            Path.Combine(options.OutputPath, "sleep.csv"));
+                    {
+                        var sleepPath = Path.Combine(options.OutputPath, "sleep.csv");
+                        await exporter.ExportSleepToCsvAsync(sampleData.SleepRecords, sleepPath);
+                        exportedFiles.Add(sleepPath);
+                    }
 
                     if (sampleData.HeartRateRecords.Any())
-                        await exporter.ExportHeartRateToCsvAsync(sampleData.HeartRateRecords,
-                            Path.Combine(options.OutputPath, "heart_rate.csv"));
+                    {
+                        var heartRatePath = Path.Combine(options.OutputPath, "heart_rate.csv");
+                        await exporter.ExportHeartRateToCsvAsync(sampleData.HeartRateRecords, heartRatePath);
+                        exportedFiles.Add(heartRatePath);
+                    }
 
                     if (sampleData.StepsRecords.Any())
-                        await exporter.ExportStepsToCsvAsync(sampleData.StepsRecords,
-                            Path.Combine(options.OutputPath, "steps.csv"));
+                    {
+                        var stepsPath = Path.Combine(options.OutputPath, "steps.csv");
+                        await exporter.ExportStepsToCsvAsync(sampleData.StepsRecords, stepsPath);
+                        exportedFiles.Add(stepsPath);
+                    }
 
                     Console.WriteLine("  ✓ Exported to CSV");
                     break;
@@ -141,7 +160,9 @@ class Program
                     var chartExporter = (ChartExportService?)serviceProvider.GetService(typeof(ChartExportService));
                     if (chartExporter is not null)
                     {
-                        await chartExporter.ExportToHtmlChartsAsync(sampleData, Path.Combine(options.OutputPath, "charts.html"));
+                        var chartsPath = Path.Combine(options.OutputPath, "charts.html");
+                        await chartExporter.ExportToHtmlChartsAsync(sampleData, chartsPath);
+                        exportedFiles.Add(chartsPath);
                         Console.WriteLine("  ✓ Exported to HTML Charts");
                     }
                     break;
@@ -149,13 +170,30 @@ class Program
                 case ExportFormat.All:
                     await exporter.ExportCompleteAsync(sampleData, options.OutputPath, ExportFormat.Json);
                     await exporter.ExportCompleteAsync(sampleData, options.OutputPath, ExportFormat.Csv);
+                    exportedFiles.Add(Path.Combine(options.OutputPath, "health_data.json"));
+                    if (sampleData.SleepRecords.Any())
+                        exportedFiles.Add(Path.Combine(options.OutputPath, "sleep.csv"));
+                    if (sampleData.HeartRateRecords.Any())
+                        exportedFiles.Add(Path.Combine(options.OutputPath, "heart_rate.csv"));
+                    if (sampleData.StepsRecords.Any())
+                        exportedFiles.Add(Path.Combine(options.OutputPath, "steps.csv"));
+
                     var allChartExporter = (ChartExportService?)serviceProvider.GetService(typeof(ChartExportService));
                     if (allChartExporter is not null)
                     {
-                        await allChartExporter.ExportToHtmlChartsAsync(sampleData, Path.Combine(options.OutputPath, "charts.html"));
+                        var chartsPath = Path.Combine(options.OutputPath, "charts.html");
+                        await allChartExporter.ExportToHtmlChartsAsync(sampleData, chartsPath);
+                        exportedFiles.Add(chartsPath);
                     }
                     Console.WriteLine("  ✓ Exported to all formats");
                     break;
+            }
+
+            if (exportedFiles.Count > 0)
+            {
+                var manifestWriter = new ExportManifestWriter();
+                var manifest = await manifestWriter.WriteAsync(sampleData, options.OutputPath, exportedFiles);
+                Console.WriteLine($"  ✓ Wrote manifest.json ({manifest.Files.Count} file(s), {manifest.TotalRecordCount} record(s))");
             }
 
             Console.WriteLine();
@@ -167,6 +205,59 @@ class Program
             Console.WriteLine($"❌ Error: {ex.Message}");
             if (ex.InnerException is not null)
                 Console.WriteLine($"   Details: {ex.InnerException.Message}");
+            Environment.Exit(1);
+        }
+    }
+
+    /// <summary>
+    /// Handle the "verify" subcommand: recompute checksums/record counts for an export
+    /// directory and compare them against a previously written manifest.json.
+    /// </summary>
+    /// <param name="args">Raw command-line arguments, starting with "verify".</param>
+    static async Task RunVerifyAsync(string[] args)
+    {
+        var parser = new CliArgumentParser();
+        var parseResult = parser.Parse(args);
+
+        if (!parseResult.Success || parseResult.Options is null)
+        {
+            Console.WriteLine("❌ Invalid arguments for 'verify':");
+            foreach (var error in parseResult.Errors)
+                Console.WriteLine($"  • {error}");
+            Console.WriteLine();
+            Console.WriteLine(parseResult.HelpText);
+            Environment.Exit(1);
+            return;
+        }
+
+        var manifestPath = parseResult.Options.ManifestPath!;
+
+        try
+        {
+            var writer = new ExportManifestWriter();
+            var result = await writer.VerifyAsync(manifestPath);
+
+            Console.WriteLine($"Manifest: {Path.GetFullPath(manifestPath)}");
+            Console.WriteLine($"Exported at (UTC): {result.Manifest.ExportedAtUtc:O}");
+            Console.WriteLine($"Tool version: {result.Manifest.ToolVersion}");
+            Console.WriteLine($"Total records recorded: {result.Manifest.TotalRecordCount}");
+            Console.WriteLine();
+
+            if (result.IsValid)
+            {
+                Console.WriteLine($"✅ Verified {result.Manifest.Files.Count} file(s) - all checksums and record counts match.");
+            }
+            else
+            {
+                Console.WriteLine($"❌ Verification failed with {result.Mismatches.Count} issue(s):");
+                foreach (var mismatch in result.Mismatches)
+                    Console.WriteLine($"  • {mismatch.FileName}: {mismatch.Description}");
+                Environment.Exit(1);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Error verifying manifest: {ex.Message}");
             Environment.Exit(1);
         }
     }
