@@ -8,6 +8,7 @@ using System.Text;
 using System.Text.Json;
 using HealthDataExportTools.Domain.Models;
 using HealthDataExportTools.Exceptions;
+using HealthDataExportTools.Utilities;
 
 namespace HealthDataExportTools.Services;
 
@@ -32,6 +33,7 @@ public sealed class JsonLinesExporter : IDataExporter
     /// <param name="collection">The health data to export.</param>
     /// <param name="outputPath">Path to the output JSON Lines file.</param>
     /// <param name="cancellationToken">Cancellation token for the operation.</param>
+    /// <exception cref="PathTraversalException">Thrown when the output path contains traversal sequences.</exception>
     public async Task ExportToJsonLinesAsync(
         HealthDataCollection collection,
         string outputPath,
@@ -39,6 +41,9 @@ public sealed class JsonLinesExporter : IDataExporter
     {
         ArgumentNullException.ThrowIfNull(collection);
         ArgumentException.ThrowIfNullOrWhiteSpace(outputPath);
+
+        // Validate output file path to prevent path traversal
+        outputPath = PathTraversalValidator.ValidateFilePath(outputPath);
 
         try
         {
@@ -104,6 +109,7 @@ public sealed class JsonLinesExporter : IDataExporter
     }
 
     /// <inheritdoc />
+    /// <exception cref="PathTraversalException">Thrown when the destination path contains traversal sequences.</exception>
     public async Task ExportAsync(
         HealthDataCollection collection,
         string destination,
@@ -111,6 +117,9 @@ public sealed class JsonLinesExporter : IDataExporter
     {
         ArgumentNullException.ThrowIfNull(collection);
         ArgumentException.ThrowIfNullOrWhiteSpace(destination);
+
+        // Validate destination path to prevent path traversal
+        destination = PathTraversalValidator.ValidateFilePath(destination);
 
         await ExportToJsonLinesAsync(collection, destination, cancellationToken).ConfigureAwait(false);
     }

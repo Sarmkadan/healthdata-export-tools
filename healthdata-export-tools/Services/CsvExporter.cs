@@ -12,6 +12,7 @@ using System.Text;
 using CsvHelper;
 using HealthDataExportTools.Domain.Models;
 using HealthDataExportTools.Exceptions;
+using HealthDataExportTools.Utilities;
 
 namespace HealthDataExportTools.Services;
 
@@ -70,6 +71,9 @@ public sealed partial class CsvExporter : IHealthDataExporter, IDataExporter
         ArgumentNullException.ThrowIfNull(collection);
         ArgumentException.ThrowIfNullOrWhiteSpace(outputDirectory);
 
+        // Validate output directory path to prevent path traversal
+        outputDirectory = PathTraversalValidator.ValidateDirectoryPath(outputDirectory);
+
         options ??= new CsvExportOptions();
 
         if (!Directory.Exists(outputDirectory))
@@ -116,6 +120,9 @@ public sealed partial class CsvExporter : IHealthDataExporter, IDataExporter
     {
         ArgumentNullException.ThrowIfNull(collection);
         ArgumentException.ThrowIfNullOrWhiteSpace(destination);
+
+        // Validate destination path to prevent path traversal
+        destination = PathTraversalValidator.ValidatePath(destination);
 
         // For backward compatibility, treat destination as a directory when implementing IDataExporter
         // This maintains existing behavior while providing the unified interface
