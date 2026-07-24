@@ -205,4 +205,79 @@ public sealed class CsvExporterTests : IDisposable
         var spo2Path = Path.Combine(_tempDir, "spo2.csv");
         Assert.False(File.Exists(spo2Path));
     }
+
+    [Fact]
+    public async Task ExportAsync_WithExistingFile_OverwritesSilently()
+    {
+        // Arrange
+        var collection = new HealthDataCollection
+        {
+            SleepRecords = [new SleepData { RecordDate = DateTime.UtcNow, DurationMinutes = 100 }]
+        };
+        var filePath = Path.Combine(_tempDir, "existing.csv");
+
+        // Create initial file with content
+        await File.WriteAllTextAsync(filePath, "Initial content");
+        var initialContent = await File.ReadAllTextAsync(filePath);
+        Assert.Equal("Initial content", initialContent);
+
+        // Act - should overwrite without throwing
+        await _exporter.ExportAsync(collection, filePath);
+
+        // Assert - file should exist and contain new content (not initial content)
+        Assert.True(File.Exists(filePath));
+        var finalContent = await File.ReadAllTextAsync(filePath);
+        Assert.NotEqual("Initial content", finalContent);
+        Assert.Contains("Date,Duration", finalContent); // Should contain CSV header
+    }
+
+    [Fact]
+    public async Task ExportAsync_WithNonExistentParentDirectory_CreatesDirectoryAndFile()
+    {
+        // Arrange
+        var collection = new HealthDataCollection
+        {
+            SleepRecords = [new SleepData { RecordDate = DateTime.UtcNow, DurationMinutes = 100 }]
+        };
+        var nonExistentDir = Path.Combine(_tempDir, "non_existent_dir");
+        var filePath = Path.Combine(nonExistentDir, "test.csv");
+
+        // Act - should create directory and file
+        await _exporter.ExportAsync(collection, filePath);
+
+        // Assert
+        Assert.True(File.Exists(filePath));
+        var content = await File.ReadAllTextAsync(filePath);
+        Assert.Contains("Date,Duration", content); // Should contain CSV header
+    }
+
+    [Fact]
+    public async Task ExportAsync_WithNullDestination_ThrowsArgumentNullException()
+    {
+        // Arrange
+        var collection = new HealthDataCollection();
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentNullException>(() => _exporter.ExportAsync(collection, null!));
+    }
+
+    [Fact]
+    public async Task ExportAsync_WithEmptyDestination_ThrowsArgumentException()
+    {
+        // Arrange
+        var collection = new HealthDataCollection();
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() => _exporter.ExportAsync(collection, ""));
+    }
+
+    [Fact]
+    public async Task ExportAsync_WithWhitespaceDestination_ThrowsArgumentException()
+    {
+        // Arrange
+        var collection = new HealthDataCollection();
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() => _exporter.ExportAsync(collection, "   "));
+    }
 }

@@ -221,4 +221,99 @@ public sealed class JsonLinesExporterTests
             }
         }
     }
+
+    [Fact]
+    public async Task ExportAsync_WithExistingFile_OverwritesSilently()
+    {
+        // Arrange
+        var collection = new HealthDataCollection
+        {
+            SleepRecords = [new SleepData { RecordDate = DateTime.UtcNow, DurationMinutes = 100 }]
+        };
+        var tempFile = Path.GetTempFileName();
+
+        try
+        {
+            // Create initial file with content
+            await File.WriteAllTextAsync(tempFile, "Initial content");
+            var initialContent = await File.ReadAllTextAsync(tempFile);
+            Assert.Equal("Initial content", initialContent);
+
+            // Act - should overwrite without throwing
+            await _exporter.ExportAsync(collection, tempFile);
+
+            // Assert - file should exist and contain new content (not initial content)
+            Assert.True(File.Exists(tempFile));
+            var finalContent = await File.ReadAllTextAsync(tempFile);
+            Assert.NotEqual("Initial content", finalContent);
+            Assert.NotEmpty(finalContent); // Should contain JSON content
+        }
+        finally
+        {
+            if (File.Exists(tempFile))
+            {
+                File.Delete(tempFile);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task ExportAsync_WithNonExistentParentDirectory_CreatesDirectoryAndFile()
+    {
+        // Arrange
+        var collection = new HealthDataCollection
+        {
+            SleepRecords = [new SleepData { RecordDate = DateTime.UtcNow, DurationMinutes = 100 }]
+        };
+        var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        var tempFile = Path.Combine(tempDir, "test.jsonl");
+
+        try
+        {
+            // Act - should create directory and file
+            await _exporter.ExportAsync(collection, tempFile);
+
+            // Assert
+            Assert.True(File.Exists(tempFile));
+            var content = await File.ReadAllTextAsync(tempFile);
+            Assert.NotEmpty(content); // Should contain JSON content
+        }
+        finally
+        {
+            if (Directory.Exists(tempDir))
+            {
+                Directory.Delete(tempDir, true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task ExportAsync_WithNullDestination_ThrowsArgumentNullException()
+    {
+        // Arrange
+        var collection = new HealthDataCollection();
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentNullException>(() => _exporter.ExportAsync(collection, null!));
+    }
+
+    [Fact]
+    public async Task ExportAsync_WithEmptyDestination_ThrowsArgumentException()
+    {
+        // Arrange
+        var collection = new HealthDataCollection();
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() => _exporter.ExportAsync(collection, ""));
+    }
+
+    [Fact]
+    public async Task ExportAsync_WithWhitespaceDestination_ThrowsArgumentException()
+    {
+        // Arrange
+        var collection = new HealthDataCollection();
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() => _exporter.ExportAsync(collection, "   "));
+    }
 }

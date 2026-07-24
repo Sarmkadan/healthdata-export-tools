@@ -1,4 +1,5 @@
 #nullable enable
+
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -44,6 +45,14 @@ public sealed class JsonLinesExporter : IDataExporter
 
         // Validate output file path to prevent path traversal
         outputPath = PathTraversalValidator.ValidateFilePath(outputPath);
+
+        // Create parent directory if it doesn't exist
+        // File.Create() will overwrite existing files, which is the desired behavior
+        var parentDirectory = Path.GetDirectoryName(outputPath);
+        if (!string.IsNullOrEmpty(parentDirectory) && !Directory.Exists(parentDirectory))
+        {
+            Directory.CreateDirectory(parentDirectory);
+        }
 
         try
         {

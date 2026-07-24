@@ -42,11 +42,11 @@ public sealed partial class CsvExporter : IHealthDataExporter, IDataExporter
 
         // Check if value starts with dangerous characters that could trigger formula execution
         bool startsWithDangerousChar = value.StartsWith('=') ||
-                                      value.StartsWith('+') ||
-                                      value.StartsWith('-') ||
-                                      value.StartsWith('@') ||
-                                      value.StartsWith('\t') ||
-                                      value.StartsWith('\r');
+        value.StartsWith('+') ||
+        value.StartsWith('-') ||
+        value.StartsWith('@') ||
+        value.StartsWith('\t') ||
+        value.StartsWith('\r');
 
         // Replace embedded newlines with spaces to prevent row splitting
         // Handle all common newline sequences: \r\n (Windows), \n (Unix), \r (old Mac)
@@ -113,6 +113,7 @@ public sealed partial class CsvExporter : IHealthDataExporter, IDataExporter
     }
 
     /// <inheritdoc />
+    /// <exception cref="PathTraversalException">Thrown when the destination path contains traversal sequences.</exception>
     public async Task ExportAsync(
         HealthDataCollection collection,
         string destination,
@@ -124,20 +125,12 @@ public sealed partial class CsvExporter : IHealthDataExporter, IDataExporter
         // Validate destination path to prevent path traversal
         destination = PathTraversalValidator.ValidatePath(destination);
 
-        // For backward compatibility, treat destination as a directory when implementing IDataExporter
-        // This maintains existing behavior while providing the unified interface
-        if (File.Exists(destination))
+        // Create parent directory if it doesn't exist
+        // File.Create() will overwrite existing files, which is the desired behavior
+        var parentDirectory = Path.GetDirectoryName(destination);
+        if (!string.IsNullOrEmpty(parentDirectory) && !Directory.Exists(parentDirectory))
         {
-            throw new ExportException(
-                "Destination path already exists and is a file",
-                destination,
-                "CSV",
-                new IOException("File already exists"));
-        }
-
-        if (!Directory.Exists(destination))
-        {
-            Directory.CreateDirectory(destination);
+            Directory.CreateDirectory(parentDirectory);
         }
 
         var options = new CsvExportOptions();
