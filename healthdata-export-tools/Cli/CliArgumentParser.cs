@@ -4,6 +4,8 @@
 // CTO & Software Architect
 // =============================================================================
 
+using HealthDataExportTools.Utilities;
+
 namespace HealthDataExportTools.Cli;
 
 /// <summary>
@@ -182,14 +184,41 @@ public sealed class CliArgumentParser
             {
                 _validationErrors.Add($"Manifest file does not exist: {_options.ManifestPath}");
             }
+            else
+            {
+                // Validate manifest path to prevent path traversal
+                try
+                {
+                    PathTraversalValidator.ValidateFilePath(_options.ManifestPath);
+                }
+                catch (PathTraversalException ex)
+                {
+                    _validationErrors.Add($"Invalid manifest path: {ex.Message}");
+                }
+            }
 
             return;
         }
 
-        // Validate input path exists
-        if (!string.IsNullOrEmpty(_options.InputPath) && !Directory.Exists(_options.InputPath))
+        // Validate input path exists and is safe from path traversal
+        if (!string.IsNullOrEmpty(_options.InputPath))
         {
-            _validationErrors.Add($"Input path does not exist: {_options.InputPath}");
+            if (!Directory.Exists(_options.InputPath))
+            {
+                _validationErrors.Add($"Input path does not exist: {_options.InputPath}");
+            }
+            else
+            {
+                // Validate input path to prevent path traversal
+                try
+                {
+                    PathTraversalValidator.ValidateDirectoryPath(_options.InputPath);
+                }
+                catch (PathTraversalException ex)
+                {
+                    _validationErrors.Add($"Invalid input path: {ex.Message}");
+                }
+            }
         }
 
         // Validate date format if provided (using invariant culture for consistent parsing)
@@ -240,6 +269,32 @@ public sealed class CliArgumentParser
         if (_options.CacheDurationMinutes < 0)
         {
             _validationErrors.Add("Cache duration cannot be negative");
+        }
+
+        // Validate output path to prevent path traversal
+        if (!string.IsNullOrEmpty(_options.OutputPath))
+        {
+            try
+            {
+                PathTraversalValidator.ValidateDirectoryPath(_options.OutputPath);
+            }
+            catch (PathTraversalException ex)
+            {
+                _validationErrors.Add($"Invalid output path: {ex.Message}");
+            }
+        }
+
+        // Validate database path to prevent path traversal
+        if (!string.IsNullOrEmpty(_options.DatabasePath))
+        {
+            try
+            {
+                PathTraversalValidator.ValidateFilePath(_options.DatabasePath);
+            }
+            catch (PathTraversalException ex)
+            {
+                _validationErrors.Add($"Invalid database path: {ex.Message}");
+            }
         }
     }
 
