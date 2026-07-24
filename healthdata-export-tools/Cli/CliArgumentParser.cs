@@ -143,6 +143,11 @@ public sealed class CliArgumentParser
                 string shortFlag = arg[1].ToString();
                 ProcessShortFlag(shortFlag, args, ref i);
             }
+            else if (i == 0 && string.Equals(arg, "verify", StringComparison.OrdinalIgnoreCase))
+            {
+                // "verify" as the first positional token selects the manifest verification subcommand
+                _options.Command = "verify";
+            }
             else
             {
                 // Positional argument - treat as input path
@@ -166,6 +171,21 @@ public sealed class CliArgumentParser
     /// </summary>
     private void ValidateAtParseTime()
     {
+        // The "verify" subcommand checks a manifest file instead of processing an input directory
+        if (string.Equals(_options.Command, "verify", StringComparison.OrdinalIgnoreCase))
+        {
+            if (string.IsNullOrEmpty(_options.ManifestPath))
+            {
+                _validationErrors.Add("The 'verify' command requires --manifest <path>");
+            }
+            else if (!File.Exists(_options.ManifestPath))
+            {
+                _validationErrors.Add($"Manifest file does not exist: {_options.ManifestPath}");
+            }
+
+            return;
+        }
+
         // Validate input path exists
         if (!string.IsNullOrEmpty(_options.InputPath) && !Directory.Exists(_options.InputPath))
         {
@@ -279,6 +299,11 @@ public sealed class CliArgumentParser
             Health Data Export Tools v1.0.0
 
             Usage: healthdata-export-tools [OPTIONS]
+                   healthdata-export-tools verify --manifest <path>
+
+            Commands:
+              verify --manifest <path>    Recompute checksums/record counts for an export and
+                                           compare them against a previously written manifest.json
 
             Options:
               --input <path>              Input directory containing health exports (default: ./exports)
@@ -304,6 +329,7 @@ public sealed class CliArgumentParser
               healthdata-export-tools --input ./exports --format json --analyze
               healthdata-export-tools --input ./exports --device amazfit --start-date 2025-01-01
               healthdata-export-tools --input ./exports --format csv --compress --validate
+              healthdata-export-tools verify --manifest ./output/manifest.json
             """;
     }
 
@@ -330,6 +356,7 @@ public sealed class CliArgumentParser
             { "cache", v => _options.EnableCache = true },
             { "no-cache", v => _options.EnableCache = false },
             { "cache-duration", v => _options.CacheDurationMinutes = int.Parse(v, CultureInfo.InvariantCulture) },
+            { "manifest", v => _options.ManifestPath = v },
         };
     }
 
@@ -338,7 +365,7 @@ public sealed class CliArgumentParser
         var flagsRequiringValue = new[]
         {
             "input", "output", "database", "format", "device",
-            "data-type", "start-date", "end-date", "max-parallelism", "cache-duration"
+            "data-type", "start-date", "end-date", "max-parallelism", "cache-duration", "manifest"
         };
         return flagsRequiringValue.Contains(key);
     }
