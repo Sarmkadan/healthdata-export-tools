@@ -44,6 +44,29 @@ public sealed class CommandHandler
     /// </summary>
     public async Task<int> ExecuteExportAsync(CliOptions options)
     {
+        // Dispatch dictionary for command handlers
+        var commandHandlers = new Dictionary<string, Func<CliOptions, Task<int>>>
+        {
+            { "export", HandleExportCommandAsync }
+        };
+
+        // Try to get the handler for the specified command, default to export if not found
+        if (commandHandlers.TryGetValue(options.Command, out var handler))
+        {
+            return await handler(options);
+        }
+        else
+        {
+            // Fallback to export command to preserve existing behavior
+            return await HandleExportCommandAsync(options);
+        }
+    }
+
+    /// <summary>
+    /// Handles the export command
+    /// </summary>
+    private async Task<int> HandleExportCommandAsync(CliOptions options)
+    {
         try
         {
             _logger.LogInformation("Starting health data export with format: {Format}", options.Format);
