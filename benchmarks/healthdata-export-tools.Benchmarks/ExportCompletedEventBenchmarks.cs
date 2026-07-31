@@ -67,7 +67,7 @@ public class ExportCompletedEventBenchmarks
     {
         for (int i = 0; i < iterations; i++)
         {
-            _exportCompletedEvent.HasWarnings;
+            bool result = _exportCompletedEvent.HasWarnings;
         }
     }
 }
