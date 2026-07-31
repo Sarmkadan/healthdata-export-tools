@@ -4,6 +4,19 @@
 // CTO & Software Architect
 // =============================================================================
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using HealthDataExportTools.Configuration;
+
 namespace HealthDataExportTools.Integration;
 
 /// <summary>
@@ -15,13 +28,21 @@ public sealed class WebhookService
     private readonly ILogger<WebhookService> _logger;
     private readonly List<Webhook> _registeredWebhooks;
     private readonly ReaderWriterLockSlim _webhooksLock;
+    private readonly WebhookOptions _options;
 
-    public WebhookService(HttpClient httpClient, ILogger<WebhookService> logger)
+    public WebhookService(HttpClient httpClient, ILogger<WebhookService> logger, IOptions<WebhookOptions>? options = null)
     {
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _registeredWebhooks = new List<Webhook>();
         _webhooksLock = new ReaderWriterLockSlim();
+
+        // Load configuration options (fallback to defaults if not provided)
+        _options = options?.Value ?? new WebhookOptions();
+
+        // Apply timeout setting from options to the HttpClient
+        // This does not change existing behaviour if the caller already configured the client.
+        _httpClient.Timeout = _options.Timeout;
     }
 
     /// <summary>
@@ -119,40 +140,57 @@ public sealed class WebhookService
     /// </summary>
     private async Task InvokeWebhookAsync(Webhook webhook, string eventType, object payload)
     {
-        try
+        int attempt = 0;
+        while (true)
         {
-            var request = new WebhookRequest
+            try
             {
-                EventType = eventType,
-                Timestamp = DateTime.UtcNow,
-                Payload = payload,
-                RetryCount = 0
-            };
+                var request = new WebhookRequest
+                {
+                    EventType = eventType,
+                    Timestamp = DateTime.UtcNow,
+                    Payload = payload,
+                    RetryCount = attempt
+                };
 
-            var json = JsonSerializer.Serialize(request);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
+                var json = JsonSerializer.Serialize(request);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            _logger.LogDebug("Invoking webhook: {Url} for event: {EventType}", webhook.Url, eventType);
+                _logger.LogDebug("Invoking webhook: {Url} for event: {EventType}", webhook.Url, eventType);
 
-            var response = await _httpClient.PostAsync(webhook.Url, content).ConfigureAwait(false);
+                var response = await _httpClient.PostAsync(webhook.Url, content).ConfigureAwait(false);
 
-            if (response.IsSuccessStatusCode)
-            {
-                webhook.LastInvokedAt = DateTime.UtcNow;
-                webhook.SuccessCount++;
-                _logger.LogDebug("Webhook invoked successfully: {Url}", webhook.Url);
+                if (response.IsSuccessStatusCode)
+                {
+                    webhook.LastInvokedAt = DateTime.UtcNow;
+                    webhook.SuccessCount++;
+                    _logger.LogDebug("Webhook invoked successfully: {Url}", webhook.Url);
+                    return;
+                }
+                else
+                {
+                    webhook.FailureCount++;
+                    _logger.LogWarning("Webhook invocation failed with status {Status}: {Url}",
+                        response.StatusCode, webhook.Url);
+                }
             }
-            else
+            catch (Exception ex)
             {
                 webhook.FailureCount++;
-                _logger.LogWarning("Webhook invocation failed with status {Status}: {Url}",
-                    response.StatusCode, webhook.Url);
+                _logger.LogError(ex, "Error invoking webhook: {Url}", webhook.Url);
             }
-        }
-        catch (Exception ex)
-        {
-            webhook.FailureCount++;
-            _logger.LogError(ex, "Error invoking webhook: {Url}", webhook.Url);
+
+            attempt++;
+
+            if (attempt > _options.MaxRetryAttempts)
+            {
+                _logger.LogError("Maximum retry attempts ({MaxAttempts}) reached for webhook {Url}", _options.MaxRetryAttempts, webhook.Url);
+                return;
+            }
+
+            // Simple exponential back‑off based on attempt count
+            var delay = TimeSpan.FromSeconds(Math.Pow(2, attempt));
+            await Task.Delay(delay).ConfigureAwait(false);
         }
     }
 
