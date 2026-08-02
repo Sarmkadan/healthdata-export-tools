@@ -1,3 +1,6 @@
+/// <summary>
+/// Contains tests for the InMemoryCacheProvider class.
+/// </summary>
 using HealthDataExportTools.Cache;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
@@ -6,8 +9,14 @@ using Xunit;
 
 namespace HealthDataExportTools.Tests.Cache;
 
+/// <summary>
+/// Tests for the InMemoryCacheProvider class.
+/// </summary>
 public class InMemoryCacheProviderTests
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="InMemoryCacheProviderTests"/> class.
+    /// </summary>
     private readonly InMemoryCacheProvider _sut;
     private readonly ILogger<InMemoryCacheProvider> _logger;
 
@@ -17,6 +26,10 @@ public class InMemoryCacheProviderTests
         _sut = new InMemoryCacheProvider(_logger);
     }
 
+    /// <summary>
+    /// Tests that setting and getting a value from the cache returns the stored value.
+    /// </summary>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     [Fact]
     public async Task SetAndGet_ShouldReturnStoredValue()
     {
@@ -32,6 +45,10 @@ public class InMemoryCacheProviderTests
         result.Should().Be(value);
     }
 
+    /// <summary>
+    /// Tests that a value expires from the cache after the specified time.
+    /// </summary>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     [Fact]
     public async Task Expiry_ShouldReturnNullAfterExpiration()
     {
@@ -50,6 +67,10 @@ public class InMemoryCacheProviderTests
         (await _sut.ExistsAsync(key)).Should().BeFalse();
     }
 
+    /// <summary>
+    /// Tests that overwriting a value in the cache replaces the existing value.
+    /// </summary>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     [Fact]
     public async Task Overwrite_ShouldReplaceExistingValue()
     {
@@ -67,6 +88,10 @@ public class InMemoryCacheProviderTests
         result.Should().Be(value2);
     }
 
+    /// <summary>
+    /// Tests that removing a missing key from the cache does not throw an exception.
+    /// </summary>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     [Fact]
     public async Task RemoveMissingKey_ShouldNotThrow()
     {
@@ -80,6 +105,9 @@ public class InMemoryCacheProviderTests
         await act.Should().NotThrowAsync();
     }
 
+    /// <summary>
+    /// Performs a smoke test for concurrent access to the cache.
+    /// </summary>
     [Fact]
     public void ConcurrentAccess_SmokeTest()
     {
