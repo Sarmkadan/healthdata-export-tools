@@ -321,3 +321,36 @@ foreach (var rule in validationRules)
     Console.WriteLine($"Validation rule: {rule}");
 }
 ```
+
+## EventBusTests
+
+The `EventBusTests` class provides comprehensive unit tests for the `EventBus`, ensuring reliable event subscription, publishing (both synchronous and asynchronous), and exception handling. It validates that subscribers are correctly invoked, unsubscribed, and that handler exceptions do not interrupt the event propagation process.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Tests;
+using System.Threading.Tasks;
+
+// The EventBusTests instance is used to run validation tests on the EventBus.
+var tests = new EventBusTests();
+
+// Example 1: Validate synchronous publishing
+tests.Publish_Should_Invoke_Subscriber();
+
+// Example 2: Validate multi-subscriber publishing
+tests.Publish_Should_Invoke_Multiple_Subscribers();
+
+// Example 3: Validate unsubscription
+tests.Unsubscribe_Should_Remove_Subscriber();
+
+// Example 4: Validate handler exception isolation in sync publishing
+tests.Publish_Should_Not_Propagate_Handler_Exception();
+
+// Example 5: Validate async publishing
+await tests.PublishAsync_Should_Invoke_Sync_And_Async_Handlers();
+
+// Example 6: Validate handler exception isolation in async publishing
+await tests.PublishAsync_Should_Not_Propagate_Handler_Exception();
+```
+
