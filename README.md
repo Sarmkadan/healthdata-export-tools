@@ -1,5 +1,35 @@
 // existing content ...
 
+## JsonLinesExporterTests
+
+The `JsonLinesExporterTests` class provides unit testing for the `JsonLinesExporter` service, focusing on verifying JSON Lines export behavior across various data scenarios. It ensures that collections are correctly serialized to files and that the exporter handles empty data, special characters, and file system interactions reliably.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Tests;
+using System.Threading.Tasks;
+
+// The JsonLinesExporterTests uses a parameterless constructor 
+// in the test project that handles dependency setup (mocking ILogger).
+var tests = new JsonLinesExporterTests();
+
+// Example 1: Test exporting an empty collection
+await tests.ExportToJsonLinesAsync_WithEmptyCollection_CreatesEmptyFile();
+
+// Example 2: Test exporting sleep records
+await tests.ExportToJsonLinesAsync_WithSleepRecords_ExportsCorrectFormat();
+
+// Example 3: Test exporting multiple record types
+await tests.ExportToJsonLinesAsync_WithMultipleRecordTypes_ExportsAllRecords();
+
+// Example 4: Test handling of special characters
+await tests.ExportToJsonLinesAsync_WithSpecialCharacters_HandlesEscaping();
+
+// Example 5: Test exporting to a non-existent directory
+await tests.ExportToJsonLinesAsync_WithNonExistentDirectory_CreatesFile();
+```
+
 ## CsvFormatter
 
 The `CsvFormatter` class provides functionality for formatting health data records into CSV (Comma-Separated Values) format. It implements the `IDataFormatter` interface and supports formatting various types of health data including general health records, sleep data, heart rate data, SpO2 data, and steps data.
