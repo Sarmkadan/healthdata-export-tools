@@ -38,14 +38,14 @@ public class NotificationServiceBenchmarks
     }
 
     [Benchmark]
-    public async Task SendNotifications_Async([Params(10, 100, 1000)] int messageCount)
+    public Task SendNotifications_Async([Params(10, 100, 1000)] int messageCount)
     {
         var messages = new List<NotificationMessage>(_messages);
         for (int i = 0; i < messageCount; i++)
         {
             messages.Add(new NotificationMessage { Message = $"Test message {i + 1}" });
         }
-        await _notificationService.SendNotificationsAsync(messages);
+        return _notificationService.SendNotificationsAsync(messages);
     }
 }
 ```
