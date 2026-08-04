@@ -354,3 +354,31 @@ await tests.PublishAsync_Should_Invoke_Sync_And_Async_Handlers();
 await tests.PublishAsync_Should_Not_Propagate_Handler_Exception();
 ```
 
+## InMemoryCacheProviderTests
+
+The `InMemoryCacheProviderTests` class contains integration‑style tests for the `InMemoryCacheProvider` implementation. It verifies basic cache operations such as setting and retrieving values, expiration handling, overwriting existing entries, safe removal of missing keys, and that the provider can be accessed concurrently without throwing.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Tests.Cache;
+using System.Threading.Tasks;
+
+// Create the test class (it sets up an InMemoryCacheProvider internally)
+var cacheTests = new InMemoryCacheProviderTests();
+
+// Example 1: Store a value and retrieve it
+await cacheTests.SetAndGet_ShouldReturnStoredValue();
+
+// Example 2: Verify that a value expires after its TTL
+await cacheTests.Expiry_ShouldReturnNullAfterExpiration();
+
+// Example 3: Overwrite an existing key with a new value
+await cacheTests.Overwrite_ShouldReplaceExistingValue();
+
+// Example 4: Attempt to remove a key that does not exist – should not throw
+cacheTests.RemoveMissingKey_ShouldNotThrow();
+
+// Example 5: Simple smoke test that accesses the cache from multiple threads
+cacheTests.ConcurrentAccess_SmokeTest();
+```
