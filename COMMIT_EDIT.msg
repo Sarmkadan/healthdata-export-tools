@@ -1,0 +1,1 @@
+Fixed bug where throwing subscriber prevented later subscribers from receiving the event

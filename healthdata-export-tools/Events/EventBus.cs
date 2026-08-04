@@ -164,7 +164,7 @@ public sealed class EventBus : IEventPublisher
                 "Publishing event: {EventType} (ID: {EventId}) to {HandlerCount} handlers",
                 @event.EventType, @event.EventId, eventHandlers.Count);
 
-            foreach (var handler in eventHandlers.Cast<Action<TEvent>>())
+            foreach (var handler in eventHandlers.Cast<Action<TEvent>>() ?? Enumerable.Empty<Action<TEvent>>())
             {
                 try
                 {
