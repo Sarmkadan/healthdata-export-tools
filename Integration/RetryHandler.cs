@@ -1,0 +1,2 @@
+<summary>Initializes a new retry handler with the specified backoff semantics.</summary>
+    <remarks>Backoff semantics determines how the handler will wait before retrying a failed operation.</remarks>
