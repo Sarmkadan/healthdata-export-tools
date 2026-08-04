@@ -56,6 +56,7 @@ public sealed class RateLimiter
                 }
             }
 
+            // TokenBucket methods are now thread‑safe, so we can call them without additional locking here.
             bucket.Refill();
 
             if (bucket.HasTokens(tokensRequired))
@@ -178,6 +179,7 @@ public sealed class RateLimiter
         public int RefillRate { get; }
         public double CurrentTokens { get; private set; }
         private DateTime _lastRefill;
+        private readonly object _sync = new object(); // ensures thread‑safe mutation of token state
 
         public TokenBucket(int capacity, int refillRate)
         {
@@ -187,21 +189,42 @@ public sealed class RateLimiter
             _lastRefill = DateTime.UtcNow;
         }
 
+        // Refill updates token count based on elapsed time. Guarded by _sync to avoid race conditions.
         public void Refill()
         {
-            var now = DateTime.UtcNow;
-            var timeSinceLastRefill = (now - _lastRefill).TotalSeconds;
-            var tokensToAdd = timeSinceLastRefill * RefillRate;
+            lock (_sync)
+            {
+                var now = DateTime.UtcNow;
+                var timeSinceLastRefill = (now - _lastRefill).TotalSeconds;
+                var tokensToAdd = timeSinceLastRefill * RefillRate;
 
-            CurrentTokens = Math.Min(Capacity, CurrentTokens + tokensToAdd);
-            _lastRefill = now;
+                CurrentTokens = Math.Min(Capacity, CurrentTokens + tokensToAdd);
+                _lastRefill = now;
+            }
         }
 
-        public bool HasTokens(int required) => CurrentTokens >= required;
+        // Checks token availability under lock to get a consistent view.
+        public bool HasTokens(int required) => 
+            // Simple read is safe because CurrentTokens is only mutated inside lock,
+            // but we still acquire the lock to guarantee visibility.
+            GetCurrentTokens() >= required;
 
+        // Consumes tokens under lock to ensure atomic decrement.
         public void ConsumeTokens(int amount)
         {
-            CurrentTokens -= amount;
+            lock (_sync)
+            {
+                CurrentTokens -= amount;
+            }
+        }
+
+        // Helper to read CurrentTokens under lock for consistency.
+        private double GetCurrentTokens()
+        {
+            lock (_sync)
+            {
+                return CurrentTokens;
+            }
         }
     }
 }
