@@ -178,7 +178,8 @@ public sealed class RateLimiter
         public int Capacity { get; }
         public int RefillRate { get; }
         public double CurrentTokens { get; private set; }
-        private DateTime _lastRefill;
+        private readonly System.Diagnostics.Stopwatch _stopwatch;
+        private TimeSpan _lastRefillElapsed;
         private readonly object _sync = new object(); // ensures thread‑safe mutation of token state
 
         public TokenBucket(int capacity, int refillRate)
@@ -186,7 +187,8 @@ public sealed class RateLimiter
             Capacity = capacity;
             RefillRate = refillRate;
             CurrentTokens = capacity;
-            _lastRefill = DateTime.UtcNow;
+            _stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            _lastRefillElapsed = TimeSpan.Zero;
         }
 
         // Refill updates token count based on elapsed time. Guarded by _sync to avoid race conditions.
@@ -194,12 +196,12 @@ public sealed class RateLimiter
         {
             lock (_sync)
             {
-                var now = DateTime.UtcNow;
-                var timeSinceLastRefill = (now - _lastRefill).TotalSeconds;
+                var nowElapsed = _stopwatch.Elapsed;
+                var timeSinceLastRefill = (nowElapsed - _lastRefillElapsed).TotalSeconds;
                 var tokensToAdd = timeSinceLastRefill * RefillRate;
 
                 CurrentTokens = Math.Min(Capacity, CurrentTokens + tokensToAdd);
-                _lastRefill = now;
+                _lastRefillElapsed = nowElapsed;
             }
         }
 
