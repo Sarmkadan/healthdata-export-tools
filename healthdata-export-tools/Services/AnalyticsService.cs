@@ -12,15 +12,15 @@ using HealthDataExportTools.Domain.Models;
 namespace HealthDataExportTools.Services;
 
 /// <summary>
-/// Service for analyzing health data and computing metrics
+/// Service for analyzing health data and computing metrics.
 /// </summary>
 public sealed class AnalyticsService
 {
     /// <summary>
-    /// Calculate average sleep duration over a period
+    /// Calculates the average sleep duration over a specified period.
     /// </summary>
     /// <param name="records">List of sleep data records.</param>
-    /// <param name="days">Number of days to analyze.</param>
+    /// <param name="days">Number of days to analyze. Defaults to 7.</param>
     /// <returns>Average sleep duration in hours.</returns>
     public double CalculateAverageSleepDuration(List<SleepData> records, int days = 7)
     {
@@ -35,8 +35,11 @@ public sealed class AnalyticsService
     }
 
     /// <summary>
-    /// Calculate average heart rate over a period
+    /// Calculates the average heart rate over a specified period.
     /// </summary>
+    /// <param name="records">List of heart rate data records.</param>
+    /// <param name="days">Number of days to analyze. Defaults to 7.</param>
+    /// <returns>Average heart rate in beats per minute.</returns>
     public int CalculateAverageHeartRate(List<HeartRateData> records, int days = 7)
     {
         if (records.Count == 0) return 0;
@@ -50,8 +53,11 @@ public sealed class AnalyticsService
     }
 
     /// <summary>
-    /// Calculate average SpO2 over a period
+    /// Calculates the average SpO₂ over a specified period.
     /// </summary>
+    /// <param name="records">List of SpO₂ data records.</param>
+    /// <param name="days">Number of days to analyze. Defaults to 7.</param>
+    /// <returns>Average SpO₂ percentage.</returns>
     public int CalculateAverageSpO2(List<SpO2Data> records, int days = 7)
     {
         if (records.Count == 0) return 0;
@@ -65,8 +71,11 @@ public sealed class AnalyticsService
     }
 
     /// <summary>
-    /// Calculate total steps over a period
+    /// Calculates the total number of steps over a specified period.
     /// </summary>
+    /// <param name="records">List of steps data records.</param>
+    /// <param name="days">Number of days to analyze. Defaults to 7.</param>
+    /// <returns>Total steps counted.</returns>
     public int CalculateTotalSteps(List<StepsData> records, int days = 7)
     {
         if (records.Count == 0) return 0;
@@ -77,8 +86,11 @@ public sealed class AnalyticsService
     }
 
     /// <summary>
-    /// Calculate deep sleep percentage average
+    /// Calculates the average deep‑sleep percentage over a specified period.
     /// </summary>
+    /// <param name="records">List of sleep data records.</param>
+    /// <param name="days">Number of days to analyze. Defaults to 7.</param>
+    /// <returns>Average deep‑sleep percentage.</returns>
     public double CalculateAverageDeepSleepPercentage(List<SleepData> records, int days = 7)
     {
         if (records.Count == 0) return 0;
@@ -92,8 +104,11 @@ public sealed class AnalyticsService
     }
 
     /// <summary>
-    /// Calculate REM sleep percentage average
+    /// Calculates the average REM‑sleep percentage over a specified period.
     /// </summary>
+    /// <param name="records">List of sleep data records.</param>
+    /// <param name="days">Number of days to analyze. Defaults to 7.</param>
+    /// <returns>Average REM‑sleep percentage.</returns>
     public double CalculateAverageRemPercentage(List<SleepData> records, int days = 7)
     {
         if (records.Count == 0) return 0;
@@ -107,8 +122,11 @@ public sealed class AnalyticsService
     }
 
     /// <summary>
-    /// Find trends in health data (improving/declining)
+    /// Analyzes a trend in a series of integer values.
     /// </summary>
+    /// <param name="values">The list of values to evaluate.</param>
+    /// <param name="days">Number of recent days to consider. Defaults to 7.</param>
+    /// <returns>A <see cref="TrendAnalysis"/> describing the trend.</returns>
     public TrendAnalysis AnalyzeTrend(List<int> values, int days = 7)
     {
         if (values.Count < 2) return new TrendAnalysis { Status = "Insufficient Data" };
@@ -146,8 +164,11 @@ public sealed class AnalyticsService
     }
 
     /// <summary>
-    /// Identify sleep quality trends
+    /// Analyzes sleep quality over a specified period.
     /// </summary>
+    /// <param name="records">List of sleep data records.</param>
+    /// <param name="days">Number of days to analyze. Defaults to 30.</param>
+    /// <returns>A <see cref="SleepQualityReport"/> summarizing the analysis.</returns>
     public SleepQualityReport AnalyzeSleepQuality(List<SleepData> records, int days = 30)
     {
         var cutoffDate = DateTime.UtcNow.AddDays(-days);
@@ -190,8 +211,11 @@ public sealed class AnalyticsService
     }
 
     /// <summary>
-    /// Identify low SpO2 events and patterns
+    /// Analyzes SpO₂ health over a specified period.
     /// </summary>
+    /// <param name="records">List of SpO₂ data records.</param>
+    /// <param name="days">Number of days to analyze. Defaults to 30.</param>
+    /// <returns>A <see cref="SpO2HealthReport"/> summarizing the analysis.</returns>
     public SpO2HealthReport AnalyzeSpO2Health(List<SpO2Data> records, int days = 30)
     {
         var cutoffDate = DateTime.UtcNow.AddDays(-days);
@@ -232,8 +256,11 @@ public sealed class AnalyticsService
     }
 
     /// <summary>
-    /// Calculate activity intensity distribution
+    /// Analyzes activity intensity distribution over a specified period.
     /// </summary>
+    /// <param name="records">List of activity data records.</param>
+    /// <param name="days">Number of days to analyze. Defaults to 7.</param>
+    /// <returns>An <see cref="ActivityIntensityDistribution"/> describing the distribution.</returns>
     public ActivityIntensityDistribution AnalyzeActivityIntensity(List<ActivityData> records, int days = 7)
     {
         var cutoffDate = DateTime.UtcNow.AddDays(-days);
@@ -264,8 +291,11 @@ public sealed class AnalyticsService
     }
 
     /// <summary>
-    /// Get health score (0-100) based on all metrics
+    /// Calculates a health score (0‑100) based on all metrics in the collection.
     /// </summary>
+    /// <param name="collection">The health data collection to evaluate.</param>
+    /// <param name="days">Number of recent days to consider. Defaults to 7.</param>
+    /// <returns>An integer health score capped at 100.</returns>
     public int CalculateHealthScore(HealthDataCollection collection, int days = 7)
     {
         var score = 50;
@@ -335,7 +365,7 @@ public sealed class AnalyticsService
     }
 
     /// <summary>
-    /// Compute specified percentiles of a numeric data set using linear interpolation.
+    /// Computes specified percentiles of a numeric data set using linear interpolation.
     /// </summary>
     /// <param name="values">The collection of numeric values.</param>
     /// <param name="percentiles">Percentile values to compute (0‑100 inclusive).</param>
@@ -387,42 +417,126 @@ public sealed class AnalyticsService
     }
 }
 
-/// <summary>Result of trend analysis</summary>
+/// <summary>
+/// Result of trend analysis.
+/// </summary>
 public sealed class TrendAnalysis
 {
+    /// <summary>
+    /// Status describing the trend (e.g., Improving, Declining, Stable, Insufficient Data).
+    /// </summary>
     public string Status { get; set; } = "Unknown";
+
+    /// <summary>
+    /// Percent change between the two halves of the analyzed data.
+    /// </summary>
     public double PercentChange { get; set; }
+
+    /// <summary>
+    /// Number of days that were analyzed.
+    /// </summary>
     public int DaysAnalyzed { get; set; }
 }
 
-/// <summary>Sleep quality analysis report</summary>
+/// <summary>
+/// Sleep quality analysis report.
+/// </summary>
 public sealed class SleepQualityReport
 {
+    /// <summary>
+    /// Average sleep duration in minutes.
+    /// </summary>
     public double AverageDuration { get; set; }
+
+    /// <summary>
+    /// Average deep‑sleep minutes.
+    /// </summary>
     public double AverageDeepSleep { get; set; }
+
+    /// <summary>
+    /// Average REM‑sleep minutes.
+    /// </summary>
     public double AverageRemSleep { get; set; }
+
+    /// <summary>
+    /// Number of nights classified as excellent quality.
+    /// </summary>
     public int ExcellentNights { get; set; }
+
+    /// <summary>
+    /// Total number of nights analyzed.
+    /// </summary>
     public int TotalNights { get; set; }
+
+    /// <summary>
+    /// Percentage of nights that were excellent.
+    /// </summary>
     public double ExcellenceRate { get; set; }
+
+    /// <summary>
+    /// Human‑readable description of the overall sleep quality.
+    /// </summary>
     public string Description { get; set; } = string.Empty;
 }
 
-/// <summary>SpO2 health analysis report</summary>
+/// <summary>
+/// SpO₂ health analysis report.
+/// </summary>
 public sealed class SpO2HealthReport
 {
+    /// <summary>
+    /// Average SpO₂ percentage across the analyzed period.
+    /// </summary>
     public int AverageSpO2 { get; set; }
+
+    /// <summary>
+    /// Minimum SpO₂ percentage observed.
+    /// </summary>
     public int MinimumSpO2 { get; set; }
+
+    /// <summary>
+    /// Total number of low‑SpO₂ events recorded.
+    /// </summary>
     public int TotalLowEvents { get; set; }
+
+    /// <summary>
+    /// Number of days that contained at least one low‑SpO₂ event.
+    /// </summary>
     public int DaysWithEvents { get; set; }
+
+    /// <summary>
+    /// Overall status derived from the minimum SpO₂ value.
+    /// </summary>
     public string Status { get; set; } = string.Empty;
 }
 
-/// <summary>Activity intensity distribution</summary>
+/// <summary>
+/// Activity intensity distribution report.
+/// </summary>
 public sealed class ActivityIntensityDistribution
 {
+    /// <summary>
+    /// Count of low‑intensity activities.
+    /// </summary>
     public int LowIntensity { get; set; }
+
+    /// <summary>
+    /// Count of medium‑intensity activities.
+    /// </summary>
     public int MediumIntensity { get; set; }
+
+    /// <summary>
+    /// Count of high‑intensity activities.
+    /// </summary>
     public int HighIntensity { get; set; }
+
+    /// <summary>
+    /// Total number of activities considered.
+    /// </summary>
     public int TotalActivities { get; set; }
+
+    /// <summary>
+    /// Total calories burned across all activities.
+    /// </summary>
     public int TotalCalories { get; set; }
 }
