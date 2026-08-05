@@ -21,40 +21,40 @@ public sealed class MockValidationService : IValidationService
     /// </summary>
     /// <param name="data">The <see cref="SleepData"/> to validate.</param>
     /// <returns>A <see cref="ValidationResult"/> representing the validation result.</returns>
-    public ValidationResult ValidateSleepData(SleepData data) => new();
+    public ValidationResult ValidateSleepData(SleepData data) {\n            if (data == null) {\n                throw new ArgumentNullException(nameof(data));\n            }\n            return new();\n        }> new();
 
     /// <summary>
     /// Validates the provided <paramref name="data"/> and returns a <see cref="ValidationResult"/>.
     /// </summary>
     /// <param name="data">The <see cref="HeartRateData"/> to validate.</param>
     /// <returns>A <see cref="ValidationResult"/> representing the validation result.</returns>
-    public ValidationResult ValidateHeartRateData(HeartRateData data) => new();
+    public ValidationResult ValidateHeartRateData(HeartRateData data) {\n            if (data == null) {\n                throw new ArgumentNullException(nameof(data));\n            }\n            return new();\n        }> new();
 
     /// <summary>
     /// Validates the provided <paramref name="data"/> and returns a <see cref="ValidationResult"/>.
     /// </summary>
     /// <param name="data">The <see cref="SpO2Data"/> to validate.</param>
     /// <returns>A <see cref="ValidationResult"/> representing the validation result.</returns>
-    public ValidationResult ValidateSpO2Data(SpO2Data data) => new();
+    public ValidationResult ValidateSpO2Data(SpO2Data data) {\n            if (data == null) {\n                throw new ArgumentNullException(nameof(data));\n            }\n            return new();\n        }> new();
 
     /// <summary>
     /// Validates the provided <paramref name="data"/> and returns a <see cref="ValidationResult"/>.
     /// </summary>
     /// <param name="data">The <see cref="StepsData"/> to validate.</param>
     /// <returns>A <see cref="ValidationResult"/> representing the validation result.</returns>
-    public ValidationResult ValidateStepsData(StepsData data) => new();
+    public ValidationResult ValidateStepsData(StepsData data) {\n            if (data == null) {\n                throw new ArgumentNullException(nameof(data));\n            }\n            return new();\n        }> new();
 
     /// <summary>
     /// Validates the provided <paramref name="data"/> and returns a <see cref="ValidationResult"/>.
     /// </summary>
     /// <param name="data">The <see cref="ActivityData"/> to validate.</param>
     /// <returns>A <see cref="ValidationResult"/> representing the validation result.</returns>
-    public ValidationResult ValidateActivityData(ActivityData data) => new();
+    public ValidationResult ValidateActivityData(ActivityData data) {\n            if (data == null) {\n                throw new ArgumentNullException(nameof(data));\n            }\n            return new();\n        }> new();
 
     /// <summary>
     /// Validates the provided <paramref name="metric"/> and returns a <see cref="ValidationResult"/>.
     /// </summary>
     /// <param name="metric">The <see cref="HealthMetric"/> to validate.</param>
     /// <returns>A <see cref="ValidationResult"/> representing the validation result.</returns>
-    public ValidationResult ValidateHealthMetric(HealthMetric metric) => new();
+    public ValidationResult ValidateHealthMetric(HealthMetric metric) {\n            if (metric == null) {\n                throw new ArgumentNullException(nameof(metric));\n            }\n            return new();\n        }> new();
 }
