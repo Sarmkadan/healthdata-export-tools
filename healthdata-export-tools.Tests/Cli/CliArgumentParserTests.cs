@@ -11,15 +11,20 @@ namespace HealthDataExportTools.Tests
     public sealed partial class CliArgumentParserTests
     {
         private readonly CliArgumentParser _parser;
+        private readonly Mock<ILogger<CliArgumentParserTests>> _loggerMock = new();
+        private readonly ILogger<CliArgumentParserTests> _logger;
 
         public CliArgumentParserTests()
         {
             _parser = new CliArgumentParser();
+            _logger = _loggerMock.Object;
         }
 
         [Fact]
         public void Parse_ValidFullCommand_ReturnsSuccessResult()
         {
+            _logger.LogInformation("Executing {Method}", nameof(Parse_ValidFullCommand_ReturnsSuccessResult));
+
             // Arrange
             var args = new[] { "--input", "input.csv", "--output", "output.json" };
 
@@ -31,11 +36,15 @@ namespace HealthDataExportTools.Tests
             Assert.NotNull(result.Options);
             Assert.Equal("input.csv", result.Options.InputPath);
             Assert.Equal("output.json", result.Options.OutputPath);
+            
+            _logger.LogInformation("Completed {Method}", nameof(Parse_ValidFullCommand_ReturnsSuccessResult));
         }
 
         [Fact]
         public void Parse_UnknownFlag_ReturnsFailureResultWithSuggestion()
         {
+            _logger.LogInformation("Executing {Method}", nameof(Parse_UnknownFlag_ReturnsFailureResultWithSuggestion));
+
             // Arrange
             var args = new[] { "--unknwon", "input.csv" };
 
@@ -48,6 +57,8 @@ namespace HealthDataExportTools.Tests
             Assert.Single(result.Errors);
             Assert.Contains("Did you mean", result.Errors[0]);
             Assert.Contains("--unknown", result.Errors[0]);
+            
+            _logger.LogInformation("Completed {Method}", nameof(Parse_UnknownFlag_ReturnsFailureResultWithSuggestion));
         }
 
         [Fact]
@@ -100,6 +111,8 @@ namespace HealthDataExportTools.Tests
         [Fact]
         public void Parse_InvalidDateFormat_ReturnsFailureResult()
         {
+            _logger.LogInformation("Executing {Method}", nameof(Parse_InvalidDateFormat_ReturnsFailureResult));
+            
             // Arrange
             var args = new[] { "--start-date", "invalid-date", "--end-date", "2025-13-45" };
 
@@ -108,6 +121,7 @@ namespace HealthDataExportTools.Tests
 
             // Assert
             Assert.False(result.Success);
+            _logger.LogWarning("Parse failed for {Args} with {ErrorCount} errors", args, result.Errors.Count);
             Assert.Null(result.Options);
             Assert.Equal(2, result.Errors.Count);
             Assert.Contains("Invalid start date format", result.Errors[0]);
