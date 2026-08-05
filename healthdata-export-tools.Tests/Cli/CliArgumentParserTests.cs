@@ -8,18 +8,29 @@ using Xunit;
 
 namespace HealthDataExportTools.Tests
 {
+    /// <summary>
+    /// Contains unit tests for the <see cref="CliArgumentParser"/> class.
+    /// </summary>
     public sealed partial class CliArgumentParserTests
     {
         private readonly CliArgumentParser _parser;
         private readonly Mock<ILogger<CliArgumentParserTests>> _loggerMock = new();
         private readonly ILogger<CliArgumentParserTests> _logger;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="CliArgumentParserTests"/>.
+        /// Creates a <see cref="CliArgumentParser"/> and a mock logger for use in the tests.
+        /// </summary>
         public CliArgumentParserTests()
         {
             _parser = new CliArgumentParser();
             _logger = _loggerMock.Object;
         }
 
+        /// <summary>
+        /// Verifies that parsing a valid full command (input and output paths) succeeds
+        /// and that the resulting <see cref="ParseResult{T}.Options"/> contain the expected values.
+        /// </summary>
         [Fact]
         public void Parse_ValidFullCommand_ReturnsSuccessResult()
         {
@@ -40,6 +51,10 @@ namespace HealthDataExportTools.Tests
             _logger.LogInformation("Completed {Method}", nameof(Parse_ValidFullCommand_ReturnsSuccessResult));
         }
 
+        /// <summary>
+        /// Ensures that an unknown flag is reported as a failure and that a suggestion
+        /// containing the closest matching known flag is included in the error message.
+        /// </summary>
         [Fact]
         public void Parse_UnknownFlag_ReturnsFailureResultWithSuggestion()
         {
@@ -61,6 +76,10 @@ namespace HealthDataExportTools.Tests
             _logger.LogInformation("Completed {Method}", nameof(Parse_UnknownFlag_ReturnsFailureResultWithSuggestion));
         }
 
+        /// <summary>
+        /// Verifies that an unknown flag without a close match results in a failure
+        /// with an error message that does not contain a suggestion.
+        /// </summary>
         [Fact]
         public void Parse_UnknownFlagWithoutGoodMatch_ReturnsFailureResult()
         {
@@ -77,6 +96,9 @@ namespace HealthDataExportTools.Tests
             Assert.Contains("Unknown option '--xyzzy'", result.Errors[0]);
         }
 
+        /// <summary>
+        /// Checks that omitting a required value for an option (e.g., <c>--input</c>) results in a failure.
+        /// </summary>
         [Fact]
         public void Parse_MissingRequiredValue_ReturnsFailureResult()
         {
@@ -93,6 +115,9 @@ namespace HealthDataExportTools.Tests
             Assert.Contains("requires a value", result.Errors[0]);
         }
 
+        /// <summary>
+        /// Confirms that providing the <c>--help</c> flag returns a successful result with the Help option set.
+        /// </summary>
         [Fact]
         public void Parse_HelpFlag_ReturnsHelp()
         {
@@ -108,6 +133,10 @@ namespace HealthDataExportTools.Tests
             Assert.True(result.Options.Help);
         }
 
+        /// <summary>
+        /// Validates that invalid date strings for <c>--start-date</c> and <c>--end-date</c>
+        /// produce two errors indicating the respective format problems.
+        /// </summary>
         [Fact]
         public void Parse_InvalidDateFormat_ReturnsFailureResult()
         {
@@ -128,6 +157,9 @@ namespace HealthDataExportTools.Tests
             Assert.Contains("Invalid end date format", result.Errors[1]);
         }
 
+        /// <summary>
+        /// Ensures that correctly formatted start and end dates are parsed successfully.
+        /// </summary>
         [Fact]
         public void Parse_DateFormatWithCorrectFormat_ReturnsSuccess()
         {
@@ -144,6 +176,9 @@ namespace HealthDataExportTools.Tests
             Assert.Equal("2025-01-20", result.Options.EndDate);
         }
 
+        /// <summary>
+        /// Checks that a start date later than the end date results in a failure with an appropriate error.
+        /// </summary>
         [Fact]
         public void Parse_StartDateAfterEndDate_ReturnsFailureResult()
         {
@@ -160,6 +195,9 @@ namespace HealthDataExportTools.Tests
             Assert.Contains("Start date cannot be after end date", result.Errors[0]);
         }
 
+        /// <summary>
+        /// Verifies that an unsupported format value (e.g., <c>xml</c>) causes a failure with a descriptive error.
+        /// </summary>
         [Fact]
         public void Parse_InvalidFormat_ReturnsFailureResult()
         {
@@ -176,6 +214,9 @@ namespace HealthDataExportTools.Tests
             Assert.Contains("Invalid format: xml. Valid options: json, csv, sqlite, xml, all", result.Errors[0]);
         }
 
+        /// <summary>
+        /// Confirms that a supported format value (e.g., <c>csv</c>) parses successfully.
+        /// </summary>
         [Fact]
         public void Parse_ValidFormat_ReturnsSuccess()
         {
@@ -191,6 +232,9 @@ namespace HealthDataExportTools.Tests
             Assert.Equal("csv", result.Options.Format);
         }
 
+        /// <summary>
+        /// Ensures that a max parallelism value less than 1 is rejected with an appropriate error message.
+        /// </summary>
         [Fact]
         public void Parse_InvalidMaxParallelism_ReturnsFailureResult()
         {
@@ -207,6 +251,9 @@ namespace HealthDataExportTools.Tests
             Assert.Contains("Max parallelism must be between 1", result.Errors[0]);
         }
 
+        /// <summary>
+        /// Checks that a valid max parallelism value equal to the processor count parses successfully.
+        /// </summary>
         [Fact]
         public void Parse_ValidMaxParallelism_ReturnsSuccess()
         {
@@ -223,6 +270,9 @@ namespace HealthDataExportTools.Tests
             Assert.Equal(processorCount, result.Options.MaxParallelism);
         }
 
+        /// <summary>
+        /// Validates that a negative cache duration is rejected with a specific error.
+        /// </summary>
         [Fact]
         public void Parse_NegativeCacheDuration_ReturnsFailureResult()
         {
@@ -239,6 +289,10 @@ namespace HealthDataExportTools.Tests
             Assert.Contains("Cache duration cannot be negative", result.Errors[0]);
         }
 
+        /// <summary>
+        /// Tests that <see cref="CliArgumentParser.TryParse(string[], out var)"/> succeeds for valid arguments
+        /// and populates the output <see cref="CliOptions"/> with the expected values.
+        /// </summary>
         [Fact]
         public void ParseExtensions_TryParse_ReturnsCorrectResult()
         {
@@ -255,6 +309,10 @@ namespace HealthDataExportTools.Tests
             Assert.Equal("jsonl", options.Format);
         }
 
+        /// <summary>
+        /// Ensures that <see cref="CliArgumentParser.TryParse(string[], out var)"/> returns <c>false</c>
+        /// and a <c>null</c> options object when the arguments contain an unknown flag.
+        /// </summary>
         [Fact]
         public void ParseExtensions_TryParse_InvalidArgs_ReturnsFailure()
         {
@@ -269,6 +327,10 @@ namespace HealthDataExportTools.Tests
             Assert.Null(options);
         }
 
+        /// <summary>
+        /// Verifies that <see cref="CliArgumentParser.ParseWithValidation(string[])"/> returns a successful
+        /// <see cref="ParseResult{T}"/> with populated options for a valid set of arguments.
+        /// </summary>
         [Fact]
         public void ParseExtensions_ParseWithValidation_ReturnsParseResult()
         {
@@ -283,6 +345,10 @@ namespace HealthDataExportTools.Tests
             Assert.NotNull(result.Options);
         }
 
+        /// <summary>
+        /// Tests that the Levenshtein‑distance based suggestion mechanism proposes the correct flag
+        /// for a variety of common typographical errors.
+        /// </summary>
         [Fact]
         public void Parse_LevenshteinDistance_SuggestsCorrectFlag()
         {
