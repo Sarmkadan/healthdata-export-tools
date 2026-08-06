@@ -382,3 +382,38 @@ cacheTests.RemoveMissingKey_ShouldNotThrow();
 // Example 5: Simple smoke test that accesses the cache from multiple threads
 cacheTests.ConcurrentAccess_SmokeTest();
 ```
+
+## RetryHandlerTests
+
+The `RetryHandlerTests` class validates the behavior of the `RetryHandler` utility, ensuring that retry logic correctly handles successful executions, transient failures, maximum‑retry limits, cancellation, and back‑off timing. The tests cover both asynchronous and synchronous execution paths.
+
+### Usage Example
+
+```csharp
+using System.Threading.Tasks;
+using HealthDataExportTools.Tests;
+
+// Demonstrates how to invoke the public test methods of RetryHandlerTests.
+public class RetryHandlerDemo
+{
+    public static async Task Main()
+    {
+        // Create the test helper instance
+        var tests = new RetryHandlerTests();
+
+        // Asynchronous scenarios
+        await tests.ExecuteAsync_SucceedsFirstTry_ReturnsResult();
+        await tests.ExecuteAsync_RetriesTransientFailures_ReturnsResult();
+        await tests.ExecuteAsync_ExceedsMaxRetries_Throws();
+        await tests.ExecuteAsync_CancellationException_NotRetried();
+        await tests.ExecuteAsync_BackoffDelaysIncrease();
+
+        // Synchronous scenarios
+        tests.Execute_SucceedsFirstTry_ReturnsResult();
+        tests.Execute_TransientFailures_RetriesAndSucceeds();
+
+        // Clean up any resources used by the test class
+        tests.Dispose();
+    }
+}
+```
