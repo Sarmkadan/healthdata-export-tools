@@ -78,6 +78,10 @@ public sealed class ValidationErrorDetail
         string errorCode = "VALIDATION_ERROR",
         string? value = null)
     {
+        ArgumentException.ThrowIfNullOrEmpty(field);
+        ArgumentException.ThrowIfNullOrEmpty(message);
+        ArgumentException.ThrowIfNullOrEmpty(errorCode);
+
         return new ValidationErrorDetail
         {
             RecordIndex = recordIndex,
@@ -112,6 +116,10 @@ public sealed class ValidationWarning
         string message,
         string warningCode = "WARNING")
     {
+        ArgumentException.ThrowIfNullOrEmpty(field);
+        ArgumentException.ThrowIfNullOrEmpty(message);
+        ArgumentException.ThrowIfNullOrEmpty(warningCode);
+
         return new ValidationWarning
         {
             RecordIndex = recordIndex,
