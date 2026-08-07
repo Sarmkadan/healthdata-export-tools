@@ -417,3 +417,32 @@ public class RetryHandlerDemo
     }
 }
 ```
+
+## CliArgumentParserTests
+
+The `CliArgumentParserTests` class provides unit tests for the command-line argument parser, verifying that well-formed command lines are parsed into valid option objects while malformed input is rejected gracefully. It covers failure handling for unknown flags, missing required values, and duplicate flags, as well as the help flag short-circuiting normal parsing.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Tests.Cli;
+
+// The CliArgumentParserTests uses a parameterless constructor
+// that sets up the argument parser under test.
+var tests = new CliArgumentParserTests();
+
+// Example 1: A complete, valid command line returns valid options
+tests.ParseArguments_ValidFullCommand_ReturnsValidOptions();
+
+// Example 2: An unrecognized flag returns a failed parse result
+tests.ParseArguments_UnknownFlag_ReturnsFailure();
+
+// Example 3: A flag missing its required value returns a failed parse result
+tests.ParseArguments_MissingRequiredValue_ReturnsFailure();
+
+// Example 4: Specifying the same flag twice returns a failed parse result
+tests.ParseArguments_DuplicateFlags_ReturnsFailure();
+
+// Example 5: The help flag returns the help output instead of parsing
+tests.ParseArguments_HelpFlag_ReturnsHelp();
+```
