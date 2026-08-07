@@ -1,0 +1,1 @@
+public void MyMethod(string param) {\n            ArgumentException.ThrowIfNullOrEmpty(param);\n            // rest of method body\n        }
