@@ -22,6 +22,7 @@ public sealed class ValidationService : IValidationService
     /// <returns>A <see cref="ValidationResult"/> indicating whether the record is valid.</returns>
     public ValidationResult ValidateSleepData(SleepData data)
     {
+        ArgumentNullException.ThrowIfNull(data);
         var result = new ValidationResult();
 
         if (data.SleepStart >= data.SleepEnd)
@@ -63,6 +64,7 @@ public sealed class ValidationService : IValidationService
     /// </summary>
     public ValidationResult ValidateHeartRateData(HeartRateData data)
     {
+        ArgumentNullException.ThrowIfNull(data);
         var result = new ValidationResult();
 
         if (!ValidationHelper.IsValidRecordDate(data.RecordDate))
@@ -95,6 +97,7 @@ public sealed class ValidationService : IValidationService
     /// </summary>
     public ValidationResult ValidateSpO2Data(SpO2Data data)
     {
+        ArgumentNullException.ThrowIfNull(data);
         var result = new ValidationResult();
 
         if (!ValidationHelper.IsValidRecordDate(data.RecordDate))
@@ -129,6 +132,7 @@ public sealed class ValidationService : IValidationService
     /// </summary>
     public ValidationResult ValidateStepsData(StepsData data)
     {
+        ArgumentNullException.ThrowIfNull(data);
         var result = new ValidationResult();
 
         if (!ValidationHelper.IsValidRecordDate(data.RecordDate))
@@ -160,6 +164,7 @@ public sealed class ValidationService : IValidationService
     /// </summary>
     public ValidationResult ValidateActivityData(ActivityData data)
     {
+        ArgumentNullException.ThrowIfNull(data);
         var result = new ValidationResult();
 
         if (string.IsNullOrWhiteSpace(data.ActivityType))
@@ -204,6 +209,7 @@ public sealed class ValidationService : IValidationService
     /// </summary>
     public ValidationResult ValidateHealthMetric(HealthMetric metric)
     {
+        ArgumentNullException.ThrowIfNull(metric);
         var result = new ValidationResult();
 
         if (string.IsNullOrWhiteSpace(metric.MetricName))
