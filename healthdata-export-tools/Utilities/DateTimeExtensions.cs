@@ -215,3 +215,4 @@ public static class DateTimeExtensions
     public static string ToDateTimeString(this DateTime dateTime)
         => dateTime.ToString(Constants.DateTime.DateTimeFormat);
 }
+
