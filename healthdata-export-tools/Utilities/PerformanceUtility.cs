@@ -18,6 +18,8 @@ public static class PerformanceUtility
         Func<Task<T>> operation,
         string operationName = "Operation")
     {
+        ArgumentNullException.ThrowIfNull(operation);
+        ArgumentException.ThrowIfNullOrEmpty(operationName);
         var stopwatch = Stopwatch.StartNew();
         try
         {
@@ -39,6 +41,8 @@ public static class PerformanceUtility
         Func<T> operation,
         string operationName = "Operation")
     {
+        ArgumentNullException.ThrowIfNull(operation);
+        ArgumentException.ThrowIfNullOrEmpty(operationName);
         var stopwatch = Stopwatch.StartNew();
         try
         {
