@@ -69,6 +69,7 @@ public static class ValidationHelper
     /// </summary>
     public static bool IsValidEmail(string email)
     {
+        ArgumentException.ThrowIfNullOrEmpty(nameof(email));
         try
         {
             var address = new System.Net.Mail.MailAddress(email);
@@ -85,6 +86,7 @@ public static class ValidationHelper
     /// </summary>
     public static bool IsValidFilePath(string filePath)
     {
+        ArgumentException.ThrowIfNullOrEmpty(nameof(filePath));
         try
         {
             return !string.IsNullOrWhiteSpace(filePath) && File.Exists(filePath);
@@ -100,6 +102,7 @@ public static class ValidationHelper
     /// </summary>
     public static bool IsValidDirectoryPath(string dirPath)
     {
+        ArgumentException.ThrowIfNullOrEmpty(nameof(dirPath));
         try
         {
             if (string.IsNullOrWhiteSpace(dirPath)) return false;
@@ -189,6 +192,7 @@ public static class ValidationHelper
     /// </summary>
     public static void EnsureNotNull<T>(T? value, string fieldName) where T : class
     {
+        ArgumentException.ThrowIfNullOrEmpty(nameof(fieldName));
         if (value is null)
         {
             throw new ValidationException(
@@ -204,6 +208,7 @@ public static class ValidationHelper
     /// </summary>
     public static void EnsureNotEmpty(string? value, string fieldName)
     {
+        ArgumentException.ThrowIfNullOrEmpty(nameof(fieldName));
         if (string.IsNullOrWhiteSpace(value))
         {
             throw new ValidationException(
