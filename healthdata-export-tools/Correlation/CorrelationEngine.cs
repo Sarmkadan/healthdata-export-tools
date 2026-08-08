@@ -50,6 +50,7 @@ public sealed class CorrelationEngine(ILogger<CorrelationEngine> logger) : ICorr
         CorrelationEngineOptions? options = null,
         CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(collection);
         options ??= CorrelationEngineOptions.Default;
 
         var timeSeries = ExtractTimeSeries(collection, options.AnalysisWindowDays);
@@ -91,6 +92,7 @@ public sealed class CorrelationEngine(ILogger<CorrelationEngine> logger) : ICorr
         int windowDays = 30,
         CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(collection);
         var result = await AnalyzeAsync(
             collection,
             new CorrelationEngineOptions { AnalysisWindowDays = windowDays },
@@ -101,6 +103,7 @@ public sealed class CorrelationEngine(ILogger<CorrelationEngine> logger) : ICorr
     /// <inheritdoc />
     public IReadOnlyList<MetricTimeSeries> ExtractTimeSeries(HealthDataCollection collection, int windowDays)
     {
+        ArgumentNullException.ThrowIfNull(collection);
         var cutoff = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-windowDays));
         var series = new List<MetricTimeSeries>(10);
 
@@ -115,6 +118,8 @@ public sealed class CorrelationEngine(ILogger<CorrelationEngine> logger) : ICorr
     /// <inheritdoc />
     public double ComputePearsonCorrelation(IReadOnlyList<double> x, IReadOnlyList<double> y)
     {
+        ArgumentNullException.ThrowIfNull(x);
+        ArgumentNullException.ThrowIfNull(y);
         if (x.Count != y.Count || x.Count < 2)
             return double.NaN;
 
@@ -139,6 +144,8 @@ public sealed class CorrelationEngine(ILogger<CorrelationEngine> logger) : ICorr
     /// <inheritdoc />
     public double ComputeLaggedCorrelation(IReadOnlyList<double> x, IReadOnlyList<double> y, int lagDays)
     {
+        ArgumentNullException.ThrowIfNull(x);
+        ArgumentNullException.ThrowIfNull(y);
         if (lagDays < 0 || lagDays >= x.Count || x.Count != y.Count)
             return double.NaN;
 
@@ -151,6 +158,8 @@ public sealed class CorrelationEngine(ILogger<CorrelationEngine> logger) : ICorr
     public IReadOnlyList<LaggedCorrelationResult> AnalyzeLag(
         MetricTimeSeries a, MetricTimeSeries b, int maxLagDays = 7)
     {
+        ArgumentNullException.ThrowIfNull(a);
+        ArgumentNullException.ThrowIfNull(b);
         var commonDates = a.DataPoints.Select(p => p.Date)
             .Intersect(b.DataPoints.Select(p => p.Date))
             .Order()
