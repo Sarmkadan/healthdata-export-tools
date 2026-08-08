@@ -25,6 +25,7 @@ public static class JsonUtility
     /// </summary>
     public static object? ParseJsonToDynamic(string json)
     {
+        ArgumentException.ThrowIfNullOrEmpty(json);
         try
         {
             return JsonSerializer.Deserialize<object>(json, DefaultOptions);
@@ -55,6 +56,7 @@ public static class JsonUtility
     /// </summary>
     public static T? DeserializeFromJson<T>(string json)
     {
+        ArgumentException.ThrowIfNullOrEmpty(json);
         try
         {
             return JsonSerializer.Deserialize<T>(json, DefaultOptions);
@@ -70,6 +72,7 @@ public static class JsonUtility
     /// </summary>
     public static string PrettyPrint(string json)
     {
+        ArgumentException.ThrowIfNullOrEmpty(json);
         try
         {
             using var doc = JsonDocument.Parse(json);
@@ -86,6 +89,7 @@ public static class JsonUtility
     /// </summary>
     public static bool IsValidJson(string json)
     {
+        ArgumentException.ThrowIfNullOrEmpty(json);
         try
         {
             using (JsonDocument.Parse(json))
@@ -104,6 +108,8 @@ public static class JsonUtility
     /// </summary>
     public static string MergeJson(string json1, string json2)
     {
+        ArgumentException.ThrowIfNullOrEmpty(json1);
+        ArgumentException.ThrowIfNullOrEmpty(json2);
         try
         {
             var node1 = JsonNode.Parse(json1);
@@ -152,6 +158,8 @@ public static class JsonUtility
     /// </summary>
     public static object? GetValueByPath(string json, string path)
     {
+        ArgumentException.ThrowIfNullOrEmpty(json);
+        ArgumentException.ThrowIfNullOrEmpty(path);
         try
         {
             using var doc = JsonDocument.Parse(json);
@@ -195,6 +203,7 @@ public static class JsonUtility
     /// </summary>
     public static string Minify(string json)
     {
+        ArgumentException.ThrowIfNullOrEmpty(json);
         try
         {
             using var doc = JsonDocument.Parse(json);
@@ -212,6 +221,8 @@ public static class JsonUtility
     /// </summary>
     public static List<string> ValidateJsonStructure(string json, Dictionary<string, string> requiredFields)
     {
+        ArgumentException.ThrowIfNullOrEmpty(json);
+        ArgumentNullException.ThrowIfNull(requiredFields);
         var errors = new List<string>();
 
         try
