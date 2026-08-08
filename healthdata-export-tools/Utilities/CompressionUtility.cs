@@ -21,6 +21,7 @@ public static class CompressionUtility
     /// </summary>
     public static async Task<string> CompressFileGzipAsync(string inputPath, string? outputPath = null)
     {
+        ArgumentException.ThrowIfNullOrEmpty(inputPath);
         if (!File.Exists(inputPath))
             throw new FileNotFoundException($"Input file not found: {inputPath}");
 
@@ -48,6 +49,7 @@ public static class CompressionUtility
     /// </summary>
     public static async Task<string> DecompressFileGzipAsync(string inputPath, string? outputPath = null)
     {
+        ArgumentException.ThrowIfNullOrEmpty(inputPath);
         if (!File.Exists(inputPath))
             throw new FileNotFoundException($"Input file not found: {inputPath}");
 
@@ -75,6 +77,8 @@ public static class CompressionUtility
     /// </summary>
     public static async Task<string> CreateZipArchiveAsync(List<string> filePaths, string outputPath)
     {
+        ArgumentNullException.ThrowIfNull(filePaths);
+        ArgumentException.ThrowIfNullOrEmpty(outputPath);
         try
         {
             using (var zipArchive = ZipFile.Open(outputPath, ZipArchiveMode.Create))
@@ -104,6 +108,7 @@ public static class CompressionUtility
     /// </summary>
     public static async Task<string> ExtractZipArchiveAsync(string zipPath, string? outputDirectory = null)
     {
+        ArgumentException.ThrowIfNullOrEmpty(zipPath);
         if (!File.Exists(zipPath))
             throw new FileNotFoundException($"ZIP file not found: {zipPath}");
 
@@ -127,6 +132,8 @@ public static class CompressionUtility
     /// </summary>
     public static double GetCompressionRatio(string originalPath, string compressedPath)
     {
+        ArgumentException.ThrowIfNullOrEmpty(originalPath);
+        ArgumentException.ThrowIfNullOrEmpty(compressedPath);
         if (!File.Exists(originalPath) || !File.Exists(compressedPath))
             return 0;
 
@@ -144,6 +151,7 @@ public static class CompressionUtility
     /// </summary>
     public static byte[] CompressString(string content)
     {
+        ArgumentException.ThrowIfNullOrEmpty(content);
         try
         {
             var bytes = Encoding.UTF8.GetBytes(content);
