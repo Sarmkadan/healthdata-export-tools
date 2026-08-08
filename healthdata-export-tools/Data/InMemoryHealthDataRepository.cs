@@ -4,6 +4,7 @@
 // CTO & Software Architect
 // =============================================================================
 
+using System;
 using System.Collections.Concurrent;
 using HealthDataExportTools.Domain.Models;
 
@@ -25,6 +26,7 @@ public sealed class InMemoryHealthDataRepository : IHealthDataRepository
     // Sleep Data Operations
     public Task<SleepData?> GetSleepByIdAsync(string id)
     {
+        ArgumentException.ThrowIfNullOrEmpty(id);
         _sleepData.TryGetValue(id, out var data);
         return Task.FromResult(data);
     }
@@ -45,18 +47,21 @@ public sealed class InMemoryHealthDataRepository : IHealthDataRepository
 
     public Task AddSleepAsync(SleepData data)
     {
+        ArgumentNullException.ThrowIfNull(data);
         _sleepData[data.Id] = data;
         return Task.CompletedTask;
     }
 
     public Task UpdateSleepAsync(SleepData data)
     {
+        ArgumentNullException.ThrowIfNull(data);
         _sleepData[data.Id] = data;
         return Task.CompletedTask;
     }
 
     public Task DeleteSleepAsync(string id)
     {
+        ArgumentException.ThrowIfNullOrEmpty(id);
         _sleepData.TryRemove(id, out _);
         return Task.CompletedTask;
     }
@@ -64,6 +69,7 @@ public sealed class InMemoryHealthDataRepository : IHealthDataRepository
     // Heart Rate Operations
     public Task<HeartRateData?> GetHeartRateByIdAsync(string id)
     {
+        ArgumentException.ThrowIfNullOrEmpty(id);
         _heartRateData.TryGetValue(id, out var data);
         return Task.FromResult(data);
     }
@@ -84,18 +90,21 @@ public sealed class InMemoryHealthDataRepository : IHealthDataRepository
 
     public Task AddHeartRateAsync(HeartRateData data)
     {
+        ArgumentNullException.ThrowIfNull(data);
         _heartRateData[data.Id] = data;
         return Task.CompletedTask;
     }
 
     public Task UpdateHeartRateAsync(HeartRateData data)
     {
+        ArgumentNullException.ThrowIfNull(data);
         _heartRateData[data.Id] = data;
         return Task.CompletedTask;
     }
 
     public Task DeleteHeartRateAsync(string id)
     {
+        ArgumentException.ThrowIfNullOrEmpty(id);
         _heartRateData.TryRemove(id, out _);
         return Task.CompletedTask;
     }
@@ -103,6 +112,7 @@ public sealed class InMemoryHealthDataRepository : IHealthDataRepository
     // SpO2 Operations
     public Task<SpO2Data?> GetSpO2ByIdAsync(string id)
     {
+        ArgumentException.ThrowIfNullOrEmpty(id);
         _spO2Data.TryGetValue(id, out var data);
         return Task.FromResult(data);
     }
@@ -123,18 +133,21 @@ public sealed class InMemoryHealthDataRepository : IHealthDataRepository
 
     public Task AddSpO2Async(SpO2Data data)
     {
+        ArgumentNullException.ThrowIfNull(data);
         _spO2Data[data.Id] = data;
         return Task.CompletedTask;
     }
 
     public Task UpdateSpO2Async(SpO2Data data)
     {
+        ArgumentNullException.ThrowIfNull(data);
         _spO2Data[data.Id] = data;
         return Task.CompletedTask;
     }
 
     public Task DeleteSpO2Async(string id)
     {
+        ArgumentException.ThrowIfNullOrEmpty(id);
         _spO2Data.TryRemove(id, out _);
         return Task.CompletedTask;
     }
@@ -142,6 +155,7 @@ public sealed class InMemoryHealthDataRepository : IHealthDataRepository
     // Steps Operations
     public Task<StepsData?> GetStepsByIdAsync(string id)
     {
+        ArgumentException.ThrowIfNullOrEmpty(id);
         _stepsData.TryGetValue(id, out var data);
         return Task.FromResult(data);
     }
@@ -162,18 +176,21 @@ public sealed class InMemoryHealthDataRepository : IHealthDataRepository
 
     public Task AddStepsAsync(StepsData data)
     {
+        ArgumentNullException.ThrowIfNull(data);
         _stepsData[data.Id] = data;
         return Task.CompletedTask;
     }
 
     public Task UpdateStepsAsync(StepsData data)
     {
+        ArgumentNullException.ThrowIfNull(data);
         _stepsData[data.Id] = data;
         return Task.CompletedTask;
     }
 
     public Task DeleteStepsAsync(string id)
     {
+        ArgumentException.ThrowIfNullOrEmpty(id);
         _stepsData.TryRemove(id, out _);
         return Task.CompletedTask;
     }
@@ -181,6 +198,7 @@ public sealed class InMemoryHealthDataRepository : IHealthDataRepository
     // Activity Operations
     public Task<ActivityData?> GetActivityByIdAsync(string id)
     {
+        ArgumentException.ThrowIfNullOrEmpty(id);
         _activityData.TryGetValue(id, out var data);
         return Task.FromResult(data);
     }
@@ -201,18 +219,21 @@ public sealed class InMemoryHealthDataRepository : IHealthDataRepository
 
     public Task AddActivityAsync(ActivityData data)
     {
+        ArgumentNullException.ThrowIfNull(data);
         _activityData[data.Id] = data;
         return Task.CompletedTask;
     }
 
     public Task UpdateActivityAsync(ActivityData data)
     {
+        ArgumentNullException.ThrowIfNull(data);
         _activityData[data.Id] = data;
         return Task.CompletedTask;
     }
 
     public Task DeleteActivityAsync(string id)
     {
+        ArgumentException.ThrowIfNullOrEmpty(id);
         _activityData.TryRemove(id, out _);
         return Task.CompletedTask;
     }
@@ -220,30 +241,35 @@ public sealed class InMemoryHealthDataRepository : IHealthDataRepository
     // Health Metric Operations
     public Task<HealthMetric?> GetMetricByIdAsync(string id)
     {
+        ArgumentException.ThrowIfNullOrEmpty(id);
         _metrics.TryGetValue(id, out var metric);
         return Task.FromResult(metric);
     }
 
     public Task<List<HealthMetric>> GetMetricsByNameAsync(string metricName)
     {
+        ArgumentException.ThrowIfNullOrEmpty(metricName);
         var result = _metrics.Values.Where(x => x.MetricName == metricName).ToList();
         return Task.FromResult(result);
     }
 
     public Task AddMetricAsync(HealthMetric metric)
     {
+        ArgumentNullException.ThrowIfNull(metric);
         _metrics[metric.Id] = metric;
         return Task.CompletedTask;
     }
 
     public Task UpdateMetricAsync(HealthMetric metric)
     {
+        ArgumentNullException.ThrowIfNull(metric);
         _metrics[metric.Id] = metric;
         return Task.CompletedTask;
     }
 
     public Task DeleteMetricAsync(string id)
     {
+        ArgumentException.ThrowIfNullOrEmpty(id);
         _metrics.TryRemove(id, out _);
         return Task.CompletedTask;
     }
