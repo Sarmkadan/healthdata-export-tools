@@ -24,6 +24,8 @@ public sealed class ExportService
     /// </summary>
     public async Task ExportToJsonAsync(HealthDataCollection collection, string outputPath)
     {
+        ArgumentNullException.ThrowIfNull(collection);
+        ArgumentException.ThrowIfNullOrEmpty(outputPath);
         try
         {
             var data = new
@@ -61,6 +63,8 @@ public sealed class ExportService
     /// </summary>
     public async Task ExportSleepToCsvAsync(List<SleepData> sleepRecords, string outputPath)
     {
+        ArgumentNullException.ThrowIfNull(sleepRecords);
+        ArgumentException.ThrowIfNullOrEmpty(outputPath);
         try
         {
             using var fs = File.Create(outputPath);
@@ -100,6 +104,8 @@ public sealed class ExportService
     /// </summary>
     public async Task ExportHeartRateToCsvAsync(List<HeartRateData> records, string outputPath)
     {
+        ArgumentNullException.ThrowIfNull(records);
+        ArgumentException.ThrowIfNullOrEmpty(outputPath);
         try
         {
             using var fs = File.Create(outputPath);
@@ -152,6 +158,8 @@ public sealed class ExportService
         string outputPath,
         int maxHeartRate)
     {
+        ArgumentNullException.ThrowIfNull(records);
+        ArgumentException.ThrowIfNullOrEmpty(outputPath);
         if (maxHeartRate <= 0)
             throw new ArgumentOutOfRangeException(nameof(maxHeartRate), "Max heart rate must be greater than zero.");
 
@@ -200,6 +208,8 @@ public sealed class ExportService
     /// </summary>
     public async Task ExportStepsToCsvAsync(List<StepsData> records, string outputPath)
     {
+        ArgumentNullException.ThrowIfNull(records);
+        ArgumentException.ThrowIfNullOrEmpty(outputPath);
         try
         {
             using var fs = File.Create(outputPath);
@@ -246,6 +256,8 @@ public sealed class ExportService
     /// </summary>
     public async Task ExportToJsonPerTypeAsync(HealthDataCollection collection, string outputDirectory)
     {
+        ArgumentNullException.ThrowIfNull(collection);
+        ArgumentException.ThrowIfNullOrEmpty(outputDirectory);
         if (!Directory.Exists(outputDirectory))
             Directory.CreateDirectory(outputDirectory);
 
@@ -326,6 +338,8 @@ public sealed class ExportService
     /// </summary>
     public async Task ExportCompleteAsync(HealthDataCollection collection, string outputDirectory, ExportFormat format)
     {
+        ArgumentNullException.ThrowIfNull(collection);
+        ArgumentException.ThrowIfNullOrEmpty(outputDirectory);
         if (!Directory.Exists(outputDirectory))
             Directory.CreateDirectory(outputDirectory);
 
