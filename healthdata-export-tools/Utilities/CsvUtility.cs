@@ -19,6 +19,7 @@ public static class CsvUtility
     /// </summary>
     public static async Task<List<Dictionary<string, string>>> ParseCsvFileAsync(string filePath)
     {
+        ArgumentException.ThrowIfNullOrEmpty(filePath);
         var records = new List<Dictionary<string, string>>();
 
         try
@@ -60,6 +61,7 @@ public static class CsvUtility
     /// </summary>
     public static List<string> ParseCsvLine(string line)
     {
+        ArgumentException.ThrowIfNullOrEmpty(line);
         var fields = new List<string>(16);
         char[] buffer = ArrayPool<char>.Shared.Rent(256);
         int bufLen = 0;
@@ -137,6 +139,8 @@ public static class CsvUtility
     /// </summary>
     public static List<string> ValidateCsvStructure(string filePath, string[] expectedHeaders)
     {
+        ArgumentException.ThrowIfNullOrEmpty(filePath);
+        ArgumentNullException.ThrowIfNull(expectedHeaders);
         var errors = new List<string>();
 
         try
@@ -180,6 +184,7 @@ public static class CsvUtility
     /// </summary>
     public static async Task<int> CountRowsAsync(string filePath)
     {
+        ArgumentException.ThrowIfNullOrEmpty(filePath);
         try
         {
             var lines = await FileUtility.ReadLinesAsync(filePath).ConfigureAwait(false);
@@ -199,6 +204,8 @@ public static class CsvUtility
         string outputPath,
         bool includeSourceColumn = false)
     {
+        ArgumentNullException.ThrowIfNull(filePaths);
+        ArgumentException.ThrowIfNullOrEmpty(outputPath);
         try
         {
             var allRecords = new List<Dictionary<string, string>>();
@@ -255,6 +262,7 @@ public static class CsvUtility
     /// </summary>
     public static async Task<string> CsvToJsonAsync(string csvFilePath)
     {
+        ArgumentException.ThrowIfNullOrEmpty(csvFilePath);
         try
         {
             var records = await ParseCsvFileAsync(csvFilePath).ConfigureAwait(false);
