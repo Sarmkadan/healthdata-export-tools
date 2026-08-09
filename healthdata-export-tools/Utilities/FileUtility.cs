@@ -16,6 +16,9 @@ public static class FileUtility
     /// </summary>
     public static async Task<string> ReadFileAsync(string filePath)
     {
+        if (string.IsNullOrEmpty(filePath))
+            throw new ArgumentException("File path is null or empty", nameof(filePath));
+
         try
         {
             if (!File.Exists(filePath))
@@ -34,6 +37,11 @@ public static class FileUtility
     /// </summary>
     public static async Task WriteFileAsync(string filePath, string content, bool createBackup = false)
     {
+        if (string.IsNullOrEmpty(filePath))
+            throw new ArgumentException("File path is null or empty", nameof(filePath));
+        if (string.IsNullOrEmpty(content))
+            throw new ArgumentException("Content is null or empty", nameof(content));
+
         try
         {
             // Create directory if it doesn't exist
@@ -63,6 +71,11 @@ public static class FileUtility
     /// </summary>
     public static List<string> GetFilesRecursive(string directoryPath, string searchPattern = "*")
     {
+        if (string.IsNullOrEmpty(directoryPath))
+            throw new ArgumentException("Directory path is null or empty", nameof(directoryPath));
+        if (string.IsNullOrEmpty(searchPattern))
+            throw new ArgumentException("Search pattern is null or empty", nameof(searchPattern));
+
         try
         {
             if (!Directory.Exists(directoryPath))
@@ -81,6 +94,9 @@ public static class FileUtility
     /// </summary>
     public static bool DeleteFile(string filePath)
     {
+        if (string.IsNullOrEmpty(filePath))
+            throw new ArgumentException("File path is null or empty", nameof(filePath));
+
         try
         {
             if (!File.Exists(filePath))
@@ -100,6 +116,9 @@ public static class FileUtility
     /// </summary>
     public static long GetFileSize(string filePath)
     {
+        if (string.IsNullOrEmpty(filePath))
+            throw new ArgumentException("File path is null or empty", nameof(filePath));
+
         try
         {
             if (!File.Exists(filePath))
@@ -161,6 +180,11 @@ public static class FileUtility
     /// </summary>
     public static async Task CopyDirectoryAsync(string sourceDir, string destDir)
     {
+        if (string.IsNullOrEmpty(sourceDir))
+            throw new ArgumentException("Source directory is null or empty", nameof(sourceDir));
+        if (string.IsNullOrEmpty(destDir))
+            throw new ArgumentException("Destination directory is null or empty", nameof(destDir));
+
         try
         {
             Directory.CreateDirectory(destDir);
@@ -188,6 +212,9 @@ public static class FileUtility
     /// </summary>
     public static async Task<string> GetFileSha256HashAsync(string filePath)
     {
+        if (string.IsNullOrEmpty(filePath))
+            throw new ArgumentException("File path is null or empty", nameof(filePath));
+
         try
         {
             if (!File.Exists(filePath))
@@ -235,6 +262,11 @@ public static class FileUtility
     /// </summary>
     public static async Task WriteLinesAsync(string filePath, IEnumerable<string> lines)
     {
+        if (string.IsNullOrEmpty(filePath))
+            throw new ArgumentException("File path is null or empty", nameof(filePath));
+        if (lines == null)
+            throw new ArgumentNullException(nameof(lines));
+
         try
         {
             var directory = Path.GetDirectoryName(filePath);
@@ -260,6 +292,9 @@ public static class FileUtility
     /// </summary>
     public static List<string> GetRecentFiles(string directoryPath, int count = 10)
     {
+        if (string.IsNullOrEmpty(directoryPath))
+            throw new ArgumentException("Directory path is null or empty", nameof(directoryPath));
+
         try
         {
             return Directory.GetFiles(directoryPath)
