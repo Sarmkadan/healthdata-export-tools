@@ -91,6 +91,7 @@ public sealed class ExportServiceTests
     [Fact]
     public async Task ExportToJsonAsync_ShouldCreateValidJsonFile()
     {
+        _mockLogger.LogInformation("ExportToJsonAsync_ShouldCreateValidJsonFile called");
         // Arrange
         var collection = CreateSampleHealthDataCollection();
         var outputPath = Path.Combine(_tempDirectory, "test_export.json");
@@ -108,6 +109,7 @@ public sealed class ExportServiceTests
         jsonContent.Should().Contain("\"StepsRecords\":");
         jsonContent.Should().Contain("\"ActivityRecords\":");
         jsonContent.Should().Contain("\"Metrics\":");
+        _mockLogger.LogInformation("ExportToJsonAsync_ShouldCreateValidJsonFile completed");
     }
 
     /// <summary>
@@ -118,6 +120,7 @@ public sealed class ExportServiceTests
     [Fact]
     public async Task ExportToJsonAsync_ShouldHandleEmptyCollection()
     {
+        _mockLogger.LogInformation("ExportToJsonAsync_ShouldHandleEmptyCollection called");
         // Arrange
         var collection = new HealthDataCollection();
         var outputPath = Path.Combine(_tempDirectory, "empty_export.json");
@@ -130,6 +133,7 @@ public sealed class ExportServiceTests
         var jsonContent = await File.ReadAllTextAsync(outputPath).ConfigureAwait(false);
         jsonContent.Should().Contain("\"TotalRecords\": 0");
         jsonContent.Should().Contain("\"SleepRecords\": []");
+        _mockLogger.LogInformation("ExportToJsonAsync_ShouldHandleEmptyCollection completed");
     }
 
     /// <summary>
@@ -140,6 +144,7 @@ public sealed class ExportServiceTests
     [Fact]
     public async Task ExportSleepToCsvAsync_ShouldCreateValidCsvFile()
     {
+        _mockLogger.LogInformation("ExportSleepToCsvAsync_ShouldCreateValidCsvFile called");
         // Arrange
         var sleepRecords = new List<SleepData>
         {
@@ -160,6 +165,7 @@ public sealed class ExportServiceTests
         var csvContent = await File.ReadAllTextAsync(outputPath).ConfigureAwait(false);
         csvContent.Should().Contain("Date,Duration,DeepSleep,LightSleep,REM,Awake,Quality,Score,AvgHeartRate");
         csvContent.Should().Contain("2024-01-01,480,90,270,60,60,Good,85,60");
+        _mockLogger.LogInformation("ExportSleepToCsvAsync_ShouldCreateValidCsvFile completed");
     }
 
     /// <summary>
@@ -170,10 +176,11 @@ public sealed class ExportServiceTests
     [Fact]
     public async Task ExportCompleteAsync_ShouldExportAllFormatsWhenSpecified()
     {
+        _mockLogger.LogInformation("ExportCompleteAsync_ShouldExportAllFormatsWhenSpecified called");
         // Arrange
         var collection = CreateSampleHealthDataCollection();
         var outputDir = Path.Combine(_tempDirectory, "complete_export_all");
-        
+
         // Act
         await _exportService.ExportCompleteAsync(collection, outputDir, ExportFormat.All).ConfigureAwait(false);
 
@@ -183,6 +190,7 @@ public sealed class ExportServiceTests
         File.Exists(Path.Combine(outputDir, "sleep.csv")).Should().BeTrue();
         File.Exists(Path.Combine(outputDir, "heart_rate.csv")).Should().BeTrue();
         File.Exists(Path.Combine(outputDir, "steps.csv")).Should().BeTrue();
+        _mockLogger.LogInformation("ExportCompleteAsync_ShouldExportAllFormatsWhenSpecified completed");
     }
 
     /// <summary>
@@ -193,16 +201,18 @@ public sealed class ExportServiceTests
     [Fact]
     public async Task ExportCompleteAsync_ShouldCreateOutputDirectoryIfNotExists()
     {
+        _mockLogger.LogInformation("ExportCompleteAsync_ShouldCreateOutputDirectoryIfNotExists called");
         // Arrange
         var collection = CreateSampleHealthDataCollection();
         var nonExistentDir = Path.Combine(_tempDirectory, "non_existent_output");
-        
+
         // Act
         await _exportService.ExportCompleteAsync(collection, nonExistentDir, ExportFormat.Json).ConfigureAwait(false);
 
         // Assert
         Directory.Exists(nonExistentDir).Should().BeTrue();
         File.Exists(Path.Combine(nonExistentDir, "health_data.json")).Should().BeTrue();
+        _mockLogger.LogInformation("ExportCompleteAsync_ShouldCreateOutputDirectoryIfNotExists completed");
     }
     
     /// <summary>
@@ -213,6 +223,7 @@ public sealed class ExportServiceTests
     [Fact]
     public async Task ExportHeartRateToCsvAsync_ShouldCreateValidCsvFile()
     {
+        _mockLogger.LogInformation("ExportHeartRateToCsvAsync_ShouldCreateValidCsvFile called");
         // Arrange
         var hrRecords = new List<HeartRateData>
         {
@@ -231,6 +242,7 @@ public sealed class ExportServiceTests
         var csvContent = await File.ReadAllTextAsync(outputPath).ConfigureAwait(false);
         csvContent.Should().Contain("Date,MinBpm,MaxBpm,AvgBpm,RestingBpm,Measurements,StressLevel,CardioZone");
         csvContent.Should().Contain("2024-01-01,50,120,70,60,100,5,30");
+        _mockLogger.LogInformation("ExportHeartRateToCsvAsync_ShouldCreateValidCsvFile completed");
     }
 
     /// <summary>
@@ -241,6 +253,7 @@ public sealed class ExportServiceTests
     [Fact]
     public async Task ExportStepsToCsvAsync_ShouldCreateValidCsvFile()
     {
+        _mockLogger.LogInformation("ExportStepsToCsvAsync_ShouldCreateValidCsvFile called");
         // Arrange
         var stepsRecords = new List<StepsData>
         {
@@ -259,5 +272,6 @@ public sealed class ExportServiceTests
         var csvContent = await File.ReadAllTextAsync(outputPath).ConfigureAwait(false);
         csvContent.Should().Contain("Date,Steps,DistanceKm,Calories,GoalAchievement,ActiveMinutes,Walking,Running");
         csvContent.Should().Contain("2024-01-01,10000,7.5,500,100,120,90,30");
+        _mockLogger.LogInformation("ExportStepsToCsvAsync_ShouldCreateValidCsvFile completed");
     }
 }
