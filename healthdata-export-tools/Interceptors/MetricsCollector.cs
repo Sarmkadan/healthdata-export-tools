@@ -31,6 +31,7 @@ public sealed class MetricsCollector : IMetricsCollector
     /// </summary>
     public void RecordSuccess(string operationName, TimeSpan duration, long itemsProcessed = 1)
     {
+        _logger.LogInformation("Recording success for operation {OperationName} with duration {DurationMs}ms and {ItemsProcessed} items processed", operationName, duration.TotalMilliseconds, itemsProcessed);
         _metricsLock.EnterUpgradeableReadLock();
         try
         {
@@ -61,6 +62,7 @@ public sealed class MetricsCollector : IMetricsCollector
     /// </summary>
     public void RecordFailure(string operationName, Exception ex)
     {
+        _logger.LogError(ex, "Recording failure for operation {OperationName}", operationName);
         _metricsLock.EnterUpgradeableReadLock();
         try
         {
@@ -91,6 +93,7 @@ public sealed class MetricsCollector : IMetricsCollector
     /// </summary>
     public OperationMetrics? GetMetrics(string operationName)
     {
+        _logger.LogInformation("Retrieving metrics for operation {OperationName}", operationName);
         _metricsLock.EnterReadLock();
         try
         {
@@ -107,6 +110,7 @@ public sealed class MetricsCollector : IMetricsCollector
     /// </summary>
     public List<OperationMetrics> GetAllMetrics()
     {
+        _logger.LogInformation("Retrieving all metrics");
         _metricsLock.EnterReadLock();
         try
         {
@@ -123,6 +127,7 @@ public sealed class MetricsCollector : IMetricsCollector
     /// </summary>
     public MetricsSummary GetSummary()
     {
+        _logger.LogInformation("Computing metrics summary");
         _metricsLock.EnterReadLock();
         try
         {
