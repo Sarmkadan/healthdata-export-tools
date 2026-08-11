@@ -49,6 +49,7 @@ public sealed class TrendAnomalyDetectionServiceTests
 	/// </summary>
 	public void ComputeTrendAndAnomalies_ShouldReturnInsufficientDataForFewPoints()
 	{
+		_mockLogger.LogInformation("ComputeTrendAndAnomalies_ShouldReturnInsufficientDataForFewPoints called");
 		// Arrange
 		var points = new List<(DateTime Date, double Value)>
 		{
@@ -74,6 +75,7 @@ public sealed class TrendAnomalyDetectionServiceTests
 	/// </summary>
 	public void ComputeTrendAndAnomalies_ShouldDetectStableTrend()
 	{
+		_mockLogger.LogInformation("ComputeTrendAndAnomalies_ShouldDetectStableTrend called");
 		// Arrange
 		var points = new List<(DateTime Date, double Value)>();
 		for (int i = 0; i < 10; i++) points.Add((DateTime.Today.AddDays(i), 100 + i * 0.5)); // Slight increase
@@ -261,24 +263,20 @@ public sealed class TrendAnomalyDetectionServiceTests
 	{
 		// Arrange
 		var collection = new HealthDataCollection();
-		// Simulate a scenario where one of the internal analysis tasks throws an exception
-		// This is tricky with current setup as Analyze method is private
-		// For now, testing the outer exception handling.
-		// A more robust test would involve mocking the internal Analyze calls if they were public/virtual.
-
-		// This test essentially verifies that if an exception occurs *within* the Task.Run calls
-		// or during the await Task.WhenAll, it gets caught and re-thrown as HealthDataException.
-		// This is implicitly tested by the service's own error handling.
-		// For a more direct test, one would need to inject a faulty dependency or use reflection/private accessors.
-		// Given current constraints, this is a conceptual test.
-
-		// Let's create a scenario where one of the valueSelectors would throw
-		collection.HeartRateRecords.Add(new HeartRateData { RecordDate = DateTime.Today, AverageBpm = -1 }); // Invalid data to force error if validation was part of this.
+		collection.HeartRateRecords.Add(new HeartRateData { RecordDate = DateTime.Today, AverageBpm = -1 });
 
 		// Act
 		Func<Task> act = async () => await _service.AnalyzeAsync(collection, 30, 2.0, new CancellationToken(true)).ConfigureAwait(false); // Pass cancelled token
 
 		// Assert
-		await act.Should().ThrowAsync<OperationCanceledException>().ConfigureAwait(false);
+		try 
+		{
+			await act.Should().ThrowAsync<OperationCanceledException>().ConfigureAwait(false);
+		}
+		catch (Exception ex)
+		{
+			_mockLogger.LogError(ex, "Failed to analyze async");
+			throw;
+		}
 	}
 }
