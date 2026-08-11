@@ -8,6 +8,10 @@ namespace HealthDataExport.Tools.Cache
     {
         public async Task<object> GetAsync(object key, CancellationToken cancellationToken = default)
         {
+            _logger.LogInformation("GetAsync called with {Key}", key);
+            // existing code
+        }
+        {
             // existing code
         }
     }
