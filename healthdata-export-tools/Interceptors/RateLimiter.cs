@@ -243,4 +243,10 @@ public sealed class RateLimitStatus
     public bool IsRateLimited { get; set; }
 
     public double GetUsagePercentage() => (CurrentTokens / MaxTokens) * 100;
+
+    /// <summary>
+    /// Returns a concise, informative string representation of this rate limit status.
+    /// </summary>
+    public override string ToString()
+        => $"RateLimitStatus {{ Identifier = {Identifier}, CurrentTokens = {CurrentTokens}, MaxTokens = {MaxTokens}, RefillRate = {RefillRate}, IsRateLimited = {IsRateLimited} }}";
 }
