@@ -183,4 +183,17 @@ public sealed class MetricsCollector : IMetricsCollector
             _metricsLock.ExitWriteLock();
         }
     }
+
+    public override string ToString()
+    {
+        _metricsLock.EnterReadLock();
+        try
+        {
+            return $"MetricsCollector {{ Operations = [{string.Join(", ", _metrics.Values.Select(m => $"{{ OperationName = {m.OperationName}, SuccessCount = {m.SuccessCount}, FailureCount = {m.FailureCount}, TotalDurationMs = {m.TotalDurationMs}, TotalItemsProcessed = {m.TotalItemsProcessed}, MinDurationMs = {m.MinDurationMs} }}"))}] }}";
+        }
+        finally
+        {
+            _metricsLock.ExitReadLock();
+        }
+    }
 }
