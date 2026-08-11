@@ -32,6 +32,7 @@ public sealed class BatchProcessingServiceTests
     [Fact]
     public async Task ProcessInBatchesAsync_ShouldProcessAllItemsSuccessfully()
     {
+        _mockLogger.LogInformation("ProcessInBatchesAsync_ShouldProcessAllItemsSuccessfully called");
         // Arrange
         var processedItems = new List<int>();
         var itemsToProcess = Enumerable.Range(1, 100).ToList();
@@ -66,11 +67,13 @@ public sealed class BatchProcessingServiceTests
             Arg.Is<object>(o => o.ToString()!.Contains("Batch processing completed")),
             null,
             Arg.Any<Func<object, Exception?, string>>());
+        _mockLogger.LogInformation("ProcessInBatchesAsync_ShouldProcessAllItemsSuccessfully completed");
     }
 
     [Fact]
     public async Task ProcessInBatchesAsync_ShouldHandleErrorsInBatchProcessor()
     {
+        _mockLogger.LogInformation("ProcessInBatchesAsync_ShouldHandleErrorsInBatchProcessor called");
         // Arrange
         var processedItems = new List<int>();
         var itemsToProcess = Enumerable.Range(1, 10).ToList();
@@ -105,11 +108,13 @@ public sealed class BatchProcessingServiceTests
             Arg.Is<object>(o => o.ToString()!.Contains("Error processing batch")),
             Arg.Any<Exception>(),
             Arg.Any<Func<object, Exception?, string>>());
+        _mockLogger.LogInformation("ProcessInBatchesAsync_ShouldHandleErrorsInBatchProcessor completed");
     }
 
     [Fact]
     public async Task ProcessInBatchesAsync_ShouldInvokeProgressCallback()
     {
+        _mockLogger.LogInformation("ProcessInBatchesAsync_ShouldInvokeProgressCallback called");
         // Arrange
         var itemsToProcess = Enumerable.Range(1, 10).ToList();
         var progressUpdates = new List<BatchProgress>();
@@ -129,11 +134,13 @@ public sealed class BatchProcessingServiceTests
         progressUpdates.Should().HaveCount(5); // 10 items, batch size 2, so 5 batches
         progressUpdates.Last().PercentComplete.Should().Be(100);
         progressUpdates.First().CurrentBatch.Should().Be(1);
+        _mockLogger.LogInformation("ProcessInBatchesAsync_ShouldInvokeProgressCallback completed");
     }
 
     [Fact]
     public async Task ProcessInBatchesAsync_ShouldReturnZeroForEmptyList()
     {
+        _mockLogger.LogInformation("ProcessInBatchesAsync_ShouldReturnZeroForEmptyList called");
         // Arrange
         var itemsToProcess = new List<string>();
         var batchProcessor = new Func<List<string>, Task>(batch => Task.CompletedTask);
@@ -146,11 +153,13 @@ public sealed class BatchProcessingServiceTests
         result.ProcessedItems.Should().Be(0);
         result.FailedItems.Should().Be(0);
         result.IsSuccessful.Should().BeTrue();
+        _mockLogger.LogInformation("ProcessInBatchesAsync_ShouldReturnZeroForEmptyList completed");
     }
 
     [Fact]
     public async Task ProcessInParallelBatchesAsync_ShouldProcessAllItemsSuccessfully()
     {
+        _mockLogger.LogInformation("ProcessInParallelBatchesAsync_ShouldProcessAllItemsSuccessfully called");
         // Arrange
         var processedItems = new List<int>();
         var itemsToProcess = Enumerable.Range(1, 100).ToList();
@@ -179,11 +188,13 @@ public sealed class BatchProcessingServiceTests
             Arg.Is<object>(o => o.ToString()!.Contains("Starting parallel batch processing")),
             null,
             Arg.Any<Func<object, Exception?, string>>());
+        _mockLogger.LogInformation("ProcessInParallelBatchesAsync_ShouldProcessAllItemsSuccessfully completed");
     }
 
     [Fact]
     public async Task ProcessInParallelBatchesAsync_ShouldHandleErrorsInParallelBatches()
     {
+        _mockLogger.LogInformation("ProcessInParallelBatchesAsync_ShouldHandleErrorsInParallelBatches called");
         // Arrange
         var processedItems = new List<int>();
         var itemsToProcess = Enumerable.Range(1, 10).ToList();
@@ -218,7 +229,9 @@ public sealed class BatchProcessingServiceTests
             Arg.Is<object>(o => o.ToString()!.Contains("Error in parallel batch processing")),
             Arg.Any<Exception>(),
             Arg.Any<Func<object, Exception?, string>>());
+        _mockLogger.LogInformation("ProcessInParallelBatchesAsync_ShouldHandleErrorsInParallelBatches completed");
     }
+
 
     [Fact]
     public void PartitionIntoBatches_ShouldPartitionCorrectly()
