@@ -28,7 +28,7 @@ public sealed class NotificationServiceTests
     public async Task SendNotification_InfoType_LogsInformationMessage()
     {
         // Arrange
-        var messageBody = "Test Info Message";
+        var messageBody = "Test Info Message with structured logging";
         var notificationMessage = new NotificationMessage
         {
             Subject = "Test Subject",
