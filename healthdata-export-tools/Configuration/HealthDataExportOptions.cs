@@ -177,4 +177,6 @@ public sealed class HealthDataExportOptions
     /// Check if configuration is valid
     /// </summary>
     public bool IsValid() => Validate().Count == 0;
+
+    public override string ToString() => $"HealthDataExportOptions {{ InputPath = {InputPath}, OutputPath = {OutputPath}, DatabasePath = {DatabasePath}, ExportFormat = {ExportFormat}, ValidateData = {ValidateData}, PerformAnalysis = {PerformAnalysis} }}";
 }
