@@ -28,6 +28,7 @@ public sealed class JsonLinesExporterTests
     [Fact]
     public async Task ExportToJsonLinesAsync_WithEmptyCollection_CreatesEmptyFile()
     {
+        _loggerMock.Object.LogInformation("ExportToJsonLinesAsync_WithEmptyCollection_CreatesEmptyFile started");
         // Arrange
         var collection = new HealthDataCollection();
         var tempFile = Path.GetTempFileName();
@@ -54,6 +55,7 @@ public sealed class JsonLinesExporterTests
     [Fact]
     public async Task ExportToJsonLinesAsync_WithSleepRecords_ExportsCorrectFormat()
     {
+        _loggerMock.Object.LogInformation("ExportToJsonLinesAsync_WithSleepRecords_ExportsCorrectFormat started");
         // Arrange
         var collection = new HealthDataCollection
         {
@@ -102,6 +104,7 @@ public sealed class JsonLinesExporterTests
     [Fact]
     public async Task ExportToJsonLinesAsync_WithMultipleRecordTypes_ExportsAllRecords()
     {
+        _loggerMock.Object.LogInformation("ExportToJsonLinesAsync_WithMultipleRecordTypes_ExportsAllRecords started");
         // Arrange
         var collection = new HealthDataCollection
         {
@@ -162,6 +165,7 @@ public sealed class JsonLinesExporterTests
     [Fact]
     public async Task ExportToJsonLinesAsync_WithSpecialCharacters_HandlesEscaping()
     {
+        _loggerMock.Object.LogInformation("ExportToJsonLinesAsync_WithSpecialCharacters_HandlesEscaping started");
         // Arrange
         var collection = new HealthDataCollection
         {
