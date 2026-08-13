@@ -36,6 +36,7 @@ public class InMemoryCacheProviderTests
         // Arrange
         string key = "testKey";
         string value = "testValue";
+        _logger.LogInformation("Starting test: SetAndGet_ShouldReturnStoredValue with Key={Key}, Value={Value}", key, value);
 
         // Act
         await _sut.SetAsync(key, value);
@@ -43,6 +44,7 @@ public class InMemoryCacheProviderTests
 
         // Assert
         result.Should().Be(value);
+        _logger.LogInformation("Finished test: SetAndGet_ShouldReturnStoredValue. Result={Result}", result);
     }
 
     /// <summary>
@@ -56,6 +58,7 @@ public class InMemoryCacheProviderTests
         string key = "expiredKey";
         string value = "value";
         TimeSpan expiry = TimeSpan.FromMilliseconds(100);
+        _logger.LogInformation("Starting test: Expiry_ShouldReturnNullAfterExpiration with Key={Key}, ExpiryMs={ExpiryMs}", key, expiry.TotalMilliseconds);
 
         // Act
         await _sut.SetAsync(key, value, expiry);
@@ -65,6 +68,7 @@ public class InMemoryCacheProviderTests
         // Assert
         result.Should().BeNull();
         (await _sut.ExistsAsync(key)).Should().BeFalse();
+        _logger.LogInformation("Finished test: Expiry_ShouldReturnNullAfterExpiration. IsNull={IsNull}", result == null);
     }
 
     /// <summary>
@@ -78,6 +82,7 @@ public class InMemoryCacheProviderTests
         string key = "overwriteKey";
         string value1 = "value1";
         string value2 = "value2";
+        _logger.LogInformation("Starting test: Overwrite_ShouldReplaceExistingValue with Key={Key}, Value1={Value1}, Value2={Value2}", key, value1, value2);
 
         // Act
         await _sut.SetAsync(key, value1);
@@ -86,6 +91,7 @@ public class InMemoryCacheProviderTests
 
         // Assert
         result.Should().Be(value2);
+        _logger.LogInformation("Finished test: Overwrite_ShouldReplaceExistingValue. FinalValue={Result}", result);
     }
 
     /// <summary>
@@ -97,12 +103,14 @@ public class InMemoryCacheProviderTests
     {
         // Arrange
         string key = "nonExistentKey";
+        _logger.LogInformation("Starting test: RemoveMissingKey_ShouldNotThrow with Key={Key}", key);
 
         // Act
         Func<Task> act = async () => await _sut.RemoveAsync(key);
 
         // Assert
         await act.Should().NotThrowAsync();
+        _logger.LogInformation("Finished test: RemoveMissingKey_ShouldNotThrow. No exception thrown.");
     }
 
     /// <summary>
@@ -114,6 +122,7 @@ public class InMemoryCacheProviderTests
         // Arrange
         int iterations = 100;
         string keyPrefix = "key_";
+        _logger.LogInformation("Starting test: ConcurrentAccess_SmokeTest with Iterations={Iterations}", iterations);
 
         // Act
         Parallel.For(0, iterations, i =>
@@ -126,5 +135,6 @@ public class InMemoryCacheProviderTests
 
         // Assert
         // If no exception, test passes
+        _logger.LogInformation("Finished test: ConcurrentAccess_SmokeTest. Completed successfully.");
     }
 }
