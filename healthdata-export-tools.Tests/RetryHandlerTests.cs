@@ -54,6 +54,8 @@ public sealed class RetryHandlerTests : IDisposable
     [Fact]
     public async Task ExecuteAsync_SucceedsFirstTry_ReturnsResult()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(ExecuteAsync_SucceedsFirstTry_ReturnsResult));
+
         // Arrange
         var handler = new RetryHandler(_loggerMock.Object, maxRetries: 3, initialDelayMs: 10);
         var expected = 42;
@@ -67,11 +69,15 @@ public sealed class RetryHandlerTests : IDisposable
         Assert.Equal(expected, result);
         // Only one debug log should be emitted (no retries)
         Assert.Contains(_logMessages, m => m.Contains("Executing operation: FirstTry"));
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(ExecuteAsync_SucceedsFirstTry_ReturnsResult));
     }
 
     [Fact]
     public async Task ExecuteAsync_RetriesTransientFailures_ReturnsResult()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(ExecuteAsync_RetriesTransientFailures_ReturnsResult));
+
         // Arrange
         var handler = new RetryHandler(_loggerMock.Object, maxRetries: 3, initialDelayMs: 10);
         var attempts = 0;
@@ -99,11 +105,16 @@ public sealed class RetryHandlerTests : IDisposable
                 warningCount++;
         }
         Assert.Equal(2, warningCount);
+
+        _loggerMock.Object.LogWarning("Observed {WarningCount} retry warnings for test {TestName}", warningCount, nameof(ExecuteAsync_RetriesTransientFailures_ReturnsResult));
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(ExecuteAsync_RetriesTransientFailures_ReturnsResult));
     }
 
     [Fact]
     public async Task ExecuteAsync_ExceedsMaxRetries_Throws()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(ExecuteAsync_ExceedsMaxRetries_Throws));
+
         // Arrange
         var handler = new RetryHandler(_loggerMock.Object, maxRetries: 2, initialDelayMs: 10);
         int attempts = 0;
@@ -118,14 +129,21 @@ public sealed class RetryHandlerTests : IDisposable
         var ex = await Assert.ThrowsAsync<HttpRequestException>(async () =>
             await handler.ExecuteAsync<int>("ExhaustRetries", Operation));
 
+        // Log the error with structured data
+        _loggerMock.Object.LogError(ex, "Operation {OperationName} failed after max retries", "ExhaustRetries");
+
         Assert.Equal("Always failing", ex.Message);
         // Attempts should be maxRetries + 1 (initial try + retries)
         Assert.Equal(3, attempts);
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(ExecuteAsync_ExceedsMaxRetries_Throws));
     }
 
     [Fact]
     public async Task ExecuteAsync_CancellationException_NotRetried()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(ExecuteAsync_CancellationException_NotRetried));
+
         // Arrange
         var handler = new RetryHandler(_loggerMock.Object, maxRetries: 5, initialDelayMs: 10);
         int attempts = 0;
@@ -140,14 +158,21 @@ public sealed class RetryHandlerTests : IDisposable
         var ex = await Assert.ThrowsAsync<OperationCanceledException>(async () =>
             await handler.ExecuteAsync<int>("Cancellation", Operation));
 
+        // Log the cancellation as an error (since the operation did not complete)
+        _loggerMock.Object.LogError(ex, "Operation {OperationName} was cancelled", "Cancellation");
+
         Assert.Equal("Cancelled", ex.Message);
         // Should not retry; only one attempt
         Assert.Equal(1, attempts);
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(ExecuteAsync_CancellationException_NotRetried));
     }
 
     [Fact]
     public async Task ExecuteAsync_BackoffDelaysIncrease()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(ExecuteAsync_BackoffDelaysIncrease));
+
         // Arrange
         var initialDelayMs = 20;
         var backoff = 2.0;
@@ -178,11 +203,15 @@ public sealed class RetryHandlerTests : IDisposable
         var expectedDelay = initialDelayMs + (initialDelayMs * backoff);
         // Allow some tolerance for scheduling overhead
         Assert.InRange(sw.ElapsedMilliseconds, expectedDelay, expectedDelay + 200);
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(ExecuteAsync_BackoffDelaysIncrease));
     }
 
     [Fact]
     public void Execute_SucceedsFirstTry_ReturnsResult()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(Execute_SucceedsFirstTry_ReturnsResult));
+
         // Arrange
         var handler = new RetryHandler(_loggerMock.Object, maxRetries: 3, initialDelayMs: 10);
         var expected = "ok";
@@ -192,11 +221,15 @@ public sealed class RetryHandlerTests : IDisposable
 
         // Assert
         Assert.Equal(expected, result);
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(Execute_SucceedsFirstTry_ReturnsResult));
     }
 
     [Fact]
     public void Execute_TransientFailures_RetriesAndSucceeds()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(Execute_TransientFailures_RetriesAndSucceeds));
+
         // Arrange
         var handler = new RetryHandler(_loggerMock.Object, maxRetries: 3, initialDelayMs: 10);
         var attempts = 0;
@@ -215,5 +248,7 @@ public sealed class RetryHandlerTests : IDisposable
         // Assert
         Assert.Equal("done", result);
         Assert.Equal(3, attempts);
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(Execute_TransientFailures_RetriesAndSucceeds));
     }
 }
