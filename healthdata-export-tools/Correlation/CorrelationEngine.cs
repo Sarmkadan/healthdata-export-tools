@@ -53,6 +53,10 @@ public sealed class CorrelationEngine(ILogger<CorrelationEngine> logger) : ICorr
         ArgumentNullException.ThrowIfNull(collection);
         options ??= CorrelationEngineOptions.Default;
 
+        logger.LogInformation(
+            "AnalyzeAsync started with {WindowDays} day window, ComputeAllPairs={ComputeAllPairs}, Parallel={Parallel}",
+            options.AnalysisWindowDays, options.ComputeAllPairs, options.EnableParallelComputation);
+
         var timeSeries = ExtractTimeSeries(collection, options.AnalysisWindowDays);
         var seriesMap = timeSeries.ToDictionary(t => t.MetricName, StringComparer.Ordinal);
 
@@ -93,6 +97,7 @@ public sealed class CorrelationEngine(ILogger<CorrelationEngine> logger) : ICorr
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(collection);
+        logger.LogInformation("GetInsightsAsync called with {WindowDays} day window", windowDays);
         var result = await AnalyzeAsync(
             collection,
             new CorrelationEngineOptions { AnalysisWindowDays = windowDays },
@@ -104,6 +109,7 @@ public sealed class CorrelationEngine(ILogger<CorrelationEngine> logger) : ICorr
     public IReadOnlyList<MetricTimeSeries> ExtractTimeSeries(HealthDataCollection collection, int windowDays)
     {
         ArgumentNullException.ThrowIfNull(collection);
+        logger.LogInformation("ExtractTimeSeries called with {WindowDays} day window", windowDays);
         var cutoff = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-windowDays));
         var series = new List<MetricTimeSeries>(10);
 
@@ -121,7 +127,12 @@ public sealed class CorrelationEngine(ILogger<CorrelationEngine> logger) : ICorr
         ArgumentNullException.ThrowIfNull(x);
         ArgumentNullException.ThrowIfNull(y);
         if (x.Count != y.Count || x.Count < 2)
+        {
+            logger.LogWarning(
+                "ComputePearsonCorrelation skipped: mismatched or insufficient sample counts ({XCount} vs {YCount})",
+                x.Count, y.Count);
             return double.NaN;
+        }
 
         var n = x.Count;
         var meanX = x.Average();
@@ -147,7 +158,12 @@ public sealed class CorrelationEngine(ILogger<CorrelationEngine> logger) : ICorr
         ArgumentNullException.ThrowIfNull(x);
         ArgumentNullException.ThrowIfNull(y);
         if (lagDays < 0 || lagDays >= x.Count || x.Count != y.Count)
+        {
+            logger.LogWarning(
+                "ComputeLaggedCorrelation skipped: invalid lag {LagDays} for series of length {Count}",
+                lagDays, x.Count);
             return double.NaN;
+        }
 
         var xLeading = x.Take(x.Count - lagDays).ToArray();
         var yLagging = y.Skip(lagDays).ToArray();
@@ -160,13 +176,19 @@ public sealed class CorrelationEngine(ILogger<CorrelationEngine> logger) : ICorr
     {
         ArgumentNullException.ThrowIfNull(a);
         ArgumentNullException.ThrowIfNull(b);
+        logger.LogInformation("AnalyzeLag started for {AMetric} and {BMetric}", a.MetricName, b.MetricName);
         var commonDates = a.DataPoints.Select(p => p.Date)
             .Intersect(b.DataPoints.Select(p => p.Date))
             .Order()
             .ToArray();
 
         if (commonDates.Length < maxLagDays + 2)
+        {
+            logger.LogWarning(
+                "AnalyzeLag skipped: insufficient common dates ({CommonDates}) for max lag {MaxLagDays}",
+                commonDates.Length, maxLagDays);
             return [];
+        }
 
         var xValues = a.DataPoints
             .Where(p => commonDates.Contains(p.Date))
