@@ -72,6 +72,7 @@ public sealed class CsvExporterTests : IDisposable
             // No column filter – all columns should be written
         };
         _loggerMock.Object.LogInformation("Exporting sleep data with all columns");
+        _loggerMock.Object.LogInformation("Exporting {SleepRecordCount} sleep record(s) to {OutputDirectory}", collection.SleepRecords.Count, _tempDir);
         // Act
         await _exporter.ExportToCsvAsync(collection, _tempDir, options);
         _loggerMock.Object.LogInformation("Sleep data exported successfully");
@@ -97,6 +98,7 @@ public sealed class CsvExporterTests : IDisposable
         Assert.Equal("85", fields[7]);
         Assert.Equal("60", fields[8]);
         _loggerMock.Object.LogInformation("Asserted sleep data export is correct");
+        _loggerMock.Object.LogInformation("ExportSleep_AllColumns_HeaderAndValues_AreCorrect completed for {OutputDirectory}", _tempDir);
     }
 
     [Fact]
@@ -123,6 +125,7 @@ public sealed class CsvExporterTests : IDisposable
             SleepColumns = new[] { "Date", "Duration", "Score" } // only these columns should appear
         };
         _loggerMock.Object.LogInformation("Exporting sleep data with selected columns: {Columns}", string.Join(",", options.SleepColumns));
+        _loggerMock.Object.LogInformation("Exporting {SleepRecordCount} sleep record(s) to {OutputDirectory}", collection.SleepRecords.Count, _tempDir);
         // Act
         await _exporter.ExportToCsvAsync(collection, _tempDir, options);
         _loggerMock.Object.LogInformation("Sleep data with selected columns exported successfully");
@@ -142,6 +145,7 @@ public sealed class CsvExporterTests : IDisposable
         Assert.Equal("300", fields[1]);
         Assert.Equal("70", fields[2]);
         _loggerMock.Object.LogInformation("Asserted selected columns sleep data export is correct");
+        _loggerMock.Object.LogInformation("ExportSleep_SelectedColumns_HeaderSubset_IsRespected completed for {OutputDirectory}", _tempDir);
     }
 
     [Fact]
@@ -157,6 +161,7 @@ public sealed class CsvExporterTests : IDisposable
             IncludeSteps = true
         };
         _loggerMock.Object.LogInformation("Exporting empty collection to verify no files are created");
+        _loggerMock.Object.LogWarning("Collection contains no records for any requested type; export to {OutputDirectory} will produce no files", _tempDir);
         // Act
         await _exporter.ExportToCsvAsync(emptyCollection, _tempDir, options);
         _loggerMock.Object.LogInformation("Empty collection export completed");
@@ -164,6 +169,7 @@ public sealed class CsvExporterTests : IDisposable
         var files = Directory.GetFiles(_tempDir);
         Assert.Empty(files); // exporter should not create any CSV files when there is no data
         _loggerMock.Object.LogInformation("Asserted that no files were created for empty collection");
+        _loggerMock.Object.LogInformation("ExportEmptyCollection_NoFilesAreCreated completed for {OutputDirectory}", _tempDir);
     }
 
     [Fact]
@@ -193,9 +199,11 @@ public sealed class CsvExporterTests : IDisposable
             IncludeSpO2 = false,
             IncludeSteps = true
         };
+        _loggerMock.Object.LogInformation("Exporting multiple record types to {OutputDirectory} with IncludeSleep={IncludeSleep}, IncludeHeartRate={IncludeHeartRate}, IncludeSpO2={IncludeSpO2}, IncludeSteps={IncludeSteps}", _tempDir, options.IncludeSleep, options.IncludeHeartRate, options.IncludeSpO2, options.IncludeSteps);
 
         // Act
         await _exporter.ExportToCsvAsync(collection, _tempDir, options);
+        _loggerMock.Object.LogInformation("Multi-type export to {OutputDirectory} completed", _tempDir);
 
         // Assert
         var expectedFiles = new[] { "sleep.csv", "heart_rate.csv", "steps.csv" };
@@ -208,6 +216,7 @@ public sealed class CsvExporterTests : IDisposable
         // Ensure SpO2 file was NOT created
         var spo2Path = Path.Combine(_tempDir, "spo2.csv");
         Assert.False(File.Exists(spo2Path));
+        _loggerMock.Object.LogInformation("Asserted expected files {ExpectedFiles} exist and {ExcludedFile} was not created", string.Join(",", expectedFiles), "spo2.csv");
     }
 
     [Fact]
@@ -224,15 +233,19 @@ public sealed class CsvExporterTests : IDisposable
         await File.WriteAllTextAsync(filePath, "Initial content");
         var initialContent = await File.ReadAllTextAsync(filePath);
         Assert.Equal("Initial content", initialContent);
+        _loggerMock.Object.LogInformation("Exporting sleep data to existing file {FilePath}", filePath);
+        _loggerMock.Object.LogWarning("Destination file {FilePath} already exists and will be overwritten", filePath);
 
         // Act - should overwrite without throwing
         await _exporter.ExportAsync(collection, filePath);
+        _loggerMock.Object.LogInformation("Export to {FilePath} completed", filePath);
 
         // Assert - file should exist and contain new content (not initial content)
         Assert.True(File.Exists(filePath));
         var finalContent = await File.ReadAllTextAsync(filePath);
         Assert.NotEqual("Initial content", finalContent);
         Assert.Contains("Date,Duration", finalContent); // Should contain CSV header
+        _loggerMock.Object.LogInformation("Asserted {FilePath} was overwritten with CSV content", filePath);
     }
 
     [Fact]
@@ -245,14 +258,18 @@ public sealed class CsvExporterTests : IDisposable
         };
         var nonExistentDir = Path.Combine(_tempDir, "non_existent_dir");
         var filePath = Path.Combine(nonExistentDir, "test.csv");
+        _loggerMock.Object.LogInformation("Exporting sleep data to {FilePath}", filePath);
+        _loggerMock.Object.LogWarning("Parent directory {ParentDirectory} does not exist and will be created during export", nonExistentDir);
 
         // Act - should create directory and file
         await _exporter.ExportAsync(collection, filePath);
+        _loggerMock.Object.LogInformation("Export to {FilePath} completed", filePath);
 
         // Assert
         Assert.True(File.Exists(filePath));
         var content = await File.ReadAllTextAsync(filePath);
         Assert.Contains("Date,Duration", content); // Should contain CSV header
+        _loggerMock.Object.LogInformation("Asserted file {FilePath} was created in new directory {ParentDirectory}", filePath, nonExistentDir);
     }
 
     [Fact]
@@ -260,9 +277,11 @@ public sealed class CsvExporterTests : IDisposable
     {
         // Arrange
         var collection = new HealthDataCollection();
+        _loggerMock.Object.LogInformation("Verifying export with null destination path throws ArgumentNullException");
 
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentNullException>(() => _exporter.ExportAsync(collection, null!));
+        _loggerMock.Object.LogInformation("Asserted ArgumentNullException was thrown for null destination path");
     }
 
     [Fact]
@@ -270,9 +289,11 @@ public sealed class CsvExporterTests : IDisposable
     {
         // Arrange
         var collection = new HealthDataCollection();
+        _loggerMock.Object.LogInformation("Verifying export with empty destination path throws ArgumentException");
 
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentException>(() => _exporter.ExportAsync(collection, ""));
+        _loggerMock.Object.LogInformation("Asserted ArgumentException was thrown for empty destination path");
     }
 
     [Fact]
@@ -280,8 +301,10 @@ public sealed class CsvExporterTests : IDisposable
     {
         // Arrange
         var collection = new HealthDataCollection();
+        _loggerMock.Object.LogInformation("Verifying export with whitespace destination path throws ArgumentException");
 
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentException>(() => _exporter.ExportAsync(collection, "   "));
+        _loggerMock.Object.LogInformation("Asserted ArgumentException was thrown for whitespace destination path");
     }
 }
