@@ -32,6 +32,7 @@ public sealed class CsvExporterTests : IDisposable
         _exporter = new CsvExporter(_loggerMock.Object);
         _tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         Directory.CreateDirectory(_tempDir);
+        _loggerMock.Object.LogInformation("CsvExporterTests initialized");
     }
 
     public void Dispose()
@@ -70,10 +71,10 @@ public sealed class CsvExporterTests : IDisposable
             IncludeSleep = true               // ensure the exporter creates the file
             // No column filter – all columns should be written
         };
-
+        _loggerMock.Object.LogInformation("Exporting sleep data with all columns");
         // Act
         await _exporter.ExportToCsvAsync(collection, _tempDir, options);
-
+        _loggerMock.Object.LogInformation("Sleep data exported successfully");
         // Assert
         var sleepPath = Path.Combine(_tempDir, "sleep.csv");
         Assert.True(File.Exists(sleepPath));
@@ -95,6 +96,7 @@ public sealed class CsvExporterTests : IDisposable
         Assert.Equal("Good", fields[6]);
         Assert.Equal("85", fields[7]);
         Assert.Equal("60", fields[8]);
+        _loggerMock.Object.LogInformation("Asserted sleep data export is correct");
     }
 
     [Fact]
@@ -120,10 +122,10 @@ public sealed class CsvExporterTests : IDisposable
             IncludeSleep = true,
             SleepColumns = new[] { "Date", "Duration", "Score" } // only these columns should appear
         };
-
+        _loggerMock.Object.LogInformation("Exporting sleep data with selected columns: {Columns}", string.Join(",", options.SleepColumns));
         // Act
         await _exporter.ExportToCsvAsync(collection, _tempDir, options);
-
+        _loggerMock.Object.LogInformation("Sleep data with selected columns exported successfully");
         // Assert
         var sleepPath = Path.Combine(_tempDir, "sleep.csv");
         Assert.True(File.Exists(sleepPath));
@@ -139,6 +141,7 @@ public sealed class CsvExporterTests : IDisposable
         Assert.Equal(collection.SleepRecords[0].RecordDate.ToString(options.DateFormat, CultureInfo.InvariantCulture), fields[0]);
         Assert.Equal("300", fields[1]);
         Assert.Equal("70", fields[2]);
+        _loggerMock.Object.LogInformation("Asserted selected columns sleep data export is correct");
     }
 
     [Fact]
@@ -153,13 +156,14 @@ public sealed class CsvExporterTests : IDisposable
             IncludeSpO2 = true,
             IncludeSteps = true
         };
-
+        _loggerMock.Object.LogInformation("Exporting empty collection to verify no files are created");
         // Act
         await _exporter.ExportToCsvAsync(emptyCollection, _tempDir, options);
-
+        _loggerMock.Object.LogInformation("Empty collection export completed");
         // Assert
         var files = Directory.GetFiles(_tempDir);
         Assert.Empty(files); // exporter should not create any CSV files when there is no data
+        _loggerMock.Object.LogInformation("Asserted that no files were created for empty collection");
     }
 
     [Fact]
