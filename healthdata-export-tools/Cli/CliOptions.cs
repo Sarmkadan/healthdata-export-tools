@@ -115,4 +115,9 @@ public sealed class CliOptions
     /// Path to the export manifest ("manifest.json") to check when running the "verify" subcommand.
     /// </summary>
     public string? ManifestPath { get; set; }
+
+    /// <summary>
+    /// Returns a concise, informative representation of the options
+    /// </summary>
+    public override string ToString() => $"CliOptions {{ InputPath = {InputPath}, OutputPath = {OutputPath}, DatabasePath = {DatabasePath}, Format = {Format}, Device = {Device}, DataType = {DataType} }}";
 }
