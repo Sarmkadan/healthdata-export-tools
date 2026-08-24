@@ -1,0 +1,1 @@
+public override string ToString() => $"HealthDataException {{ ErrorCode = {ErrorCode}, ContextData = {ContextData} }}";
