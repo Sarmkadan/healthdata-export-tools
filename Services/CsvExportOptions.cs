@@ -1,0 +1,1 @@
+public override string ToString() => $"CsvExportOptions {{ IncludeSleep = {IncludeSleep}, IncludeHeartRate = {IncludeHeartRate}, IncludeSpO2 = {IncludeSpO2}, IncludeSteps = {IncludeSteps}, IncludeActivity = {IncludeActivity}, DateFormat = {DateFormat} }}";
