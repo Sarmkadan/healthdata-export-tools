@@ -1,0 +1,1 @@
+public override string ToString() => $"CorrelationEngineOptions {{ AnalysisWindowDays = {AnalysisWindowDays}, SignificanceThreshold = {SignificanceThreshold}, MinimumSampleCount = {MinimumSampleCount}, IncludeWeakCorrelations = {IncludeWeakCorrelations}, ComputeAllPairs = {ComputeAllPairs}, EnableParallelComputation = {EnableParallelComputation} }}";
