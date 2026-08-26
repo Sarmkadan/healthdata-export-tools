@@ -1,0 +1,1 @@
+public override string ToString() => $"CsvUtility {{ RowCount = {RowCount}, HeaderCount = {HeaderCount}, FileSizeBytes = {FileSizeBytes}, LastModified = {LastModified} }}";
