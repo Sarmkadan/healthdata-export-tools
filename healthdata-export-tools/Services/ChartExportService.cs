@@ -28,6 +28,10 @@ public sealed class ChartExportOptions
 
     /// <summary>Whether to include the sleep composition stacked-bar chart.</summary>
     public bool IncludeSleepCompositionChart { get; set; } = true;
+
+    /// <inheritdoc />
+    public override string ToString()
+        => $"ChartExportOptions {{ Title = {Title}, IncludeSummaryTable = {IncludeSummaryTable}, IncludeSpO2Chart = {IncludeSpO2Chart}, IncludeActivityChart = {IncludeActivityChart}, IncludeSleepCompositionChart = {IncludeSleepCompositionChart} }}";
 }
 
 /// <summary>
