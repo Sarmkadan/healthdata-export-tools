@@ -1,0 +1,1 @@
+public override string ToString() => $"DataTransformationUtility {{ Date = {Date}, TotalDurationMinutes = {TotalDurationMinutes}, AverageDurationMinutes = {AverageDurationMinutes}, AverageQuality = {AverageQuality}, TotalDeepSleepMinutes = {TotalDeepSleepMinutes}, TotalRemoSleepMinutes = {TotalRemoSleepMinutes} }}";
