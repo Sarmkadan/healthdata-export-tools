@@ -1,5 +1,4 @@
 // existing content ...
-
 ## JsonLinesExporterTests
 
 The `JsonLinesExporterTests` class provides unit testing for the `JsonLinesExporter` service, focusing on verifying JSON Lines export behavior across various data scenarios. It ensures that collections are correctly serialized to files and that the exporter handles empty data, special characters, and file system interactions reliably.
@@ -445,4 +444,29 @@ tests.ParseArguments_DuplicateFlags_ReturnsFailure();
 
 // Example 5: The help flag returns the help output instead of parsing
 tests.ParseArguments_HelpFlag_ReturnsHelp();
+```
+## CsvExporterTests
+
+The `CsvExporterTests` class provides unit testing for the `CsvExporter` service, verifying CSV export behavior including header generation, column selection, handling of empty collections, and multiple record types.
+
+### Usage Example
+
+```csharp
+using HealthDataExportTools.Tests;
+using System.Threading.Tasks;
+
+// The CsvExporterTests uses a parameterless constructor that sets up a temporary directory and mock logger.
+using var tests = new CsvExporterTests();
+
+// Example 1: Test exporting sleep records with all columns
+await tests.ExportSleep_AllColumns_HeaderAndValues_AreCorrect();
+
+// Example 2: Test exporting sleep records with selected columns
+await tests.ExportSleep_SelectedColumns_HeaderSubset_IsRespected();
+
+// Example 3: Test exporting an empty collection
+await tests.ExportEmptyCollection_NoFilesAreCreated();
+
+// Example 4: Test exporting multiple record types
+await tests.ExportMultipleRecordTypes_AllRequestedFilesAreCreated();
 ```
