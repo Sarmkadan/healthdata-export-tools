@@ -16,6 +16,42 @@ public static class CompressionUtility
 {
     private const int BufferSize = 65536;
 
+    private static string BuildErrorContext(string operationName, string? inputPath, string? outputPath)
+    {
+        if (operationName == null) throw new ArgumentNullException(nameof(operationName));
+
+        var context = new System.Text.StringBuilder();
+        context.Append($"Operation: {operationName}");
+
+        if (!string.IsNullOrEmpty(inputPath))
+        {
+            context.Append($", InputPath: {inputPath}");
+            if (File.Exists(inputPath))
+            {
+                try
+                {
+                    var size = new FileInfo(inputPath).Length;
+                    context.Append($", InputSize: {size} bytes");
+                }
+                catch
+                {
+                    context.Append(", InputSize: <unavailable>");
+                }
+            }
+            else
+            {
+                context.Append(", InputFileDoesNotExist");
+            }
+        }
+
+        if (!string.IsNullOrEmpty(outputPath))
+        {
+            context.Append($", OutputPath: {outputPath}");
+        }
+
+        return context.ToString();
+    }
+
     /// <summary>
     /// Compress a file using GZip compression
     /// </summary>
@@ -38,9 +74,21 @@ public static class CompressionUtility
 
             return outputPath;
         }
+        catch (FileNotFoundException)
+        {
+            throw;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            throw;
+        }
+        catch (DirectoryNotFoundException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
-            throw new HealthDataException($"Failed to compress file: {inputPath}", ex);
+            throw new HealthDataException(BuildErrorContext(nameof(CompressFileGzipAsync), inputPath, outputPath), ex);
         }
     }
 
@@ -66,9 +114,21 @@ public static class CompressionUtility
 
             return outputPath;
         }
+        catch (FileNotFoundException)
+        {
+            throw;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            throw;
+        }
+        catch (DirectoryNotFoundException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
-            throw new HealthDataException($"Failed to decompress file: {inputPath}", ex);
+            throw new HealthDataException(BuildErrorContext(nameof(DecompressFileGzipAsync), inputPath, outputPath), ex);
         }
     }
 
@@ -97,9 +157,33 @@ public static class CompressionUtility
 
             return await Task.FromResult(outputPath).ConfigureAwait(false);
         }
+        catch (FileNotFoundException)
+        {
+            throw;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            throw;
+        }
+        catch (DirectoryNotFoundException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
-            throw new HealthDataException("Failed to create ZIP archive", ex);
+            // Determine the first existing file path for context, if any
+            string? firstExistingPath = null;
+            foreach (var path in filePaths)
+            {
+                if (File.Exists(path))
+                {
+                    firstExistingPath = path;
+                    break;
+                }
+            }
+            // If none exist, use the first path in the list (or empty if list is empty)
+            string? inputPathForContext = filePaths.FirstOrDefault() ?? string.Empty;
+            throw new HealthDataException(BuildErrorContext(nameof(CreateZipArchiveAsync), inputPathForContext, outputPath), ex);
         }
     }
 
@@ -121,9 +205,21 @@ public static class CompressionUtility
             ZipFile.ExtractToDirectory(zipPath, outputDirectory, overwriteFiles: true);
             return await Task.FromResult(outputDirectory).ConfigureAwait(false);
         }
+        catch (FileNotFoundException)
+        {
+            throw;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            throw;
+        }
+        catch (DirectoryNotFoundException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
-            throw new HealthDataException($"Failed to extract ZIP archive: {zipPath}", ex);
+            throw new HealthDataException(BuildErrorContext(nameof(ExtractZipArchiveAsync), zipPath, outputDirectory), ex);
         }
     }
 
@@ -137,13 +233,32 @@ public static class CompressionUtility
         if (!File.Exists(originalPath) || !File.Exists(compressedPath))
             return 0;
 
-        var originalSize = new FileInfo(originalPath).Length;
-        var compressedSize = new FileInfo(compressedPath).Length;
+        try
+        {
+            var originalSize = new FileInfo(originalPath).Length;
+            var compressedSize = new FileInfo(compressedPath).Length;
 
-        if (originalSize == 0)
-            return 0;
+            if (originalSize == 0)
+                return 0;
 
-        return Math.Round(((double)compressedSize / originalSize) * 100, 2);
+            return Math.Round(((double)compressedSize / originalSize) * 100, 2);
+        }
+        catch (FileNotFoundException)
+        {
+            throw;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            throw;
+        }
+        catch (DirectoryNotFoundException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            throw new HealthDataException(BuildErrorContext(nameof(GetCompressionRatio), originalPath, compressedPath), ex);
+        }
     }
 
     /// <summary>
@@ -167,7 +282,7 @@ public static class CompressionUtility
         }
         catch (Exception ex)
         {
-            throw new HealthDataException("Failed to compress string", ex);
+            throw new HealthDataException(BuildErrorContext(nameof(CompressString), null, null), ex);
         }
     }
 
@@ -188,7 +303,7 @@ public static class CompressionUtility
         }
         catch (Exception ex)
         {
-            throw new HealthDataException("Failed to decompress string", ex);
+            throw new HealthDataException(BuildErrorContext(nameof(DecompressString), null, null), ex);
         }
     }
 
