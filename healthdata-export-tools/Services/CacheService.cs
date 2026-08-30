@@ -34,6 +34,28 @@ public sealed class CacheService
     }
 
     /// <summary>
+    /// Retrieve a cached value, or create and cache it when it is not found
+    /// </summary>
+    public async Task<T?> GetOrCreateAsync<T>(string key, Func<Task<T>> factory, TimeSpan? ttl = null)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(key);
+        ArgumentNullException.ThrowIfNull(factory);
+
+        var cached = await _cacheProvider.GetAsync<T>(key).ConfigureAwait(false);
+        if (cached is not null)
+        {
+            _logger.LogDebug("Cache hit for key: {Key}", key);
+            return cached;
+        }
+
+        _logger.LogDebug("Cache miss for key: {Key}", key);
+        var value = await factory().ConfigureAwait(false);
+        await _cacheProvider.SetAsync(key, value, ttl ?? _defaultTtl).ConfigureAwait(false);
+
+        return value;
+    }
+
+    /// <summary>
     /// Cache health data records with default TTL
     /// </summary>
     public async Task CacheHealthDataAsync(string key, List<HealthDataRecord> records)
