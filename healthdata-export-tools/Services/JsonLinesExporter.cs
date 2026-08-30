@@ -20,6 +20,13 @@ namespace HealthDataExportTools.Services;
 /// </summary>
 public sealed class JsonLinesExporter : IDataExporter
 {
+    private static readonly JsonSerializerOptions SerializerOptions = new()
+    {
+        WriteIndented = false,
+        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
+        Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+    };
+
     private readonly ILogger<JsonLinesExporter> _logger;
 
     public JsonLinesExporter(ILogger<JsonLinesExporter> logger)
@@ -56,51 +63,51 @@ public sealed class JsonLinesExporter : IDataExporter
 
         try
         {
-            using var fs = File.Create(outputPath);
-            using var writer = new StreamWriter(fs, Encoding.UTF8);
-            var options = new JsonSerializerOptions
-            {
-                WriteIndented = false,
-                DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
-                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-            };
+            await using var fs = new FileStream(
+                outputPath,
+                FileMode.Create,
+                FileAccess.Write,
+                FileShare.None,
+                bufferSize: 4096,
+                useAsync: true);
+            await using var writer = new StreamWriter(fs, Encoding.UTF8);
 
             // Export sleep records
             foreach (var record in collection.SleepRecords)
             {
-                var json = JsonSerializer.Serialize(record, options);
-                await writer.WriteLineAsync(json).ConfigureAwait(false);
+                var json = JsonSerializer.Serialize(record, SerializerOptions);
+                await writer.WriteLineAsync(json.AsMemory(), cancellationToken).ConfigureAwait(false);
             }
 
             // Export heart rate records
             foreach (var record in collection.HeartRateRecords)
             {
-                var json = JsonSerializer.Serialize(record, options);
-                await writer.WriteLineAsync(json).ConfigureAwait(false);
+                var json = JsonSerializer.Serialize(record, SerializerOptions);
+                await writer.WriteLineAsync(json.AsMemory(), cancellationToken).ConfigureAwait(false);
             }
 
             // Export SpO2 records
             foreach (var record in collection.SpO2Records)
             {
-                var json = JsonSerializer.Serialize(record, options);
-                await writer.WriteLineAsync(json).ConfigureAwait(false);
+                var json = JsonSerializer.Serialize(record, SerializerOptions);
+                await writer.WriteLineAsync(json.AsMemory(), cancellationToken).ConfigureAwait(false);
             }
 
             // Export steps records
             foreach (var record in collection.StepsRecords)
             {
-                var json = JsonSerializer.Serialize(record, options);
-                await writer.WriteLineAsync(json).ConfigureAwait(false);
+                var json = JsonSerializer.Serialize(record, SerializerOptions);
+                await writer.WriteLineAsync(json.AsMemory(), cancellationToken).ConfigureAwait(false);
             }
 
             // Export activity records
             foreach (var record in collection.ActivityRecords)
             {
-                var json = JsonSerializer.Serialize(record, options);
-                await writer.WriteLineAsync(json).ConfigureAwait(false);
+                var json = JsonSerializer.Serialize(record, SerializerOptions);
+                await writer.WriteLineAsync(json.AsMemory(), cancellationToken).ConfigureAwait(false);
             }
 
-            await writer.FlushAsync().ConfigureAwait(false);
+            await writer.FlushAsync(cancellationToken).ConfigureAwait(false);
 
             _logger.LogInformation(
                 "JSON Lines export complete: {RecordCount} records written to {OutputPath}",
