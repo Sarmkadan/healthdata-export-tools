@@ -23,6 +23,13 @@ namespace HealthDataExportTools.Services;
 /// </summary>
 public sealed partial class CsvExporter : IHealthDataExporter, IDataExporter
 {
+    private static readonly char[] DangerousPrefixChars = { '=', '+', '-', '@', '\t', '\r' };
+    private const char EscapePrefixChar = '\'';
+    private const string CsvFileExtension = ".csv";
+    private const string WindowsNewLineSeparator = "\r\n";
+    private const string SanitizedLineSeparator = " ";
+    private const char SanitizedLineSeparatorChar = ' ';
+
     private readonly ILogger<CsvExporter> _logger;
 
     public CsvExporter(ILogger<CsvExporter> logger)
@@ -41,25 +48,20 @@ public sealed partial class CsvExporter : IHealthDataExporter, IDataExporter
             return string.Empty;
 
         // Check if value starts with dangerous characters that could trigger formula execution
-        bool startsWithDangerousChar = value.StartsWith('=') ||
-        value.StartsWith('+') ||
-        value.StartsWith('-') ||
-        value.StartsWith('@') ||
-        value.StartsWith('\t') ||
-        value.StartsWith('\r');
+        bool startsWithDangerousChar = Array.IndexOf(DangerousPrefixChars, value[0]) >= 0;
 
         // Replace embedded newlines with spaces to prevent row splitting
         // Handle all common newline sequences: \r\n (Windows), \n (Unix), \r (old Mac)
         string sanitized = value
-            .Replace("\r\n", " ")
-            .Replace('\n', ' ')
-            .Replace('\r', ' ');
+            .Replace(WindowsNewLineSeparator, SanitizedLineSeparator)
+            .Replace('\n', SanitizedLineSeparatorChar)
+            .Replace('\r', SanitizedLineSeparatorChar);
 
         // Escape embedded double quotes per RFC 4180
         sanitized = sanitized.Replace("\"", "\"\"");
 
         // Apply prefix if value starts with dangerous character
-        return startsWithDangerousChar ? $"'{sanitized}" : sanitized;
+        return startsWithDangerousChar ? $"{EscapePrefixChar}{sanitized}" : sanitized;
     }
 
     /// <inheritdoc />
@@ -83,25 +85,25 @@ public sealed partial class CsvExporter : IHealthDataExporter, IDataExporter
 
         if (options.IncludeSleep && collection.SleepRecords.Count > 0)
         {
-            var path = Path.Combine(outputDirectory, "sleep.csv");
+            var path = Path.Combine(outputDirectory, $"sleep{CsvFileExtension}");
             tasks.Add(ExportSleepAsync(collection.SleepRecords, path, options));
         }
 
         if (options.IncludeHeartRate && collection.HeartRateRecords.Count > 0)
         {
-            var path = Path.Combine(outputDirectory, "heart_rate.csv");
+            var path = Path.Combine(outputDirectory, $"heart_rate{CsvFileExtension}");
             tasks.Add(ExportHeartRateAsync(collection.HeartRateRecords, path, options));
         }
 
         if (options.IncludeSpO2 && collection.SpO2Records.Count > 0)
         {
-            var path = Path.Combine(outputDirectory, "spo2.csv");
+            var path = Path.Combine(outputDirectory, $"spo2{CsvFileExtension}");
             tasks.Add(ExportSpO2Async(collection.SpO2Records, path, options));
         }
 
         if (options.IncludeSteps && collection.StepsRecords.Count > 0)
         {
-            var path = Path.Combine(outputDirectory, "steps.csv");
+            var path = Path.Combine(outputDirectory, $"steps{CsvFileExtension}");
             tasks.Add(ExportStepsAsync(collection.StepsRecords, path, options));
         }
 
@@ -140,7 +142,7 @@ public sealed partial class CsvExporter : IHealthDataExporter, IDataExporter
     /// <summary>
     /// Gets the file extension for CSV format.
     /// </summary>
-    public string FileExtension => ".csv";
+    public string FileExtension => CsvFileExtension;
 
     /// <summary>
     /// Gets a human-readable description of the CSV export format.
