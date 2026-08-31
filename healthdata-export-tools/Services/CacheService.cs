@@ -30,6 +30,12 @@ public sealed class CacheService
     {
         _cacheProvider = cacheProvider ?? throw new ArgumentNullException(nameof(cacheProvider));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
+        if (defaultTtl.HasValue && defaultTtl.Value <= TimeSpan.Zero)
+        {
+            throw new ArgumentOutOfRangeException(nameof(defaultTtl), "TTL must be positive.");
+        }
+
         _defaultTtl = defaultTtl ?? TimeSpan.FromHours(1);
     }
 
@@ -40,6 +46,11 @@ public sealed class CacheService
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
         ArgumentNullException.ThrowIfNull(factory);
+
+        if (ttl.HasValue && ttl.Value <= TimeSpan.Zero)
+        {
+            throw new ArgumentOutOfRangeException(nameof(ttl), "TTL must be positive.");
+        }
 
         var cached = await _cacheProvider.GetAsync<T>(key).ConfigureAwait(false);
         if (cached is not null)
@@ -60,6 +71,9 @@ public sealed class CacheService
     /// </summary>
     public async Task CacheHealthDataAsync(string key, List<HealthDataRecord> records)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(key);
+        ArgumentNullException.ThrowIfNull(records);
+
         try
         {
             var cacheKey = $"{HealthDataKeyPrefix}{key}";
@@ -78,6 +92,8 @@ public sealed class CacheService
     /// </summary>
     public async Task<List<HealthDataRecord>?> GetCachedHealthDataAsync(string key)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(key);
+
         try
         {
             var cacheKey = $"{HealthDataKeyPrefix}{key}";
@@ -102,6 +118,9 @@ public sealed class CacheService
     /// </summary>
     public async Task CacheAnalyticsAsync(string key, object analyticsData)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(key);
+        ArgumentNullException.ThrowIfNull(analyticsData);
+
         try
         {
             var cacheKey = $"{AnalyticsKeyPrefix}{key}";
@@ -120,6 +139,8 @@ public sealed class CacheService
     /// </summary>
     public async Task<T?> GetCachedAnalyticsAsync<T>(string key) where T : class
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(key);
+
         try
         {
             var cacheKey = $"{AnalyticsKeyPrefix}{key}";
@@ -144,6 +165,9 @@ public sealed class CacheService
     /// </summary>
     public async Task CacheParseResultAsync(string filePath, List<HealthDataRecord> records)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
+        ArgumentNullException.ThrowIfNull(records);
+
         try
         {
             var fileHash = Path.GetFileName(filePath);
@@ -163,6 +187,8 @@ public sealed class CacheService
     /// </summary>
     public async Task<List<HealthDataRecord>?> GetCachedParseResultAsync(string filePath)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
+
         try
         {
             var fileHash = Path.GetFileName(filePath);
@@ -197,6 +223,8 @@ public sealed class CacheService
     /// </summary>
     public async Task ClearPatternAsync(string pattern)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(pattern);
+
         try
         {
             var keys = await _cacheProvider.GetKeysAsync().ConfigureAwait(false);
@@ -237,6 +265,8 @@ public sealed class CacheService
     /// </summary>
     public async Task<bool> IsHealthDataCachedAsync(string key)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(key);
+
         try
         {
             var cacheKey = $"{HealthDataKeyPrefix}{key}";
@@ -254,6 +284,8 @@ public sealed class CacheService
     /// </summary>
     public async Task RemoveAsync(string key)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(key);
+
         try
         {
             await _cacheProvider.RemoveAsync(key).ConfigureAwait(false);
