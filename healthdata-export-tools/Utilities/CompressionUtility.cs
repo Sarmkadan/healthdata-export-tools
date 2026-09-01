@@ -101,7 +101,9 @@ public static class CompressionUtility
         if (!File.Exists(inputPath))
             throw new FileNotFoundException($"Input file not found: {inputPath}");
 
-        outputPath ??= inputPath.TrimEnd('z').TrimEnd('g').TrimEnd('.');
+        outputPath ??= inputPath.EndsWith(".gz", StringComparison.OrdinalIgnoreCase)
+            ? inputPath[..^3]
+            : $"{inputPath}.decompressed";
 
         try
         {
